@@ -153,7 +153,7 @@ namespace Streamliner
 			Gauge.sizeDelta = _currentSize;
 
 			// Coloring
-			Number.color = GetTintColor();
+			Number.color = GetTintColor(TextAlpha.ThreeQuarters);
 			GaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
 			Gauge.GetComponent<Image>().color = GetTintColor(TextAlpha.ThreeQuarters);
 		}
