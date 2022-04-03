@@ -39,7 +39,6 @@ namespace Streamliner
 		private float _previousSpeed;
 		private Color _defaultColor;
 		private Color _highlightColor;
-		private float _colorTransitionTimer = 0.13f;
 
 		public override void Start()
 		{
@@ -65,6 +64,7 @@ namespace Streamliner
 			SpeedGauge.sizeDelta = _currentSpeedSize;
 
 			// Colorizing
+			PanelTransform.GetChild(0).GetComponent<Text>().color = GetTintColor();
 			Value.color = GetTintColor();
 			GaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
 			AccelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
@@ -113,10 +113,7 @@ namespace Streamliner
 				return;
 			}
 			Color color = Value.color;
-			if (
-				_currentSpeed < _previousSpeed &&
-				TargetShip.BoostLevel == 0
-				)
+			if (_currentSpeed < _previousSpeed)
 			{
 				// 4-frame transition in 60 fps => 60/4 = 15
 				color = Color.Lerp(color, _highlightColor, Time.deltaTime * 15f);
