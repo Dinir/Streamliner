@@ -89,7 +89,7 @@ namespace Streamliner
 
 			// Colorize the text on speed change
 			_currentSpeed = _currentSpeedSize.x;
-			ColorSpeedValue();
+			ColorSpeedComponent();
 			_previousSpeed = _currentSpeed;
 		}
 
@@ -110,7 +110,7 @@ namespace Streamliner
 		private string GetSpeedValueString() => 
 			IntStrDb.GetNumber(Mathf.Abs(Mathf.RoundToInt(TargetShip.HudSpeed)));
 
-		private void ColorSpeedValue()
+		private void ColorSpeedComponent()
 		{
 			if (!OptionSpeedHighlight)
 			{
