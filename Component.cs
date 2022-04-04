@@ -128,7 +128,7 @@ namespace Streamliner
 
 	public class EnergyMeter : ScriptableHud
 	{
-		private Text Number;
+		private Text Value;
 		private Image GaugeBackground;
 		private RectTransform Gauge;
 		private float MaxWidth;
@@ -136,11 +136,42 @@ namespace Streamliner
 		private float _computedValue;
 		private float _adjustedDamageMult;
 
+		private float _currentEnergy;
+		private float _previousEnergy;
+
+		private readonly Color _damageColor = new Color32(0xba, 0x7f, 0x81, 0xff); // Red 4
+		private readonly Color _damageLowColor = new Color32(0xba, 0xb8, 0x7f, 0xff); // Yellow 4
+		private readonly Color _rechargeColor = new Color32(0x7f, 0xba, 0xb8, 0xbf); // Cyan 4
+		private readonly Color _lowColor = new Color32(0xcd, 0xb1, 0x98, 0xbf); // Orange 3
+		private readonly Color _lowColorOpaque = new Color32(0xcd, 0xb1, 0x98, 0xff); // Orange 3
+		private readonly Color _criticalColor = new Color32(0xcd, 0x98, 0x9a, 0xbf); // Red 3
+		private readonly Color _criticalColorOpaque = new Color32(0xcd, 0x98, 0x9a, 0xff); // Red 3
+
+		private Color _defaultColor;
+		private Color _currentColor;
+		private Color _currentDamageColor;
+
+		/*
+		 * When would the progress reach 0.99999 (1 - 10^-5) with the speed?
+		 * That's log(10^-5) / 60log(1-(s/60)) seconds.
+		 * When would the progress reach 0.75 (1 - 0.25) which can be considered gone on eyes?
+		 * That's log(0.25) / 60log(1-(s/60)) seconds.
+		 * 
+		 * Speed is decided on the 0.75 time, and Timer is decided on 0.99999 time of that speed.
+		 * https://www.desmos.com/calculator/nip7pyehxl
+		 */
+		private readonly float _damageAnimationSpeed = 8f;
+		private readonly float _transitionAnimationSpeed = 5f;
+		private readonly float _damageAnimationTimerMax = 1.5f;
+		private readonly float _transitionAnimationTimerMax = 2.2f;
+		private float _damageAnimationTimer;
+		private float _transitionAnimationTimer;
+
 		public override void Start()
 		{
 			base.Start();
 
-			Number = CustomComponents.GetById<Text>("Number");
+			Value = CustomComponents.GetById<Text>("Number");
 			GaugeBackground = CustomComponents.GetById<Image>("GaugeBackground");
 			Gauge = CustomComponents.GetById<RectTransform>("Gauge");
 
@@ -153,9 +184,12 @@ namespace Streamliner
 			Gauge.sizeDelta = _currentSize;
 
 			// Coloring
-			Number.color = GetTintColor(TextAlpha.ThreeQuarters);
+			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
 			GaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
-			Gauge.GetComponent<Image>().color = GetTintColor(TextAlpha.ThreeQuarters);
+			_currentColor = _defaultColor;
+			_currentDamageColor = _damageColor;
+			Value.color = _defaultColor;
+			Gauge.GetComponent<Image>().color = _defaultColor;
 		}
 
 		public override void Update()
@@ -164,8 +198,11 @@ namespace Streamliner
 			
 			_currentSize.x = GetHudShieldWidth();
 			Gauge.sizeDelta = _currentSize;
-			Number.text = GetShieldValueString();
+			Value.text = GetShieldValueString();
 
+			_currentEnergy = TargetShip.ShieldIntegrity;
+			ColorEnergyComponent();
+			_previousEnergy = _currentEnergy;
 		}
 
 		/*
@@ -210,6 +247,96 @@ namespace Streamliner
 			return TargetShip.Settings.DAMAGE_MULT <= 0f ? 
 				"" : 
 				IntStrDb.GetNoSingleCharNumber(Mathf.RoundToInt(_computedValue));
+		}
+
+		private void ColorEnergyComponent()
+		{
+			// Set timer during which the coloring transition can run
+			// damage flash
+			if (_currentEnergy < _previousEnergy)
+			{
+				_damageAnimationTimer = _damageAnimationTimerMax;
+			}
+			// transition
+			if (
+				OptionLowEnergy != 0 && (
+					(_currentEnergy <= 25f && _previousEnergy > 25f) ||
+					(_currentEnergy <= 10f && _previousEnergy > 10f) ||
+					(_currentEnergy > 25f && _previousEnergy <= 25f) ||
+					(_currentEnergy > 10f && _previousEnergy <= 10f)
+				) ||
+				TargetShip.IsRecharging
+			)
+			{
+				_transitionAnimationTimer = _transitionAnimationTimerMax;
+				// Charging takes over damage flash and stops the flash timer
+				if (TargetShip.IsRecharging)
+				{
+					_damageAnimationTimer = 0f;
+				}
+			}
+
+			Color color = Value.color;
+
+			// Set target color for the transition to take between
+			// transition
+			if (_transitionAnimationTimer > 0f)
+			{
+				if (TargetShip.IsRecharging)
+				{
+					_currentColor = _rechargeColor;
+				}
+				else if (_currentEnergy <= 25f)
+				{
+					if (_currentEnergy > 10f)
+					{
+						_currentColor =
+							(OptionLowEnergy == 2 || Audio.WarnOfLowEnergy) ?
+							_lowColor : _defaultColor;
+					}
+					else
+					{
+						_currentColor =
+							(OptionLowEnergy == 2 || Audio.WarnOfCriticalEnergy) ?
+							_criticalColor : _defaultColor;
+					}
+				}
+				else
+				{
+					_currentColor = _defaultColor;
+				}
+
+				color = Color.Lerp(color, _currentColor, Time.deltaTime * _transitionAnimationSpeed);
+				_transitionAnimationTimer -= Time.deltaTime;
+			}
+			else
+			{
+				_transitionAnimationTimer = 0f;
+			}
+			// damage flash (process after getting `_currentColor` set)
+			if (_damageAnimationTimer > 0f)
+			{
+				_currentDamageColor =
+					_currentEnergy > 10f || 
+					OptionLowEnergy == 0 || 
+					(OptionLowEnergy == 1 && !Audio.WarnOfCriticalEnergy) ?
+					_damageColor : _damageLowColor;
+
+				if (_damageAnimationTimer == _damageAnimationTimerMax)
+				{
+					color = _currentDamageColor;
+				}
+				color = Color.Lerp(color, _currentColor, Time.deltaTime * _damageAnimationSpeed);
+				_damageAnimationTimer -= Time.deltaTime;
+			}
+			else
+			{
+				_damageAnimationTimer = 0f;
+			}
+
+			// Apply the final color
+			Value.color = color;
+			Gauge.GetComponent<Image>().color = color;
 		}
 	}
 
