@@ -38,7 +38,12 @@ namespace Streamliner
 		private float _currentSpeed;
 		private float _previousSpeed;
 		private Color _defaultColor;
-		private Color _highlightColor;
+		private readonly Color _highlightColor = new Color32(0xba, 0x7f, 0x81, 0xff); // Red 4
+
+		private readonly float _animationSpeed = 8f;
+		private readonly float _animationTimerMax = 1.5f;
+		private float _speedDecreaseAnimationTimer;
+		private float _speedIncreaseAnimationTimer;
 
 		public override void Start()
 		{
@@ -64,13 +69,12 @@ namespace Streamliner
 			SpeedGauge.sizeDelta = _currentSpeedSize;
 
 			// Colorizing
-			PanelTransform.GetChild(0).GetComponent<Text>().color = GetTintColor();
-			Value.color = GetTintColor();
+			_defaultColor = GetTintColor();
+			PanelTransform.GetChild(0).GetComponent<Text>().color = _defaultColor;
+			Value.color = _defaultColor;
 			GaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
 			AccelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
-			SpeedGauge.GetComponent<Image>().color = GetTintColor();
-			_defaultColor = GetTintColor();
-			_highlightColor = new Color32(0x9f, 0x65, 0x67, 0xff);
+			SpeedGauge.GetComponent<Image>().color = _defaultColor;
 		}
 
 		public override void Update()
@@ -112,17 +116,42 @@ namespace Streamliner
 			{
 				return;
 			}
-			Color color = Value.color;
+
 			if (_currentSpeed < _previousSpeed)
 			{
-				// 4-frame transition in 60 fps => 60/4 = 15
-				color = Color.Lerp(color, _highlightColor, Time.deltaTime * 15f);
-			} 
+				_speedDecreaseAnimationTimer = _animationTimerMax;
+				_speedIncreaseAnimationTimer = 0f;
+			}
 			else
 			{
-				color = Color.Lerp(color, _defaultColor, Time.deltaTime * 15f);
+				_speedIncreaseAnimationTimer = _animationTimerMax;
+				_speedDecreaseAnimationTimer = 0f;
 			}
+
+			Color color = Value.color;
+
+			if (_speedDecreaseAnimationTimer > 0f)
+			{
+				color = Color.Lerp(color, _highlightColor, Time.deltaTime * _animationSpeed);
+				_speedDecreaseAnimationTimer -= Time.deltaTime;
+			}
+			else
+			{
+				_speedDecreaseAnimationTimer = 0f;
+			}
+
+			if (_speedIncreaseAnimationTimer > 0f)
+			{
+				color = Color.Lerp(color, _defaultColor, Time.deltaTime * _animationSpeed);
+				_speedIncreaseAnimationTimer -= Time.deltaTime;
+			}
+			else
+			{
+				_speedIncreaseAnimationTimer = 0f;
+			}
+
 			Value.color = color;
+			SpeedGauge.GetComponent<Image>().color = color;
 		}
 	}
 
