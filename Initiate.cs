@@ -28,19 +28,19 @@ namespace Streamliner
 
         // color options
         public static readonly Color[] TintColorList = new Color[13] {
-			Color.HSVToRGB(0.9944f, 0.00f, 0.86f),
-			Color.HSVToRGB(0.9944f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.0778f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.1611f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.2444f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.3278f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.4111f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.4944f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.5778f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.6611f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.7444f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.8278f, 0.18f, 0.86f),
-			Color.HSVToRGB(0.9111f, 0.18f, 0.86f)
+			Color.HSVToRGB(0.9944f, 0.00f, 0.86f), // Grey
+			Color.HSVToRGB(0.9944f, 0.18f, 0.86f), // Red
+			Color.HSVToRGB(0.0778f, 0.18f, 0.86f), // Orange
+			Color.HSVToRGB(0.1611f, 0.18f, 0.86f), // Yellow
+			Color.HSVToRGB(0.2444f, 0.18f, 0.86f), // Lime
+			Color.HSVToRGB(0.3278f, 0.18f, 0.86f), // Green
+			Color.HSVToRGB(0.4111f, 0.18f, 0.86f), // Mint
+			Color.HSVToRGB(0.4944f, 0.18f, 0.86f), // Cyan
+			Color.HSVToRGB(0.5778f, 0.18f, 0.86f), // Azure
+			Color.HSVToRGB(0.6611f, 0.18f, 0.86f), // Blue
+			Color.HSVToRGB(0.7444f, 0.18f, 0.86f), // Violet
+			Color.HSVToRGB(0.8278f, 0.18f, 0.86f), // Magenta
+			Color.HSVToRGB(0.9111f, 0.18f, 0.86f)  // Rose
 		};
 		public static readonly float[] TintAlphaList = new float[] {
 			1f, 0.750f, 0.500f, 0.375f, 0.250f
