@@ -127,12 +127,19 @@ namespace Streamliner
 				OptionSpeedHighlight ? 1 : 0,
 				"Off", "On"
 			);
+			ctx.GenerateSelector(
+				"LowEnergyIndicator", "Low Energy Indicator",
+				"Change when the low energy indicator turns on.",
+				OptionLowEnergy,
+				"Off", "Follow Audio Setting", "On"
+			);
 		}
 
 		private void ModUiToCode(ModOptionsUiContext ctx)
 		{
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
 			OptionSpeedHighlight = ctx.GetSelectorValue("SpeedHighlight") == 1;
+			OptionLowEnergy = ctx.GetSelectorValue("LowEnergyIndicator");
 		}
 
 		private void OnLoadSettings()
@@ -142,6 +149,7 @@ namespace Streamliner
 
 			OptionValueTint = ini.ReadValue("Display", "TextTint", OptionValueTint);
 			OptionSpeedHighlight = ini.ReadValue("AdditionalInformation", "SpeedHighlight", OptionSpeedHighlight);
+			OptionLowEnergy = ini.ReadValue("AdditionalInformation", "LowEnergyIndicator", OptionLowEnergy);
 
 			ini.Close();
 		}
@@ -153,6 +161,7 @@ namespace Streamliner
 
 			ini.WriteValue("Display", "TextTint", OptionValueTint);
 			ini.WriteValue("AdditionalInformation", "SpeedHighlight", OptionSpeedHighlight);
+			ini.WriteValue("AdditionalInformation", "LowEnergyIndicator", OptionLowEnergy);
 
 			ini.Close();
 		}
