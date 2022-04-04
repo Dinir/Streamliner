@@ -46,9 +46,9 @@ namespace Streamliner
 			1f, 0.750f, 0.500f, 0.375f, 0.250f
 		};
 		public enum TextAlpha
-				{
+		{
 			Full, ThreeQuarters, Half, ThreeEighths, Quarter
-				}
+        }
 		private static Color _tintColorBuffer;
 
 		// options
@@ -116,22 +116,22 @@ namespace Streamliner
 				"TextTint", "Text Tint",
 				"Change the colour of the texts.",
 				OptionValueTint,
-				"White", "Red", "Orange", "Yellow", "Lime", "Green", "Mint", "Cyan", "Azure", "Blue", "Violet", "Magenta", "Rose"
+				"white", "red", "orange", "yellow", "lime", "green", "mint", "cyan", "azure", "blue", "violet", "magenta", "rose"
 			);
 
 			ctx.GenerateHeader("Additional Information");
 
 			ctx.GenerateSelector(
-				"SpeedHighlight", "Speed Reduction Highlight",
+				"SpeedHighlight", "speed reduction highlight",
 				"Highlight speedometer text when speed decreases.",
 				OptionSpeedHighlight ? 1 : 0,
-				"Off", "On"
+				"off", "on"
 			);
 			ctx.GenerateSelector(
-				"LowEnergyIndicator", "Low Energy Indicator",
+				"LowEnergyIndicator", "low energy indicator",
 				"Change when the low energy indicator turns on.",
 				OptionLowEnergy,
-				"Off", "Follow Audio Setting", "On"
+				"off", "follow audio setting", "on"
 			);
 		}
 
