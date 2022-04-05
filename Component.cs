@@ -32,24 +32,23 @@ namespace Streamliner
 	/// </summary>
 	public class BasicPanel
 	{
-		public RectTransform Panel;
-		public Text Label;
-		public Text Value;
-		public RectTransform GaugeBackground;
-		public RectTransform Gauge;
-		public Color GaugeColor;
-		public float GaugeMaxWidth;
+		private readonly Text _label;
+		public readonly Text Value;
+		protected readonly RectTransform GaugeBackground;
+		private readonly RectTransform _gauge;
+		private Color _gaugeColor;
+		private readonly float _gaugeMaxWidth;
 		public Vector2 CurrentSize;
 
-		public BasicPanel(RectTransform panelElement)
+		protected BasicPanel(RectTransform panelElement)
 		{
-			Panel = panelElement;			
-			Label = Panel.Find("Label").GetComponent<Text>();
-			Value = Panel.Find("Value").GetComponent<Text>();
-			GaugeBackground = Panel.Find("GaugeBackground").GetComponent<RectTransform>();
-			Gauge = (RectTransform)GaugeBackground.Find("Gauge");
-			GaugeMaxWidth = Gauge.sizeDelta.x;
-			CurrentSize.y = Gauge.sizeDelta.y;
+			_label = panelElement.Find("Label").GetComponent<Text>();
+			Value = panelElement.Find("Value").GetComponent<Text>();
+			GaugeBackground = panelElement.Find("GaugeBackground").GetComponent<RectTransform>();
+			_gauge = (RectTransform)GaugeBackground.Find("Gauge");
+			Vector2 sizeDelta = _gauge.sizeDelta;
+			_gaugeMaxWidth = sizeDelta.x;
+			CurrentSize.y = sizeDelta.y;
 
 			ChangeColor();
 			Fill(0f);
@@ -57,12 +56,12 @@ namespace Streamliner
 
 		// NEVER MAKE A METHOD BEING CALLED IN BASE CONSTRUCTOR VIRTUAL
 		// NEVER OVERRIDE THIS SHIT BELOW
-		public void ChangeColor()
+		private void ChangeColor()
 		{
-			GaugeColor = GetTintColor();
-			Label.color = GaugeColor;
-			Value.color = GaugeColor;
-			Gauge.GetComponent<Image>().color = GaugeColor;
+			_gaugeColor = GetTintColor();
+			_label.color = _gaugeColor;
+			Value.color = _gaugeColor;
+			_gauge.GetComponent<Image>().color = _gaugeColor;
 			GaugeBackground.GetComponent<Image>().color = 
 				GetTintColor(TextAlpha.ThreeEighths);
 		}
@@ -70,13 +69,13 @@ namespace Streamliner
 		public void ChangeDataPartColor(Color color)
 		{
 			Value.color = color;
-			Gauge.GetComponent<Image>().color = color;
+			_gauge.GetComponent<Image>().color = color;
 		}
 
 		public void Fill(float amount)
 		{
-			CurrentSize.x = amount * GaugeMaxWidth;
-			Gauge.sizeDelta = CurrentSize;
+			CurrentSize.x = amount * _gaugeMaxWidth;
+			_gauge.sizeDelta = CurrentSize;
 		}
 	}
 
@@ -91,35 +90,36 @@ namespace Streamliner
 	/// </summary>
 	public class SpeedPanel : BasicPanel
 	{
-		public RectTransform AccelGauge;
-		public float AccelGaugeMaxWidth;
-		public Vector2 CurrentAccelSize;
+		private readonly RectTransform _accelGauge;
+		private readonly float _accelGaugeMaxWidth;
+		private Vector2 _currentAccelSize;
 
 		public SpeedPanel(RectTransform panelElement) : base(panelElement)
 		{
-			AccelGauge = (RectTransform)GaugeBackground.Find("AccelGauge");
-			AccelGaugeMaxWidth = AccelGauge.sizeDelta.x;
-			CurrentAccelSize.y = AccelGauge.sizeDelta.y;
+			_accelGauge = (RectTransform)GaugeBackground.Find("AccelGauge");
+			Vector2 sizeDelta = _accelGauge.sizeDelta;
+			_accelGaugeMaxWidth = sizeDelta.x;
+			_currentAccelSize.y = sizeDelta.y;
 
 			ChangeAccelColor();
 			FillAccel(0f);
 		}
 
-		public void ChangeAccelColor()
+		private void ChangeAccelColor()
 		{ 
-			AccelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
+			_accelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
 		}
 
 		public void FillAccel(float amount)
 		{
-			CurrentAccelSize.x = amount * AccelGaugeMaxWidth;
-			AccelGauge.sizeDelta = CurrentAccelSize;
+			_currentAccelSize.x = amount * _accelGaugeMaxWidth;
+			_accelGauge.sizeDelta = _currentAccelSize;
 		}
 	}
 
 	public class Speedometer : ScriptableHud
 	{
-		public SpeedPanel Panel;
+		private SpeedPanel _panel;
 		private float _computedValue;
 
 		private Color _defaultColor;
@@ -137,7 +137,7 @@ namespace Streamliner
 		{
 			base.Start();
 
-			Panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Panel"));
+			_panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Panel"));
 			_defaultColor = GetTintColor();
 		}
 
@@ -145,11 +145,11 @@ namespace Streamliner
 		{
 			base.Update();
 
-			Panel.FillAccel(GetHudAccelWidth());
-			Panel.Fill(GetHudSpeedWidth());
-			Panel.Value.text = GetSpeedValueString();
+			_panel.FillAccel(GetHudAccelWidth());
+			_panel.Fill(GetHudSpeedWidth());
+			_panel.Value.text = GetSpeedValueString();
 
-			_currentSpeed = Panel.CurrentSize.x;
+			_currentSpeed = _panel.CurrentSize.x;
 			ColorSpeedComponent();
 			_previousSpeed = _currentSpeed;
 		}
@@ -185,7 +185,7 @@ namespace Streamliner
 				_speedDecreaseAnimationTimer = 0f;
 			}
 
-			Color color = Panel.Value.color;
+			Color color = _panel.Value.color;
 
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
@@ -201,16 +201,16 @@ namespace Streamliner
 			}
 			else _speedIncreaseAnimationTimer = 0f;
 
-			Panel.ChangeDataPartColor(color);
+			_panel.ChangeDataPartColor(color);
 		}
 	}
 
 	public class EnergyMeter : ScriptableHud
 	{
-		private Text Value;
-		private Image GaugeBackground;
-		private RectTransform Gauge;
-		private float MaxWidth;
+		public Text Value;
+		public Image GaugeBackground;
+		public RectTransform Gauge;
+		public float MaxWidth;
 		private Vector2 _currentSize;
 		private float _computedValue;
 		private float _adjustedDamageMult;
@@ -254,12 +254,14 @@ namespace Streamliner
 				.Find("Gauge");
 
 			// Gauge is stored in its maximum size, store the max width here.
-			MaxWidth = Gauge.sizeDelta.x;
+			Vector2 sizeDelta = Gauge.sizeDelta;
+			MaxWidth = sizeDelta.x;
 
 			// Initiate the gauge size.
 			_currentSize.x = MaxWidth;
-			_currentSize.y = Gauge.sizeDelta.y;
-			Gauge.sizeDelta = _currentSize;
+			_currentSize.y = sizeDelta.y;
+			sizeDelta = _currentSize;
+			Gauge.sizeDelta = sizeDelta;
 
 			// Coloring
 			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
@@ -289,7 +291,6 @@ namespace Streamliner
 		 * - DAMAGE_MULT = Shield Effectiveness
 		 * - DAMAGE_PWR = Weapon Effectiveness
 		 */
-
 		private float GetHudShieldWidth()
 		{
 			_computedValue =
@@ -400,6 +401,7 @@ namespace Streamliner
 					(OptionLowEnergy == 1 && !Audio.WarnOfCriticalEnergy) ?
 					_damageColor : _damageLowColor;
 
+				// ReSharper disable once CompareOfFloatsByEqualityOperator
 				if (_damageAnimationTimer == _damageAnimationTimerMax)
 				{
 					color = _currentDamageColor;
@@ -419,7 +421,10 @@ namespace Streamliner
 	}
 
 	public class Timer : ScriptableHud
-	{}
+	{
+		public BasicPanel Panel;
+
+	}
 
 	public class SpeedLapTimer : ScriptableHud
 	{}
