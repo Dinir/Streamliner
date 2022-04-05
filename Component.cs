@@ -38,7 +38,7 @@ namespace Streamliner
 		private float _currentSpeed;
 		private float _previousSpeed;
 		private Color _defaultColor;
-		private readonly Color _highlightColor = new Color32(0xba, 0x7f, 0x81, 0xff); // Red 4
+		private readonly Color _highlightColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
 
 		private readonly float _animationSpeed = 8f;
 		private readonly float _animationTimerMax = 1.5f;
@@ -168,13 +168,11 @@ namespace Streamliner
 		private float _currentEnergy;
 		private float _previousEnergy;
 
-		private readonly Color _damageColor = new Color32(0xba, 0x7f, 0x81, 0xff); // Red 4
-		private readonly Color _damageLowColor = new Color32(0xba, 0xb8, 0x7f, 0xff); // Yellow 4
-		private readonly Color _rechargeColor = new Color32(0x7f, 0xba, 0xb8, 0xbf); // Cyan 4
-		private readonly Color _lowColor = new Color32(0xcd, 0xb1, 0x98, 0xbf); // Orange 3
-		private readonly Color _lowColorOpaque = new Color32(0xcd, 0xb1, 0x98, 0xff); // Orange 3
-		private readonly Color _criticalColor = new Color32(0xcd, 0x98, 0x9a, 0xbf); // Red 3
-		private readonly Color _criticalColorOpaque = new Color32(0xcd, 0x98, 0x9a, 0xff); // Red 3
+		private readonly Color _rechargeColor = new Color32(0x88, 0xe3, 0xe0, 0xbf); // Cyan S6 V1
+		private readonly Color _lowColor = new Color32(0xe3, 0xb3, 0x88, 0xbf); // Orange S6 V1
+		private readonly Color _criticalColor = new Color32(0xe3, 0x88, 0x8e, 0xbf); // Red S6 V1
+		private readonly Color _damageColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
+		private readonly Color _damageLowColor = new Color32(0xf2, 0xed, 0x61, 0xff); // Yellow S.60 V.95
 
 		private Color _defaultColor;
 		private Color _currentColor;
@@ -382,6 +380,9 @@ namespace Streamliner
 	{}
 
 	public class MessageLogger : ScriptableHud
+	{}
+
+	public class PositionTracker : ScriptableHud
 	{}
 
 	public class NowPlaying : ScriptableHud

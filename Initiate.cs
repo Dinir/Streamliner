@@ -28,6 +28,7 @@ namespace Streamliner
 
         // color options
         public static readonly Color[] TintColorList = new Color[13] {
+			// S2 V2
 			Color.HSVToRGB(0.9944f, 0.00f, 0.86f), // Grey
 			Color.HSVToRGB(0.9944f, 0.18f, 0.86f), // Red
 			Color.HSVToRGB(0.0778f, 0.18f, 0.86f), // Orange
