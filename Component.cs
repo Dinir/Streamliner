@@ -198,9 +198,10 @@ namespace Streamliner
 		{
 			base.Start();
 
-			Value = CustomComponents.GetById<Text>("Number");
+			Value = CustomComponents.GetById<Text>("Value");
 			GaugeBackground = CustomComponents.GetById<Image>("GaugeBackground");
-			Gauge = CustomComponents.GetById<RectTransform>("Gauge");
+			Gauge = (RectTransform)GaugeBackground.GetComponent<RectTransform>()
+				.Find("Gauge");
 
 			// Gauge is stored in its maximum size, store the max width here.
 			MaxWidth = Gauge.sizeDelta.x;

@@ -26,8 +26,8 @@ namespace Streamliner
 		public static ModAssets Assets;
 		private static string ModPathOnClassScope;
 
-        // color options
-        public static readonly Color[] TintColorList = new Color[13] {
+    // color options
+    public static readonly Color[] TintColorList = new Color[13] {
 			// S2 V2
 			Color.HSVToRGB(0.9944f, 0.00f, 0.86f), // Grey
 			Color.HSVToRGB(0.9944f, 0.18f, 0.86f), // Red
@@ -49,7 +49,7 @@ namespace Streamliner
 		public enum TextAlpha
 		{
 			Full, ThreeQuarters, Half, ThreeEighths, Quarter
-        }
+		}
 		private static Color _tintColorBuffer;
 
 		// options
