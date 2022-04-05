@@ -21,24 +21,112 @@ using static Streamliner.HudRegister;
 
 namespace Streamliner
 {
+	/// <summary>
+	/// Makes a panel that has following RectTransform hierarchy defined on Unity:
+	/// - Panel (has Image. a background area)
+	///		- Label (has Text. stays around the background)
+	///		- Value (has Text. the main dynamic element)
+	///		- Gauge Background (has Image. an overlay for the gauge)
+	///			- Gauge (has Image, set to maximum width. the gauge sprite)
+	/// The string arguments in <c>Find()</c> are the names I set to components on Unity.
+	/// </summary>
+	public class BasicPanel
+	{
+		public RectTransform Panel;
+		public Text Label;
+		public Text Value;
+		public RectTransform GaugeBackground;
+		public RectTransform Gauge;
+		public Color GaugeColor;
+		public float GaugeMaxWidth;
+		public Vector2 CurrentSize;
+
+		public BasicPanel(RectTransform panelElement)
+		{
+			Panel = panelElement;			
+			Label = Panel.Find("Label").GetComponent<Text>();
+			Value = Panel.Find("Value").GetComponent<Text>();
+			GaugeBackground = Panel.Find("GaugeBackground").GetComponent<RectTransform>();
+			Gauge = (RectTransform)GaugeBackground.Find("Gauge");
+			GaugeMaxWidth = Gauge.sizeDelta.x;
+			CurrentSize.y = Gauge.sizeDelta.y;
+
+			ChangeColor();
+			Fill(0f);
+		}
+
+		// NEVER MAKE A METHOD BEING CALLED IN BASE CONSTRUCTOR VIRTUAL
+		// NEVER OVERRIDE THIS SHIT BELOW
+		public void ChangeColor()
+		{
+			GaugeColor = GetTintColor();
+			Label.color = GaugeColor;
+			Value.color = GaugeColor;
+			Gauge.GetComponent<Image>().color = GaugeColor;
+			GaugeBackground.GetComponent<Image>().color = 
+				GetTintColor(TextAlpha.ThreeEighths);
+		}
+
+		public void ChangeDataPartColor(Color color)
+		{
+			Value.color = color;
+			Gauge.GetComponent<Image>().color = color;
+		}
+
+		public void Fill(float amount)
+		{
+			CurrentSize.x = amount * GaugeMaxWidth;
+			Gauge.sizeDelta = CurrentSize;
+		}
+	}
+
+	/// <summary>
+	/// Inheritance of <c>BasicPanel</c>.
+	/// This adds a set for the second gauge for acceleration.
+	/// 
+	/// The component hierarchy on Unity has one more child under GaugeBackground.
+	///	- Gauge Background (has Image. an overlay for the gauge)
+	///		- AccelGauge (has Image, set to maximum width. the gauge sprite)
+	///	  - Gauge (has Image, set to maximum width. the gauge sprite)
+	/// </summary>
+	public class SpeedPanel : BasicPanel
+	{
+		public RectTransform AccelGauge;
+		public float AccelGaugeMaxWidth;
+		public Vector2 CurrentAccelSize;
+
+		public SpeedPanel(RectTransform panelElement) : base(panelElement)
+		{
+			AccelGauge = (RectTransform)GaugeBackground.Find("AccelGauge");
+			AccelGaugeMaxWidth = AccelGauge.sizeDelta.x;
+			CurrentAccelSize.y = AccelGauge.sizeDelta.y;
+
+			ChangeAccelColor();
+			FillAccel(0f);
+		}
+
+		public void ChangeAccelColor()
+		{ 
+			AccelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
+		}
+
+		public void FillAccel(float amount)
+		{
+			CurrentAccelSize.x = amount * AccelGaugeMaxWidth;
+			AccelGauge.sizeDelta = CurrentAccelSize;
+		}
+	}
+
 	public class Speedometer : ScriptableHud
 	{
-		private Image Panel;
-		private RectTransform PanelTransform;
-		private Text Value;
-		private Image GaugeBackground;
-		private RectTransform AccelGauge;
-		private float AccelMaxWidth;
-		private Vector2 _currentAccelSize;
-		private RectTransform SpeedGauge;
-		private float SpeedMaxWidth;
-		private Vector2 _currentSpeedSize;
+		public SpeedPanel Panel;
 		private float _computedValue;
+
+		private Color _defaultColor;
+		private readonly Color _highlightColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
 
 		private float _currentSpeed;
 		private float _previousSpeed;
-		private Color _defaultColor;
-		private readonly Color _highlightColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
 
 		private readonly float _animationSpeed = 8f;
 		private readonly float _animationTimerMax = 1.5f;
@@ -49,65 +137,37 @@ namespace Streamliner
 		{
 			base.Start();
 
-			Panel = CustomComponents.GetById<Image>("Panel");
-			PanelTransform = CustomComponents.GetById<RectTransform>("Panel");
-			Value = PanelTransform.GetChild(1).GetComponent<Text>();
-			GaugeBackground = CustomComponents.GetById<Image>("GaugeBackground");
-			AccelGauge = CustomComponents.GetById<RectTransform>("AccelGauge");
-			SpeedGauge = CustomComponents.GetById<RectTransform>("SpeedGauge");
-
-			// Gauges are stored in their maximum size, store the max width here.
-			AccelMaxWidth = AccelGauge.sizeDelta.x;
-			SpeedMaxWidth = SpeedGauge.sizeDelta.x;
-
-			// Initiate the gauges to have 0 width.
-			_currentAccelSize.x = 0;
-			_currentAccelSize.y = AccelGauge.sizeDelta.y;
-			_currentSpeedSize.x = 0;
-			_currentSpeedSize.y = SpeedGauge.sizeDelta.y;
-			AccelGauge.sizeDelta = _currentAccelSize;
-			SpeedGauge.sizeDelta = _currentSpeedSize;
-
-			// Colorizing
+			Panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Panel"));
 			_defaultColor = GetTintColor();
-			PanelTransform.GetChild(0).GetComponent<Text>().color = _defaultColor;
-			Value.color = _defaultColor;
-			GaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
-			AccelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
-			SpeedGauge.GetComponent<Image>().color = _defaultColor;
 		}
 
 		public override void Update()
 		{
 			base.Update();
 
-			_currentAccelSize.x = GetHudAccelWidth();
-			_currentSpeedSize.x = GetHudSpeedWidth();
-			AccelGauge.sizeDelta = _currentAccelSize;
-			SpeedGauge.sizeDelta = _currentSpeedSize;
-			Value.text = GetSpeedValueString();
+			Panel.FillAccel(GetHudAccelWidth());
+			Panel.Fill(GetHudSpeedWidth());
+			Panel.Value.text = GetSpeedValueString();
 
-			// Colorize the text on speed change
-			_currentSpeed = _currentSpeedSize.x;
+			_currentSpeed = Panel.CurrentSize.x;
 			ColorSpeedComponent();
 			_previousSpeed = _currentSpeed;
 		}
 
-		private float GetHudAccelWidth() => 
-			Mathf.Clamp(TargetShip.PysSim.enginePower, 0f, 1f) * AccelMaxWidth;
+		private float GetHudAccelWidth() =>
+			Mathf.Clamp(TargetShip.PysSim.enginePower, 0f, 1f);
 
 		private float GetHudSpeedWidth()
 		{
-			_computedValue = 
+			_computedValue =
 				TargetShip.T.InverseTransformDirection(TargetShip.RBody.velocity).z /
 				TargetShip.Settings.ENGINE_MAXSPEED_SPECTRE;
 			_computedValue = Mathf.Clamp(
 				Mathf.Clamp(_computedValue * 3f, 0f, 1f), 0f, 1f);
 
-			return _computedValue * SpeedMaxWidth;
+			return _computedValue;
 		}
-
-		private string GetSpeedValueString() => 
+		private string GetSpeedValueString() =>
 			IntStrDb.GetNumber(Mathf.Abs(Mathf.RoundToInt(TargetShip.HudSpeed)));
 
 		private void ColorSpeedComponent()
@@ -125,7 +185,7 @@ namespace Streamliner
 				_speedDecreaseAnimationTimer = 0f;
 			}
 
-			Color color = Value.color;
+			Color color = Panel.Value.color;
 
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
@@ -141,8 +201,7 @@ namespace Streamliner
 			}
 			else _speedIncreaseAnimationTimer = 0f;
 
-			Value.color = color;
-			SpeedGauge.GetComponent<Image>().color = color;
+			Panel.ChangeDataPartColor(color);
 		}
 	}
 
