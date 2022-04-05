@@ -112,10 +112,7 @@ namespace Streamliner
 
 		private void ColorSpeedComponent()
 		{
-			if (!OptionSpeedHighlight)
-			{
-				return;
-			}
+			if (!OptionSpeedHighlight) return;
 
 			if (_currentSpeed < _previousSpeed)
 			{
@@ -135,20 +132,14 @@ namespace Streamliner
 				color = Color.Lerp(color, _highlightColor, Time.deltaTime * _animationSpeed);
 				_speedDecreaseAnimationTimer -= Time.deltaTime;
 			}
-			else
-			{
-				_speedDecreaseAnimationTimer = 0f;
-			}
+			else _speedDecreaseAnimationTimer = 0f;
 
 			if (_speedIncreaseAnimationTimer > 0f)
 			{
 				color = Color.Lerp(color, _defaultColor, Time.deltaTime * _animationSpeed);
 				_speedIncreaseAnimationTimer -= Time.deltaTime;
 			}
-			else
-			{
-				_speedIncreaseAnimationTimer = 0f;
-			}
+			else _speedIncreaseAnimationTimer = 0f;
 
 			Value.color = color;
 			SpeedGauge.GetComponent<Image>().color = color;
