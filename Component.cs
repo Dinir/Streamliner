@@ -36,7 +36,7 @@ namespace Streamliner
 		public readonly Text Value;
 		protected readonly RectTransform GaugeBackground;
 		private readonly RectTransform _gauge;
-		private Color _gaugeColor;
+		internal Color GaugeColor;
 		private readonly float _gaugeMaxWidth;
 		public Vector2 CurrentSize;
 
@@ -58,10 +58,10 @@ namespace Streamliner
 		// NEVER OVERRIDE THIS SHIT BELOW
 		private void ChangeColor()
 		{
-			_gaugeColor = GetTintColor();
-			_label.color = _gaugeColor;
-			Value.color = _gaugeColor;
-			_gauge.GetComponent<Image>().color = _gaugeColor;
+			GaugeColor = GetTintColor();
+			_label.color = GaugeColor;
+			Value.color = GaugeColor;
+			_gauge.GetComponent<Image>().color = GaugeColor;
 			GaugeBackground.GetComponent<Image>().color = 
 				GetTintColor(TextAlpha.ThreeEighths);
 		}
@@ -122,7 +122,6 @@ namespace Streamliner
 		private SpeedPanel _panel;
 		private float _computedValue;
 
-		private Color _defaultColor;
 		private readonly Color _highlightColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
 
 		private float _currentSpeed;
@@ -138,7 +137,6 @@ namespace Streamliner
 			base.Start();
 
 			_panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Panel"));
-			_defaultColor = GetTintColor();
 		}
 
 		public override void Update()
@@ -196,7 +194,7 @@ namespace Streamliner
 
 			if (_speedIncreaseAnimationTimer > 0f)
 			{
-				color = Color.Lerp(color, _defaultColor, Time.deltaTime * _animationSpeed);
+				color = Color.Lerp(color, _panel.GaugeColor, Time.deltaTime * _animationSpeed);
 				_speedIncreaseAnimationTimer -= Time.deltaTime;
 			}
 			else _speedIncreaseAnimationTimer = 0f;
