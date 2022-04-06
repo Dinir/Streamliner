@@ -33,12 +33,12 @@ namespace Streamliner
 	public class BasicPanel
 	{
 		private readonly Text _label;
-		public readonly Text Value;
+		internal readonly Text Value;
 		protected readonly RectTransform GaugeBackground;
 		private readonly RectTransform _gauge;
 		internal Color GaugeColor;
 		private readonly float _gaugeMaxWidth;
-		public Vector2 CurrentSize;
+		internal Vector2 CurrentSize;
 
 		public BasicPanel(RectTransform panelElement)
 		{
@@ -119,10 +119,10 @@ namespace Streamliner
 
 	public class Speedometer : ScriptableHud
 	{
-		private SpeedPanel _panel;
+		internal SpeedPanel Panel;
 		private float _computedValue;
 
-		private readonly Color _highlightColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
+		internal readonly Color HighlightColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
 
 		private float _currentSpeed;
 		private float _previousSpeed;
@@ -136,18 +136,18 @@ namespace Streamliner
 		{
 			base.Start();
 
-			_panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Panel"));
+			Panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Panel"));
 		}
 
 		public override void Update()
 		{
 			base.Update();
 
-			_panel.FillAccel(GetHudAccelWidth());
-			_panel.Fill(GetHudSpeedWidth());
-			_panel.Value.text = GetSpeedValueString();
+			Panel.FillAccel(GetHudAccelWidth());
+			Panel.Fill(GetHudSpeedWidth());
+			Panel.Value.text = GetSpeedValueString();
 
-			_currentSpeed = _panel.CurrentSize.x;
+			_currentSpeed = Panel.CurrentSize.x;
 			ColorSpeedComponent();
 			_previousSpeed = _currentSpeed;
 		}
@@ -183,23 +183,23 @@ namespace Streamliner
 				_speedDecreaseAnimationTimer = 0f;
 			}
 
-			Color color = _panel.Value.color;
+			Color color = Panel.Value.color;
 
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
-				color = Color.Lerp(color, _highlightColor, Time.deltaTime * _animationSpeed);
+				color = Color.Lerp(color, HighlightColor, Time.deltaTime * _animationSpeed);
 				_speedDecreaseAnimationTimer -= Time.deltaTime;
 			}
 			else _speedDecreaseAnimationTimer = 0f;
 
 			if (_speedIncreaseAnimationTimer > 0f)
 			{
-				color = Color.Lerp(color, _panel.GaugeColor, Time.deltaTime * _animationSpeed);
+				color = Color.Lerp(color, Panel.GaugeColor, Time.deltaTime * _animationSpeed);
 				_speedIncreaseAnimationTimer -= Time.deltaTime;
 			}
 			else _speedIncreaseAnimationTimer = 0f;
 
-			_panel.ChangeDataPartColor(color);
+			Panel.ChangeDataPartColor(color);
 		}
 	}
 

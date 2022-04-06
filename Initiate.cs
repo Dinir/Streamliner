@@ -46,7 +46,7 @@ namespace Streamliner
 		private static readonly float[] TintAlphaList = new float[] {
 			1f, 0.9f, 0.750f, 0.500f, 0.375f, 0.250f
 		};
-		public enum TextAlpha
+		internal enum TextAlpha
 		{
 			Full, NineTenths, ThreeQuarters, Half, ThreeEighths, Quarter
 		}
@@ -58,7 +58,7 @@ namespace Streamliner
 		public static bool OptionSpeedHighlight = true;
 		public static int OptionLowEnergy = 2;
 
-		public static Color GetTintColor(TextAlpha transparencyIndex = TextAlpha.Full)
+		internal static Color GetTintColor(TextAlpha transparencyIndex = TextAlpha.Full)
 		{
 			_tintColorBuffer = TintColorList[OptionValueTint];
 			_tintColorBuffer.a = TintAlphaList[(int)transparencyIndex];
