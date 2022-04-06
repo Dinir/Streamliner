@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using BallisticUnityTools.AssetApi;
@@ -62,7 +64,7 @@ namespace Streamliner
 			_label.color = GaugeColor;
 			Value.color = GaugeColor;
 			_gauge.GetComponent<Image>().color = GaugeColor;
-			GaugeBackground.GetComponent<Image>().color = 
+			GaugeBackground.GetComponent<Image>().color =
 				GetTintColor(TextAlpha.ThreeEighths);
 		}
 
@@ -82,7 +84,7 @@ namespace Streamliner
 	/// <summary>
 	/// Inheritance of <c>BasicPanel</c>.
 	/// This adds a set for the second gauge for acceleration.
-	/// 
+	///
 	/// The component hierarchy on Unity has one more child under GaugeBackground.
 	///	- Gauge Background (has Image. an overlay for the gauge)
 	///		- AccelGauge (has Image, set to maximum width. the gauge sprite)
@@ -105,7 +107,7 @@ namespace Streamliner
 			FillAccel(0f);
 		}
 
-		private void ChangeAccelColor() => 
+		private void ChangeAccelColor() =>
 			_accelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
 
 		public void FillAccel(float amount)
@@ -231,7 +233,7 @@ namespace Streamliner
 		 * That's log(10^-5) / 60log(1-(s/60)) seconds.
 		 * When would the progress reach 0.75 (1 - 0.25) which can be considered gone on eyes?
 		 * That's log(0.25) / 60log(1-(s/60)) seconds.
-		 * 
+		 *
 		 * Speed is decided on the 0.75 time, and Timer is decided on 0.99999 time of that speed.
 		 * https://www.desmos.com/calculator/nip7pyehxl
 		 */
@@ -273,7 +275,7 @@ namespace Streamliner
 		public override void Update()
 		{
 			base.Update();
-			
+
 			_currentSize.x = GetHudShieldWidth();
 			Gauge.sizeDelta = _currentSize;
 			Value.text = GetShieldValueString();
@@ -315,8 +317,8 @@ namespace Streamliner
 			else
 				_computedValue = Mathf.Ceil(_computedValue * 100f) / 100f * 100f;
 
-			return TargetShip.Settings.DAMAGE_MULT <= 0f ? 
-				"" : 
+			return TargetShip.Settings.DAMAGE_MULT <= 0f ?
+				"" :
 				IntStrDb.GetNoSingleCharNumber(Mathf.RoundToInt(_computedValue));
 		}
 
@@ -381,13 +383,13 @@ namespace Streamliner
 			if (_damageAnimationTimer > 0f)
 			{
 				_currentDamageColor =
-					_currentEnergy > 10f || 
-					OptionLowEnergy == 0 || 
+					_currentEnergy > 10f ||
+					OptionLowEnergy == 0 ||
 					(OptionLowEnergy == 1 && !Audio.WarnOfCriticalEnergy) ?
 					_damageColor : _damageLowColor;
 
 				// ReSharper disable once CompareOfFloatsByEqualityOperator
-				if (_damageAnimationTimer == _damageAnimationTimerMax) 
+				if (_damageAnimationTimer == _damageAnimationTimerMax)
 					color = _currentDamageColor;
 				color = Color.Lerp(color, _currentColor, Time.deltaTime * _damageAnimationSpeed);
 				_damageAnimationTimer -= Time.deltaTime;
@@ -403,8 +405,187 @@ namespace Streamliner
 
 	public class Timer : ScriptableHud
 	{
-		public BasicPanel Panel;
+		internal BasicPanel Panel;
+		internal RectTransform LapSlotTemplate;
 
+		private readonly List<LapSlot> _slots = new List<LapSlot>(5);
+		private LapSlot _currentSlot;
+		private int _totalSlots;
+		/// <summary>
+		/// Contains the index of the current lap. It's base-1, but period for 0th exists.
+		/// </summary>
+		private int _currentLap;
+		private int _totalLaps;
+
+		internal readonly StringBuilder CurrentTimeBuilder = new StringBuilder();
+		private string ConvertForCurrentTimer(float value)
+		{
+			CurrentTimeBuilder.Clear();
+			string minutes = IntStrDb.GetNumber(
+				Mathf.FloorToInt(value / 60f));
+			string seconds = IntStrDb.GetNoSingleCharNumber(
+				Mathf.FloorToInt(value) % 60);
+			string hundredths = IntStrDb.GetNoSingleCharNumber(
+				Mathf.FloorToInt(value * 100f % 100f));
+
+			// 0:00.<size=20> </size><size=150>00</size>
+			// Default font size in the component is 300.
+			CurrentTimeBuilder.Append(minutes);
+			CurrentTimeBuilder.Append(":");
+			CurrentTimeBuilder.Append(seconds);
+			CurrentTimeBuilder.Append(".<size=20> </size><size=150>");
+			CurrentTimeBuilder.Append(hundredths);
+			CurrentTimeBuilder.Append("</size>");
+
+			return CurrentTimeBuilder.ToString();
+		}
+
+		private class LapSlot
+		{
+			internal readonly Text Value;
+			private readonly Image _perfectLine;
+			private bool _perfectLapStatus;
+
+			internal bool PerfectLap
+			{
+				get => _perfectLapStatus;
+				set
+				{
+					_perfectLapStatus = value;
+					_perfectLine.gameObject.SetActive(value: value);
+				}
+			}
+
+			public LapSlot(RectTransform template)
+			{
+				Value = template.Find("Text").GetComponent<Text>();
+				_perfectLine = template.Find("PerfectLine").GetComponent<Image>();
+
+				Value.text = "";
+				Value.gameObject.SetActive(value: true);
+				_perfectLapStatus = false;
+
+				ChangeColor(GetTintColor(TextAlpha.ThreeQuarters));
+			}
+
+			internal void ChangeColor(Color color) => Value.color = color;
+		}
+
+		public override void Start()
+		{
+			base.Start();
+			_totalLaps = Race.MaxLaps;
+			Panel = new BasicPanel(CustomComponents.GetById<RectTransform>("Panel"));
+			LapSlotTemplate = CustomComponents.GetById<RectTransform>("LapSlot");
+			// I am hiding the text here, because I want to keep it visible on Unity.
+			LapSlotTemplate.Find("Text").gameObject.SetActive(value: false);
+			InitiateSlots();
+			_currentSlot = _slots[0];
+
+			NgRaceEvents.OnShipLapUpdate += OnLapUpdate;
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			UpdateTotalTime();
+			UpdateCurrentLapTime();
+		}
+
+		// This runs at the last moment of a lap.
+		private void OnLapUpdate(ShipController ship)
+		{
+			ShiftSlotData();
+			_currentLap++;
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			NgRaceEvents.OnShipLapUpdate -= OnLapUpdate;
+		}
+
+		private void InitiateSlots()
+		{
+			_totalSlots = Mathf.Clamp(Race.MaxLaps, 0, 5);
+			for (int i = 0; i < _totalSlots; i++)
+			{
+				RectTransform slot =
+					Instantiate(LapSlotTemplate.gameObject).GetComponent<RectTransform>();
+				slot.SetParent(LapSlotTemplate.parent);
+				slot.localScale = LapSlotTemplate.localScale;
+				slot.anchoredPosition = LapSlotTemplate.anchoredPosition;
+
+				slot.localPosition += Vector3.up * slot.sizeDelta.y * i;
+
+				_slots.Add(new LapSlot(slot));
+			}
+
+			// Emphasis the current lap slot by a bit.
+			_slots[0].ChangeColor(GetTintColor(TextAlpha.NineTenths));
+		}
+
+		private void ShiftSlotData()
+		{
+			// Don't execute when it's the end of the 0th lap or the last lap. Nothing to shift.
+			if (_currentLap > _totalLaps || _currentLap == 0)
+				return;
+
+			for (int i = _totalSlots - 1; i > 0; i--)
+			{
+				// Nothing to copy from `_slots[i - 1]` at the moment.
+				/*
+				 * End of Lap:  0 1 2 3 4 5 6 7
+				 * _currentLap: 0 1 2 3 4 5 6 7
+				 * The index of the lap to write in to the `slot[i]`, `_currentLap - i + 1`:
+				 * on loop i=4          1 2 3 4
+				 * on loop i=3        1 2 3 4 5
+				 * on loop i=2      1 2 3 4 5 6
+				 * on loop i=1    1 2 3 4 5 6 7
+				 */
+				if (_currentLap - i + 1 <= 0)
+					continue;
+				/*
+				 * This assignment here is why `LapSlot` can't be struct.
+				 * Struct values are copied by value, and updates on this variable don't affect the struct in the list.
+				*/
+				LapSlot slot = _slots[i];
+				LapSlot previousSlot = _slots[i - 1];
+				/*
+				 * For the slot right above the current lap slot (at i=0), fetch the stored values via
+				 * `GetLapTime()` and `GetPerfectLap()` instead of the live values being updated at the slot.
+				 * The live values can have differences of few hundredths at the moment this method is running.
+				 */
+				if (i == 1)
+				{
+					slot.Value.text = FloatToTime.Convert(TargetShip.GetLapTime(_currentLap), TimeFormat);
+					slot.PerfectLap = TargetShip.GetPerfectLap(_currentLap);
+					// Reset the current lap slot.
+					previousSlot.Value.text = TimeFormat;
+					previousSlot.PerfectLap = true;
+				}
+				// Otherwise, fetch the values from the slot below.
+				else
+				{
+					slot.Value.text = previousSlot.Value.text;
+					slot.PerfectLap = previousSlot.PerfectLap;
+				}
+			}
+		}
+
+		private void UpdateTotalTime() =>
+			Panel.Value.text = ConvertForCurrentTimer(TargetShip.TotalRaceTime);
+
+		private void UpdateCurrentLapTime()
+		{
+			// Let's not show the timer until the first lap starts.
+			if (_currentLap > _totalLaps || _currentLap == 0)
+				return;
+
+			_currentSlot.Value.text =
+				FloatToTime.Convert(TargetShip.CurrentLapTime, TimeFormat);
+			_currentSlot.PerfectLap = TargetShip.IsPerfectLap;
+		}
 	}
 
 	public class SpeedLapTimer : ScriptableHud

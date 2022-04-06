@@ -174,6 +174,7 @@ namespace Streamliner
 		{
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
+			RegisterHud<Timer>(HudRegister.Assets.GetComponent<HudComponents>("Timer", false));
 		}
 	}
 
