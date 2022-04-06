@@ -44,11 +44,11 @@ namespace Streamliner
 			Color.HSVToRGB(0.9111f, 0.18f, 0.86f)  // Rose
 		};
 		public static readonly float[] TintAlphaList = new float[] {
-			1f, 0.750f, 0.500f, 0.375f, 0.250f
+			1f, 0.9f, 0.750f, 0.500f, 0.375f, 0.250f
 		};
 		public enum TextAlpha
 		{
-			Full, ThreeQuarters, Half, ThreeEighths, Quarter
+			Full, NineTenths, ThreeQuarters, Half, ThreeEighths, Quarter
 		}
 		private static Color _tintColorBuffer;
 
