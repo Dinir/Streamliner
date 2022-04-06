@@ -22,7 +22,7 @@ namespace Streamliner
 {
 	public class HudRegister : CodeMod
 	{
-		readonly string Id = "Streamliner";
+		public readonly string Id = "Streamliner";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 

@@ -105,10 +105,8 @@ namespace Streamliner
 			FillAccel(0f);
 		}
 
-		private void ChangeAccelColor()
-		{ 
+		private void ChangeAccelColor() => 
 			_accelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
-		}
 
 		public void FillAccel(float amount)
 		{
@@ -190,14 +188,16 @@ namespace Streamliner
 				color = Color.Lerp(color, HighlightColor, Time.deltaTime * _animationSpeed);
 				_speedDecreaseAnimationTimer -= Time.deltaTime;
 			}
-			else _speedDecreaseAnimationTimer = 0f;
+			else
+				_speedDecreaseAnimationTimer = 0f;
 
 			if (_speedIncreaseAnimationTimer > 0f)
 			{
 				color = Color.Lerp(color, Panel.GaugeColor, Time.deltaTime * _animationSpeed);
 				_speedIncreaseAnimationTimer -= Time.deltaTime;
 			}
-			else _speedIncreaseAnimationTimer = 0f;
+			else
+				_speedIncreaseAnimationTimer = 0f;
 
 			Panel.ChangeDataPartColor(color);
 		}
@@ -304,22 +304,16 @@ namespace Streamliner
 			{
 				_adjustedDamageMult = TargetShip.Settings.DAMAGE_MULT + 0.07f;
 				if (_adjustedDamageMult > 1f)
-				{
 					_adjustedDamageMult *= 1.1f;
-				}
 				else if (_adjustedDamageMult < 0f)
-				{
 					_adjustedDamageMult *= 0.9f;
-				}
 
 				_computedValue = Mathf.Ceil(
 					TargetShip.ShieldIntegrity / _adjustedDamageMult);
 				_computedValue = Mathf.Max(0f, _computedValue);
 			}
 			else
-			{
 				_computedValue = Mathf.Ceil(_computedValue * 100f) / 100f * 100f;
-			}
 
 			return TargetShip.Settings.DAMAGE_MULT <= 0f ? 
 				"" : 
@@ -331,9 +325,7 @@ namespace Streamliner
 			// Set timer during which the coloring transition can run
 			// damage flash
 			if (_currentEnergy < _previousEnergy)
-			{
 				_damageAnimationTimer = _damageAnimationTimerMax;
-			}
 			// transition
 			if (
 				OptionLowEnergy != 0 && (
@@ -360,9 +352,7 @@ namespace Streamliner
 			if (_transitionAnimationTimer > 0f)
 			{
 				if (TargetShip.IsRecharging)
-				{
 					_currentColor = _rechargeColor;
-				}
 				else if (_currentEnergy <= 25f)
 				{
 					if (_currentEnergy > 10f)
@@ -379,17 +369,14 @@ namespace Streamliner
 					}
 				}
 				else
-				{
 					_currentColor = _defaultColor;
-				}
 
 				color = Color.Lerp(color, _currentColor, Time.deltaTime * _transitionAnimationSpeed);
 				_transitionAnimationTimer -= Time.deltaTime;
 			}
 			else
-			{
 				_transitionAnimationTimer = 0f;
-			}
+
 			// damage flash (process after getting `_currentColor` set)
 			if (_damageAnimationTimer > 0f)
 			{
@@ -400,17 +387,13 @@ namespace Streamliner
 					_damageColor : _damageLowColor;
 
 				// ReSharper disable once CompareOfFloatsByEqualityOperator
-				if (_damageAnimationTimer == _damageAnimationTimerMax)
-				{
+				if (_damageAnimationTimer == _damageAnimationTimerMax) 
 					color = _currentDamageColor;
-				}
 				color = Color.Lerp(color, _currentColor, Time.deltaTime * _damageAnimationSpeed);
 				_damageAnimationTimer -= Time.deltaTime;
 			}
 			else
-			{
 				_damageAnimationTimer = 0f;
-			}
 
 			// Apply the final color
 			Value.color = color;
