@@ -24,10 +24,10 @@ namespace Streamliner
 	{
 		readonly string Id = "Streamliner";
 		public static ModAssets Assets;
-		private static string ModPathOnClassScope;
+		private static string _modPathOnClassScope;
 
-    // color options
-    public static readonly Color[] TintColorList = new Color[13] {
+		// color options
+		private static readonly Color[] TintColorList = new Color[13] {
 			// S2 V2
 			Color.HSVToRGB(0.9944f, 0.00f, 0.86f), // Grey
 			Color.HSVToRGB(0.9944f, 0.18f, 0.86f), // Red
@@ -43,7 +43,7 @@ namespace Streamliner
 			Color.HSVToRGB(0.8278f, 0.18f, 0.86f), // Magenta
 			Color.HSVToRGB(0.9111f, 0.18f, 0.86f)  // Rose
 		};
-		public static readonly float[] TintAlphaList = new float[] {
+		private static readonly float[] TintAlphaList = new float[] {
 			1f, 0.9f, 0.750f, 0.500f, 0.375f, 0.250f
 		};
 		public enum TextAlpha
@@ -53,7 +53,7 @@ namespace Streamliner
 		private static Color _tintColorBuffer;
 
 		// options
-		private string SettingsPath;
+		private string _settingsPath;
 		public static int OptionValueTint = 0;
 		public static bool OptionSpeedHighlight = true;
 		public static int OptionLowEnergy = 2;
@@ -67,10 +67,10 @@ namespace Streamliner
 
 		public override void OnRegistered(string modPath)
 		{
-			ModPathOnClassScope = modPath;
+			_modPathOnClassScope = modPath;
 
 			// load from files
-			SettingsPath = Path.Combine(modPath, "settings.ini");
+			_settingsPath = Path.Combine(modPath, "settings.ini");
 
 			Assets = ModAssets.Load(
 				Path.Combine(modPath, "streamliner.nga"));
@@ -146,7 +146,7 @@ namespace Streamliner
 		private void OnLoadSettings()
 		{
 			INIParser ini = new INIParser();
-			ini.Open(SettingsPath);
+			ini.Open(_settingsPath);
 
 			OptionValueTint = ini.ReadValue("Display", "TextTint", OptionValueTint);
 			OptionSpeedHighlight = ini.ReadValue("AdditionalInformation", "SpeedHighlight", OptionSpeedHighlight);
@@ -158,7 +158,7 @@ namespace Streamliner
 		private void OnSaveSettings()
 		{
 			INIParser ini = new INIParser();
-			ini.Open(SettingsPath);
+			ini.Open(_settingsPath);
 
 			ini.WriteValue("Display", "TextTint", OptionValueTint);
 			ini.WriteValue("AdditionalInformation", "SpeedHighlight", OptionSpeedHighlight);
