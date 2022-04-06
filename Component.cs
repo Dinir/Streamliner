@@ -40,7 +40,7 @@ namespace Streamliner
 		private readonly float _gaugeMaxWidth;
 		public Vector2 CurrentSize;
 
-		protected BasicPanel(RectTransform panelElement)
+		public BasicPanel(RectTransform panelElement)
 		{
 			_label = panelElement.Find("Label").GetComponent<Text>();
 			Value = panelElement.Find("Value").GetComponent<Text>();
