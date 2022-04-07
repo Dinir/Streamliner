@@ -136,7 +136,7 @@ namespace Streamliner
 		{
 			base.Start();
 
-			Panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Panel"));
+			Panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Base"));
 		}
 
 		public override void Update()
@@ -207,10 +207,11 @@ namespace Streamliner
 
 	public class EnergyMeter : ScriptableHud
 	{
-		public Text Value;
-		public Image GaugeBackground;
-		public RectTransform Gauge;
-		public float MaxWidth;
+		internal RectTransform Panel;
+		internal Text Value;
+		internal Image GaugeBackground;
+		internal RectTransform Gauge;
+		internal float MaxWidth;
 		private Vector2 _currentSize;
 		private float _computedValue;
 		private float _adjustedDamageMult;
@@ -248,8 +249,9 @@ namespace Streamliner
 		{
 			base.Start();
 
-			Value = CustomComponents.GetById<Text>("Value");
-			GaugeBackground = CustomComponents.GetById<Image>("GaugeBackground");
+			Panel = CustomComponents.GetById<RectTransform>("Base");
+			Value = Panel.Find("Value").GetComponent<Text>();
+			GaugeBackground = Panel.Find("GaugeBackground").GetComponent<Image>();
 			Gauge = (RectTransform)GaugeBackground.GetComponent<RectTransform>()
 				.Find("Gauge");
 
@@ -475,7 +477,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_totalLaps = Race.MaxLaps;
-			Panel = new BasicPanel(CustomComponents.GetById<RectTransform>("Panel"));
+			Panel = new BasicPanel(CustomComponents.GetById<RectTransform>("Base"));
 			LapSlotTemplate = CustomComponents.GetById<RectTransform>("LapSlot");
 			// I am hiding the text here, because I want to keep it visible on Unity.
 			LapSlotTemplate.Find("Text").gameObject.SetActive(value: false);
