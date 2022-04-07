@@ -321,7 +321,7 @@ namespace Streamliner
 
 			return TargetShip.Settings.DAMAGE_MULT <= 0f ?
 				"" :
-				IntStrDb.GetNoSingleCharNumber(Mathf.RoundToInt(_computedValue));
+				IntStrDb.GetNumber(Mathf.RoundToInt(_computedValue));
 		}
 
 		private void ColorEnergyComponent()
