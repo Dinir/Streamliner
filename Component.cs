@@ -479,8 +479,10 @@ namespace Streamliner
 			_totalLaps = Race.MaxLaps;
 			Panel = new BasicPanel(CustomComponents.GetById<RectTransform>("Base"));
 			LapSlotTemplate = CustomComponents.GetById<RectTransform>("LapSlot");
-			// I am hiding the text here, because I want to keep it visible on Unity.
+			// I am hiding the components here, not on Unity,
+			// because I want to keep them visible on Unity.
 			LapSlotTemplate.Find("Text").gameObject.SetActive(value: false);
+			LapSlotTemplate.Find("PerfectLine").gameObject.SetActive(value: false);
 			InitiateSlots();
 			_currentSlot = _slots[0];
 
