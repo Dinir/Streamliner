@@ -492,6 +492,8 @@ namespace Streamliner
 		public override void Update()
 		{
 			base.Update();
+			if (!TargetShip)
+				return;
 			UpdateTotalTime();
 			UpdateCurrentLapTime();
 		}
@@ -499,6 +501,8 @@ namespace Streamliner
 		// This runs at the last moment of a lap.
 		private void OnLapUpdate(ShipController ship)
 		{
+			if (ship != TargetShip)
+				return;
 			ShiftSlotData();
 			_currentLap++;
 		}
