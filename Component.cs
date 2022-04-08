@@ -147,6 +147,9 @@ namespace Streamliner
 			Panel.Fill(GetHudSpeedWidth());
 			Panel.Value.text = GetSpeedValueString();
 
+			if (!OptionSpeedHighlight)
+				return;
+
 			_currentSpeed = Panel.CurrentSize.x;
 			ColorSpeedComponent();
 			_previousSpeed = _currentSpeed;
@@ -170,8 +173,6 @@ namespace Streamliner
 
 		private void ColorSpeedComponent()
 		{
-			if (!OptionSpeedHighlight) return;
-
 			if (_currentSpeed < _previousSpeed)
 			{
 				_speedDecreaseAnimationTimer = _animationTimerMax;
