@@ -26,32 +26,6 @@ namespace Streamliner
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
-		// color options
-		private static readonly Color[] TintColorList = new Color[13] {
-			// S2 V2
-			Color.HSVToRGB(0.9944f, 0.00f, 0.86f), // Grey
-			Color.HSVToRGB(0.9944f, 0.18f, 0.86f), // Red
-			Color.HSVToRGB(0.0778f, 0.18f, 0.86f), // Orange
-			Color.HSVToRGB(0.1611f, 0.18f, 0.86f), // Yellow
-			Color.HSVToRGB(0.2444f, 0.18f, 0.86f), // Lime
-			Color.HSVToRGB(0.3278f, 0.18f, 0.86f), // Green
-			Color.HSVToRGB(0.4111f, 0.18f, 0.86f), // Mint
-			Color.HSVToRGB(0.4944f, 0.18f, 0.86f), // Cyan
-			Color.HSVToRGB(0.5778f, 0.18f, 0.86f), // Azure
-			Color.HSVToRGB(0.6611f, 0.18f, 0.86f), // Blue
-			Color.HSVToRGB(0.7444f, 0.18f, 0.86f), // Violet
-			Color.HSVToRGB(0.8278f, 0.18f, 0.86f), // Magenta
-			Color.HSVToRGB(0.9111f, 0.18f, 0.86f)  // Rose
-		};
-		private static readonly float[] TintAlphaList = new float[] {
-			1f, 0.9f, 0.750f, 0.500f, 0.375f, 0.250f
-		};
-		internal enum TextAlpha
-		{
-			Full, NineTenths, ThreeQuarters, Half, ThreeEighths, Quarter
-		}
-		private static Color _tintColorBuffer;
-
 		// options
 		private string _settingsPath;
 		public static int OptionValueTint;
@@ -60,13 +34,6 @@ namespace Streamliner
 		public static bool OptionEnergyChange = true;
 		public static int OptionLowEnergy = 1;
 		public static bool OptionRechargeAmount = true;
-
-		internal static Color GetTintColor(TextAlpha transparencyIndex = TextAlpha.Full)
-		{
-			_tintColorBuffer = TintColorList[OptionValueTint];
-			_tintColorBuffer.a = TintAlphaList[(int)transparencyIndex];
-			return _tintColorBuffer;
-		}
 
 		public override void OnRegistered(string modPath)
 		{

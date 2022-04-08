@@ -20,103 +20,11 @@ using NgModes;
 using NgGame;
 using NgSp;
 using static Streamliner.HudRegister;
+using static Streamliner.Panel.PresetColorPicker;
+using Streamliner.Panel;
 
 namespace Streamliner
 {
-	/// <summary>
-	/// Makes a panel that has following RectTransform hierarchy defined on Unity:
-	/// - Panel (has Image. a background area)
-	///		- Label (has Text. stays around the background)
-	///		- Value (has Text. the main dynamic element)
-	///		- Gauge Background (has Image. an overlay for the gauge)
-	///			- Gauge (has Image, set to maximum width. the gauge sprite)
-	/// The string arguments in <c>Find()</c> are the names I set to components on Unity.
-	/// </summary>
-	public class BasicPanel
-	{
-		private readonly Text _label;
-		internal readonly Text Value;
-		protected readonly RectTransform GaugeBackground;
-		private readonly RectTransform _gauge;
-		internal Color GaugeColor;
-		private readonly float _gaugeMaxWidth;
-		internal Vector2 CurrentSize;
-
-		public BasicPanel(RectTransform panelElement)
-		{
-			_label = panelElement.Find("Label").GetComponent<Text>();
-			Value = panelElement.Find("Value").GetComponent<Text>();
-			GaugeBackground = panelElement.Find("GaugeBackground").GetComponent<RectTransform>();
-			_gauge = (RectTransform)GaugeBackground.Find("Gauge");
-			Vector2 sizeDelta = _gauge.sizeDelta;
-			_gaugeMaxWidth = sizeDelta.x;
-			CurrentSize.y = sizeDelta.y;
-
-			ChangeColor();
-			Fill(0f);
-		}
-
-		// NEVER MAKE A METHOD BEING CALLED IN BASE CONSTRUCTOR VIRTUAL
-		// NEVER OVERRIDE THIS SHIT BELOW
-		private void ChangeColor()
-		{
-			GaugeColor = GetTintColor();
-			_label.color = GaugeColor;
-			Value.color = GaugeColor;
-			_gauge.GetComponent<Image>().color = GaugeColor;
-			GaugeBackground.GetComponent<Image>().color =
-				GetTintColor(TextAlpha.ThreeEighths);
-		}
-
-		public void ChangeDataPartColor(Color color)
-		{
-			Value.color = color;
-			_gauge.GetComponent<Image>().color = color;
-		}
-
-		public void Fill(float amount)
-		{
-			CurrentSize.x = amount * _gaugeMaxWidth;
-			_gauge.sizeDelta = CurrentSize;
-		}
-	}
-
-	/// <summary>
-	/// Inheritance of <c>BasicPanel</c>.
-	/// This adds a set for the second gauge for acceleration.
-	///
-	/// The component hierarchy on Unity has one more child under GaugeBackground.
-	///	- Gauge Background (has Image. an overlay for the gauge)
-	///		- AccelGauge (has Image, set to maximum width. the gauge sprite)
-	///	  - Gauge (has Image, set to maximum width. the gauge sprite)
-	/// </summary>
-	public class SpeedPanel : BasicPanel
-	{
-		private readonly RectTransform _accelGauge;
-		private readonly float _accelGaugeMaxWidth;
-		private Vector2 _currentAccelSize;
-
-		public SpeedPanel(RectTransform panelElement) : base(panelElement)
-		{
-			_accelGauge = (RectTransform)GaugeBackground.Find("AccelGauge");
-			Vector2 sizeDelta = _accelGauge.sizeDelta;
-			_accelGaugeMaxWidth = sizeDelta.x;
-			_currentAccelSize.y = sizeDelta.y;
-
-			ChangeAccelColor();
-			FillAccel(0f);
-		}
-
-		private void ChangeAccelColor() =>
-			_accelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
-
-		public void FillAccel(float amount)
-		{
-			_currentAccelSize.x = amount * _accelGaugeMaxWidth;
-			_accelGauge.sizeDelta = _currentAccelSize;
-		}
-	}
-
 	public class Speedometer : ScriptableHud
 	{
 		internal SpeedPanel Panel;
