@@ -606,25 +606,28 @@ namespace Streamliner
 		}
 	}
 
-	public class SpeedLapTimer : ScriptableHud
-	{}
-
 	public class Placement : ScriptableHud
 	{}
 
 	public class LapCounter : ScriptableHud
 	{}
 
+	public class PositionTracker : ScriptableHud
+	{}
+
+	public class PickupDisplay : ScriptableHud
+	{}
+
 	public class MessageLogger : ScriptableHud
 	{}
 
-	public class PositionTracker : ScriptableHud
+	public class Leaderboard : ScriptableHud
 	{}
 
 	public class NowPlaying : ScriptableHud
 	{}
 
-	public class PickupDisplay : ScriptableHud
+	public class SpeedLapTimer : ScriptableHud
 	{}
 
 	public class ZoneTracker : ScriptableHud
@@ -637,9 +640,6 @@ namespace Streamliner
 	{}
 
 	public class TargetZoneDisplay : ScriptableHud
-	{}
-
-	public class Leaderboard : ScriptableHud
 	{}
 
 	public class CombatScoreboard : ScriptableHud
