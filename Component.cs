@@ -369,7 +369,7 @@ namespace Streamliner
 					{
 						_currentColor =
 							(OptionLowEnergy == 2 || Audio.WarnOfCriticalEnergy) ?
-							_criticalColor : _defaultColor;
+								_criticalColor : (Audio.WarnOfLowEnergy ? _lowColor : _defaultColor);
 					}
 				}
 				else
