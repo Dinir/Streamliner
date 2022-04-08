@@ -313,6 +313,10 @@ namespace Streamliner
 			_currentSize.x = GetHudShieldWidth();
 			Gauge.sizeDelta = _currentSize;
 			Value.text = GetShieldValueString();
+
+			if (!OptionEnergyChange && OptionLowEnergy == 0 && !OptionRechargeAmount)
+				return;
+
 			if (_isRecharging)
 			{
 				if (_wasRecharging)
@@ -368,7 +372,7 @@ namespace Streamliner
 		{
 			// Set timer during which the coloring transition can run
 			// damage flash
-			if (_currentEnergy < _previousEnergy)
+			if (OptionEnergyChange && _currentEnergy < _previousEnergy)
 				_damageAnimationTimer = _fastTransitionTimerMax;
 			// transition
 			if (
@@ -385,7 +389,8 @@ namespace Streamliner
 				// Charging takes over damage flash and recharge amount display
 				if (_isRecharging)
 				{
-					_deltaAnimationTimer = _slowTransitionTimerMax;
+					if (OptionRechargeAmount)
+						_deltaAnimationTimer = _slowTransitionTimerMax;
 					_rechargeDisplayTimer = 0f;
 					_damageAnimationTimer = 0f;
 				}
@@ -397,9 +402,9 @@ namespace Streamliner
 			// transition
 			if (_transitionAnimationTimer > 0f)
 			{
-				if (_isRecharging)
+				if (OptionEnergyChange && _isRecharging)
 					_currentColor = _rechargeColor;
-				else if (_currentEnergy <= 25f)
+				else if (OptionLowEnergy != 0 && _currentEnergy <= 25f)
 				{
 					if (_currentEnergy > 10f)
 					{
