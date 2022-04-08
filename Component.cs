@@ -21,6 +21,7 @@ using NgGame;
 using NgSp;
 using static Streamliner.HudRegister;
 using static Streamliner.Panel.PresetColorPicker;
+using static Streamliner.Panel.SectionManager;
 using Streamliner.Panel;
 
 namespace Streamliner
@@ -415,6 +416,7 @@ namespace Streamliner
 		/// </summary>
 		private int _currentLap;
 		private int _totalLaps;
+		private int _totalSections;
 
 		internal readonly StringBuilder CurrentTimeBuilder = new StringBuilder();
 		private string ConvertForCurrentTimer(float value)
@@ -474,6 +476,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_totalLaps = Race.MaxLaps;
+			_totalSections = GetTotalSectionCount();
 			Panel = new BasicPanel(CustomComponents.GetById<RectTransform>("Base"));
 			LapSlotTemplate = CustomComponents.GetById<RectTransform>("LapSlot");
 			// I am hiding the components here, not on Unity,
@@ -493,6 +496,7 @@ namespace Streamliner
 				return;
 			UpdateTotalTime();
 			UpdateCurrentLapTime();
+			UpdateProgressBar();
 		}
 
 		// This runs at the last moment of a lap.
@@ -590,6 +594,15 @@ namespace Streamliner
 			_currentSlot.Value.text =
 				FloatToTime.Convert(TargetShip.CurrentLapTime, TimeFormat);
 			_currentSlot.PerfectLap = TargetShip.IsPerfectLap;
+		}
+
+		private void UpdateProgressBar()
+		{
+			// The reason of skipping the 0th section is written in
+			// `Streamliner.Panel.GetPassingSectionIndex`.
+			if (TargetShip.CurrentSection.index - 1 == 0)
+				return;
+			Panel.Fill(GetRaceCompletionRate(TargetShip, _currentLap, _totalSections));
 		}
 	}
 
