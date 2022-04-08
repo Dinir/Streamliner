@@ -218,6 +218,7 @@ namespace Streamliner
 
 		private float _currentEnergy;
 		private float _previousEnergy;
+		private bool _isRecharging;
 
 		private readonly Color _rechargeColor = new Color32(0x88, 0xe3, 0xe0, 0xbf); // Cyan S6 V1
 		private readonly Color _lowColor = new Color32(0xe3, 0xb3, 0x88, 0xbf); // Orange S6 V1
@@ -277,6 +278,8 @@ namespace Streamliner
 		public override void Update()
 		{
 			base.Update();
+			_currentEnergy = TargetShip.ShieldIntegrity;
+			_isRecharging = TargetShip.IsRecharging;
 
 			_currentSize.x = GetHudShieldWidth();
 			Gauge.sizeDelta = _currentSize;
@@ -296,7 +299,7 @@ namespace Streamliner
 		private float GetHudShieldWidth()
 		{
 			_computedValue =
-				TargetShip.ShieldIntegrity / TargetShip.Settings.DAMAGE_SHIELD;
+				_currentEnergy / TargetShip.Settings.DAMAGE_SHIELD;
 			_computedValue = Mathf.Clamp(_computedValue, 0f, 1f);
 
 			return _computedValue * MaxWidth;
@@ -313,7 +316,7 @@ namespace Streamliner
 					_adjustedDamageMult *= 0.9f;
 
 				_computedValue = Mathf.Ceil(
-					TargetShip.ShieldIntegrity / _adjustedDamageMult);
+					_currentEnergy / _adjustedDamageMult);
 				_computedValue = Mathf.Max(0f, _computedValue);
 			}
 			else
@@ -338,12 +341,12 @@ namespace Streamliner
 					(_currentEnergy > 25f && _previousEnergy <= 25f) ||
 					(_currentEnergy > 10f && _previousEnergy <= 10f)
 				) ||
-				TargetShip.IsRecharging
+				_isRecharging
 			)
 			{
 				_transitionAnimationTimer = _slowTransitionTimerMax;
 				// Charging takes over damage flash and stops the flash timer
-				if (TargetShip.IsRecharging)
+				if (_isRecharging)
 				{
 					_damageAnimationTimer = 0f;
 				}
@@ -355,7 +358,7 @@ namespace Streamliner
 			// transition
 			if (_transitionAnimationTimer > 0f)
 			{
-				if (TargetShip.IsRecharging)
+				if (_isRecharging)
 					_currentColor = _rechargeColor;
 				else if (_currentEnergy <= 25f)
 				{
