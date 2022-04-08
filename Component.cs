@@ -365,20 +365,22 @@ namespace Streamliner
 					if (_currentEnergy > 10f)
 					{
 						_currentColor =
-							(OptionLowEnergy == 2 || Audio.WarnOfLowEnergy) ?
-							_lowColor : _defaultColor;
+							OptionLowEnergy == 2 || Audio.WarnOfLowEnergy ?
+								_lowColor : _defaultColor;
 					}
 					else
 					{
 						_currentColor =
-							(OptionLowEnergy == 2 || Audio.WarnOfCriticalEnergy) ?
-								_criticalColor : (Audio.WarnOfLowEnergy ? _lowColor : _defaultColor);
+							OptionLowEnergy == 2 || Audio.WarnOfCriticalEnergy ?
+								_criticalColor : Audio.WarnOfLowEnergy ?
+									_lowColor : _defaultColor;
 					}
 				}
 				else
 					_currentColor = _defaultColor;
 
-				color = Color.Lerp(color, _currentColor, Time.deltaTime * _slowTransitionSpeed);
+				color = Color.Lerp(
+					color, _currentColor, Time.deltaTime * _slowTransitionSpeed);
 				_transitionAnimationTimer -= Time.deltaTime;
 			}
 			else
@@ -391,12 +393,12 @@ namespace Streamliner
 					_currentEnergy > 10f ||
 					OptionLowEnergy == 0 ||
 					(OptionLowEnergy == 1 && !Audio.WarnOfCriticalEnergy) ?
-					_damageColor : _damageLowColor;
+						_damageColor : _damageLowColor;
 
-				// ReSharper disable once CompareOfFloatsByEqualityOperator
 				if (_damageAnimationTimer == _fastTransitionTimerMax)
 					color = _currentDamageColor;
-				color = Color.Lerp(color, _currentColor, Time.deltaTime * _fastTransitionSpeed);
+				color = Color.Lerp(
+					color, _currentColor, Time.deltaTime * _fastTransitionSpeed);
 				_damageAnimationTimer -= Time.deltaTime;
 			}
 			else

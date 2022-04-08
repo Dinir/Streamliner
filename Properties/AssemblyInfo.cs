@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Streamliner")]
-[assembly: AssemblyCopyright("Copyright © Dinir Nertan 2022")]
+[assembly: AssemblyCopyright("Copyright © 2022 Dinir Nertan")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
