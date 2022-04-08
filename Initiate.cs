@@ -55,8 +55,11 @@ namespace Streamliner
 		// options
 		private string _settingsPath;
 		public static int OptionValueTint = 0;
+		public static bool OptionMotion = true;
 		public static bool OptionSpeedHighlight = true;
+		public static bool OptionEnergyHighlight = true;
 		public static int OptionLowEnergy = 2;
+		public static bool OptionRecharge = true;
 
 		internal static Color GetTintColor(TextAlpha transparencyIndex = TextAlpha.Full)
 		{
@@ -120,27 +123,54 @@ namespace Streamliner
 				"white", "red", "orange", "yellow", "lime", "green", "mint", "cyan", "azure", "blue", "violet", "magenta", "rose"
 			);
 
+			ctx.GenerateSelector(
+				"Motion", "motion effect",
+				"Loosen the hud a bit.",
+				OptionMotion ? 1 : 0,
+				"off", "on"
+			);
+
 			ctx.GenerateHeader("Additional Information");
 
 			ctx.GenerateSelector(
 				"SpeedHighlight", "speed reduction highlight",
-				"Highlight speedometer text when speed decreases.",
+				"Highlight speedometer when speed decreases.",
 				OptionSpeedHighlight ? 1 : 0,
 				"off", "on"
 			);
+
+			ctx.GenerateSpace();
+
 			ctx.GenerateSelector(
-				"LowEnergyIndicator", "low energy indicator",
-				"Change when the low energy indicator turns on.",
+				"EnergyHighlight", "energy reduction highlight",
+				"Highlight energy meter on receiving damage.",
+				OptionEnergyHighlight ? 1 : 0,
+				"off", "on"
+			);
+
+			ctx.GenerateSelector(
+				"LowEnergyTransition", "low energy highlight",
+				"Change the color of energy meter when the ship's energy is low.",
 				OptionLowEnergy,
 				"off", "follow audio setting", "on"
+			);
+
+			ctx.GenerateSelector(
+				"RechargeAmount", "recharge amount display",
+				"Show the amount the ship recharged on a pit lane.",
+				OptionRecharge ? 1 : 0,
+				"off", "on"
 			);
 		}
 
 		private void ModUiToCode(ModOptionsUiContext ctx)
 		{
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
+			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
 			OptionSpeedHighlight = ctx.GetSelectorValue("SpeedHighlight") == 1;
-			OptionLowEnergy = ctx.GetSelectorValue("LowEnergyIndicator");
+			OptionEnergyHighlight = ctx.GetSelectorValue("EnergyHighlight") == 1;
+			OptionLowEnergy = ctx.GetSelectorValue("LowEnergyTransition");
+			OptionRecharge = ctx.GetSelectorValue("RechargeAmount") == 1;
 		}
 
 		private void OnLoadSettings()
@@ -149,8 +179,11 @@ namespace Streamliner
 			ini.Open(_settingsPath);
 
 			OptionValueTint = ini.ReadValue("Display", "TextTint", OptionValueTint);
+			OptionMotion = ini.ReadValue("Display", "Motion", OptionMotion);
 			OptionSpeedHighlight = ini.ReadValue("AdditionalInformation", "SpeedHighlight", OptionSpeedHighlight);
-			OptionLowEnergy = ini.ReadValue("AdditionalInformation", "LowEnergyIndicator", OptionLowEnergy);
+			OptionEnergyHighlight = ini.ReadValue("AdditionalInformation", "EnergyHighlight", OptionEnergyHighlight);
+			OptionLowEnergy = ini.ReadValue("AdditionalInformation", "LowEnergyTransition", OptionLowEnergy);
+			OptionRecharge = ini.ReadValue("AdditionalInformation", "RechargeAmount", OptionRecharge);
 
 			ini.Close();
 		}
@@ -161,8 +194,11 @@ namespace Streamliner
 			ini.Open(_settingsPath);
 
 			ini.WriteValue("Display", "TextTint", OptionValueTint);
+			ini.WriteValue("Display", "Motion", OptionMotion);
 			ini.WriteValue("AdditionalInformation", "SpeedHighlight", OptionSpeedHighlight);
-			ini.WriteValue("AdditionalInformation", "LowEnergyIndicator", OptionLowEnergy);
+			ini.WriteValue("AdditionalInformation", "EnergyHighlight", OptionEnergyHighlight);
+			ini.WriteValue("AdditionalInformation", "LowEnergyTransition", OptionLowEnergy);
+			ini.WriteValue("AdditionalInformation", "RechargeAmount", OptionRecharge);
 
 			ini.Close();
 		}
