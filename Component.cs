@@ -209,16 +209,30 @@ namespace Streamliner
 	{
 		internal RectTransform Panel;
 		internal Text Value;
+		internal Text Delta;
 		internal Image GaugeBackground;
 		internal RectTransform Gauge;
 		internal float MaxWidth;
 		private Vector2 _currentSize;
 		private float _computedValue;
 		private float _adjustedDamageMult;
+		private int _valueBeforeCharging;
+		internal string ValueBeforeCharging
+		{
+			get => _valueBeforeCharging.ToString();
+			set => _valueBeforeCharging = Convert.ToInt32(value);
+		}
+		internal string ValueCharged()
+		{
+			int value = Convert.ToInt32(Value.text) - _valueBeforeCharging;
+			return IntStrDb.GetNumber(value);
+		}
 
 		private float _currentEnergy;
 		private float _previousEnergy;
+		private string _previousValueString;
 		private bool _isRecharging;
+		private bool _wasRecharging;
 
 		private readonly Color _rechargeColor = new Color32(0x88, 0xe3, 0xe0, 0xbf); // Cyan S6 V1
 		private readonly Color _lowColor = new Color32(0xe3, 0xb3, 0x88, 0xbf); // Orange S6 V1
@@ -229,6 +243,11 @@ namespace Streamliner
 		private Color _defaultColor;
 		private Color _currentColor;
 		private Color _currentDamageColor;
+		private Color _deltaColor;
+		private Color _deltaFinalColor;
+		private Color _deltaInactiveColor;
+		private readonly float _deltaFinalAlpha = 0.9f;
+		private readonly float _deltaInactiveAlpha = 0f;
 
 		/*
 		 * When would the progress reach 0.99999 (1 - 10^-5) with the speed?
@@ -243,8 +262,11 @@ namespace Streamliner
 		private readonly float _slowTransitionSpeed = 5f;
 		private readonly float _fastTransitionTimerMax = 1.5f;
 		private readonly float _slowTransitionTimerMax = 2.2f;
+		private readonly float _rechargeDisplayTimerMax = 3.0f;
 		private float _damageAnimationTimer;
 		private float _transitionAnimationTimer;
+		private float _deltaAnimationTimer;
+		private float _rechargeDisplayTimer;
 
 		public override void Start()
 		{
@@ -252,6 +274,7 @@ namespace Streamliner
 
 			Panel = CustomComponents.GetById<RectTransform>("Base");
 			Value = Panel.Find("Value").GetComponent<Text>();
+			Delta = Panel.Find("Delta").GetComponent<Text>();
 			GaugeBackground = Panel.Find("GaugeBackground").GetComponent<Image>();
 			Gauge = (RectTransform)GaugeBackground.GetComponent<RectTransform>()
 				.Find("Gauge");
@@ -273,6 +296,12 @@ namespace Streamliner
 			_currentDamageColor = _damageColor;
 			Value.color = _defaultColor;
 			Gauge.GetComponent<Image>().color = _defaultColor;
+			_deltaColor = Delta.color;
+			_deltaFinalColor = Delta.color;
+			_deltaInactiveColor = Delta.color;
+			_deltaFinalColor.a = _deltaFinalAlpha;
+			_deltaInactiveColor.a = _deltaInactiveAlpha;
+			Delta.color = _deltaInactiveColor;
 		}
 
 		public override void Update()
@@ -284,10 +313,18 @@ namespace Streamliner
 			_currentSize.x = GetHudShieldWidth();
 			Gauge.sizeDelta = _currentSize;
 			Value.text = GetShieldValueString();
-
-			_currentEnergy = TargetShip.ShieldIntegrity;
+			if (_isRecharging)
+			{
+				if (_wasRecharging)
+					Delta.text = ValueCharged();
+				else
+					ValueBeforeCharging = _previousValueString;
+			}
 			ColorEnergyComponent();
+
 			_previousEnergy = _currentEnergy;
+			_previousValueString = Value.text;
+			_wasRecharging = _isRecharging;
 		}
 
 		/*
@@ -345,9 +382,11 @@ namespace Streamliner
 			)
 			{
 				_transitionAnimationTimer = _slowTransitionTimerMax;
-				// Charging takes over damage flash and stops the flash timer
+				// Charging takes over damage flash and recharge amount display
 				if (_isRecharging)
 				{
+					_deltaAnimationTimer = _slowTransitionTimerMax;
+					_rechargeDisplayTimer = 0f;
 					_damageAnimationTimer = 0f;
 				}
 			}
@@ -386,6 +425,44 @@ namespace Streamliner
 			else
 				_transitionAnimationTimer = 0f;
 
+			// recharging amount transition
+			Color deltaColor = Delta.color;
+			if (_deltaAnimationTimer > 0f)
+			{
+				if (_isRecharging)
+				{
+					deltaColor = _wasRecharging ?
+						Color.Lerp(
+							deltaColor, _deltaColor, Time.deltaTime * _slowTransitionSpeed
+						) :
+						_deltaInactiveColor;
+				}
+				else
+				{
+					// Recharging is done here, as the timer is only set when recharging starts.
+					// Stop this block and start the display block.
+					_rechargeDisplayTimer = _rechargeDisplayTimerMax;
+					_deltaAnimationTimer = 0f;
+				}
+
+				_deltaAnimationTimer -= Time.deltaTime;
+			}
+			else
+				_deltaAnimationTimer = 0f;
+
+			// recharged amount display
+			if (_rechargeDisplayTimer > 0f)
+			{
+				if (_rechargeDisplayTimer == _rechargeDisplayTimerMax)
+					deltaColor = _deltaFinalColor;
+
+				_rechargeDisplayTimer -= Time.deltaTime;
+				if (_rechargeDisplayTimer <= 0f)
+					deltaColor = _deltaInactiveColor;
+			}
+			else
+				_rechargeDisplayTimer = 0f;
+
 			// damage flash (process after getting `_currentColor` set)
 			if (_damageAnimationTimer > 0f)
 			{
@@ -407,6 +484,7 @@ namespace Streamliner
 			// Apply the final color
 			Value.color = color;
 			Gauge.GetComponent<Image>().color = color;
+			Delta.color = deltaColor;
 		}
 	}
 
