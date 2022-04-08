@@ -238,10 +238,10 @@ namespace Streamliner
 		 * Speed is decided on the 0.75 time, and Timer is decided on 0.99999 time of that speed.
 		 * https://www.desmos.com/calculator/nip7pyehxl
 		 */
-		private readonly float _damageAnimationSpeed = 8f;
-		private readonly float _transitionAnimationSpeed = 5f;
-		private readonly float _damageAnimationTimerMax = 1.5f;
-		private readonly float _transitionAnimationTimerMax = 2.2f;
+		private readonly float _fastTransitionSpeed = 8f;
+		private readonly float _slowTransitionSpeed = 5f;
+		private readonly float _fastTransitionTimerMax = 1.5f;
+		private readonly float _slowTransitionTimerMax = 2.2f;
 		private float _damageAnimationTimer;
 		private float _transitionAnimationTimer;
 
@@ -329,7 +329,7 @@ namespace Streamliner
 			// Set timer during which the coloring transition can run
 			// damage flash
 			if (_currentEnergy < _previousEnergy)
-				_damageAnimationTimer = _damageAnimationTimerMax;
+				_damageAnimationTimer = _fastTransitionTimerMax;
 			// transition
 			if (
 				OptionLowEnergy != 0 && (
@@ -341,7 +341,7 @@ namespace Streamliner
 				TargetShip.IsRecharging
 			)
 			{
-				_transitionAnimationTimer = _transitionAnimationTimerMax;
+				_transitionAnimationTimer = _slowTransitionTimerMax;
 				// Charging takes over damage flash and stops the flash timer
 				if (TargetShip.IsRecharging)
 				{
@@ -375,7 +375,7 @@ namespace Streamliner
 				else
 					_currentColor = _defaultColor;
 
-				color = Color.Lerp(color, _currentColor, Time.deltaTime * _transitionAnimationSpeed);
+				color = Color.Lerp(color, _currentColor, Time.deltaTime * _slowTransitionSpeed);
 				_transitionAnimationTimer -= Time.deltaTime;
 			}
 			else
@@ -391,9 +391,9 @@ namespace Streamliner
 					_damageColor : _damageLowColor;
 
 				// ReSharper disable once CompareOfFloatsByEqualityOperator
-				if (_damageAnimationTimer == _damageAnimationTimerMax)
+				if (_damageAnimationTimer == _fastTransitionTimerMax)
 					color = _currentDamageColor;
-				color = Color.Lerp(color, _currentColor, Time.deltaTime * _damageAnimationSpeed);
+				color = Color.Lerp(color, _currentColor, Time.deltaTime * _fastTransitionSpeed);
 				_damageAnimationTimer -= Time.deltaTime;
 			}
 			else
