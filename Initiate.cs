@@ -96,20 +96,20 @@ namespace Streamliner
 				"Race", Id, new RaceHudManager());
 			CustomHudRegistry.RegisterSceneManager(
 				"Speed Lap", Id, new SpeedLapHudManager());
-			CustomHudRegistry.RegisterSceneManager(
-				"Time Trial", Id, new TrialHudManager());
-			CustomHudRegistry.RegisterSceneManager(
-				"Eliminator", Id, new CombatHudManager());
-			CustomHudRegistry.RegisterSceneManager(
-				"Team Race", Id, new TeamRaceHudManager());
-			CustomHudRegistry.RegisterSceneManager(
-				"Survival", Id, new ZoneHudManager());
-			CustomHudRegistry.RegisterSceneManager(
-				"Upsurge", Id, new UpsurgeHudManager());
-			CustomHudRegistry.RegisterSceneManager(
-				"Knockout", Id, new KnockoutHudManager());
-			CustomHudRegistry.RegisterSceneManager(
-				"Rush Hour", Id, new RushHourHudManager());
+			// CustomHudRegistry.RegisterSceneManager(
+			// 	"Time Trial", Id, new TrialHudManager());
+			// CustomHudRegistry.RegisterSceneManager(
+			// 	"Eliminator", Id, new CombatHudManager());
+			// CustomHudRegistry.RegisterSceneManager(
+			// 	"Team Race", Id, new TeamRaceHudManager());
+			// CustomHudRegistry.RegisterSceneManager(
+			// 	"Survival", Id, new ZoneHudManager());
+			// CustomHudRegistry.RegisterSceneManager(
+			// 	"Upsurge", Id, new UpsurgeHudManager());
+			// CustomHudRegistry.RegisterSceneManager(
+			// 	"Knockout", Id, new KnockoutHudManager());
+			// CustomHudRegistry.RegisterSceneManager(
+			// 	"Rush Hour", Id, new RushHourHudManager());
 		}
 
 		private void GenerateModUi(ModOptionsUiContext ctx)
