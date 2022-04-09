@@ -459,7 +459,7 @@ namespace Streamliner
 
 			public LapSlot(RectTransform template)
 			{
-				Value = template.Find("Text").GetComponent<Text>();
+				Value = template.Find("Time").GetComponent<Text>();
 				_perfectLine = template.Find("PerfectLine").GetComponent<Image>();
 
 				Value.text = "";
@@ -481,7 +481,7 @@ namespace Streamliner
 			LapSlotTemplate = CustomComponents.GetById<RectTransform>("LapSlot");
 			// I am hiding the components here, not on Unity,
 			// because I want to keep them visible on Unity.
-			LapSlotTemplate.Find("Text").gameObject.SetActive(value: false);
+			LapSlotTemplate.Find("Time").gameObject.SetActive(value: false);
 			LapSlotTemplate.Find("PerfectLine").gameObject.SetActive(value: false);
 			InitiateSlots();
 			_currentSlot = _slots[0];
