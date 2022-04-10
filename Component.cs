@@ -20,9 +20,8 @@ using NgModes;
 using NgGame;
 using NgSp;
 using static Streamliner.HudRegister;
-using static Streamliner.Panel.PresetColorPicker;
-using static Streamliner.Panel.SectionManager;
-using Streamliner.Panel;
+using static Streamliner.PresetColorPicker;
+using static Streamliner.SectionManager;
 
 namespace Streamliner
 {

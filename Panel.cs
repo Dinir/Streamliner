@@ -8,9 +8,9 @@ using NgModes;
 using NgTrackData;
 using NgShips;
 using static Streamliner.HudRegister;
-using static Streamliner.Panel.PresetColorPicker;
+using static Streamliner.PresetColorPicker;
 
-namespace Streamliner.Panel
+namespace Streamliner
 {
 	internal static class PresetColorPicker
 	{
