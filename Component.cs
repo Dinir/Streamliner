@@ -407,7 +407,7 @@ namespace Streamliner
 		internal BasicPanel Panel;
 		internal RectTransform LapSlotTemplate;
 
-		private readonly List<LapSlot> _slots = new List<LapSlot>(5);
+		private readonly List<LapSlot> _slots = new(5);
 		private LapSlot _currentSlot;
 		private int _totalSlots;
 		/// <summary>
