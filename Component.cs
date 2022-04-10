@@ -624,6 +624,12 @@ namespace Streamliner
 	public class Leaderboard : ScriptableHud
 	{}
 
+	public class CombatScoreboard : ScriptableHud
+	{}
+
+	public class UpsurgeScoreboard : ScriptableHud
+	{}
+
 	public class NowPlaying : ScriptableHud
 	{}
 
@@ -642,12 +648,6 @@ namespace Streamliner
 	public class TargetZoneDisplay : ScriptableHud
 	{}
 
-	public class CombatScoreboard : ScriptableHud
-	{}
-
 	public class TeamScoreboard : ScriptableHud
-	{}
-
-	public class UpsurgeScoreboard : ScriptableHud
 	{}
 }

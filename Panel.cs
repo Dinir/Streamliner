@@ -1,6 +1,10 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
+using NgLib;
 using NgData;
+using NgGame;
+using NgModes;
 using NgTrackData;
 using NgShips;
 using static Streamliner.HudRegister;
@@ -205,6 +209,102 @@ namespace Streamliner.Panel
 		{
 			_currentAccelSize.x = amount * _accelGaugeMaxWidth;
 			_accelGauge.sizeDelta = _currentAccelSize;
+		}
+	}
+
+	internal class Playerboard
+	{
+		private readonly Gamemode gamemode = RaceManager.CurrentGamemode;
+		private enum SpecialModeName
+		{
+			Normal, Eliminator, Rush_Hour, Upsurge
+		}
+		private SpecialModeName _gamemodeName;
+		private string GamemodeName
+		{
+			get => _gamemodeName.ToString().Replace("_", " ");
+			set
+			{
+				switch (value)
+				{
+					case "Eliminator":
+						_gamemodeName = SpecialModeName.Eliminator;
+						break;
+					case "Rush Hour":
+						_gamemodeName = SpecialModeName.Rush_Hour;
+						break;
+					case "Upsurge":
+						_gamemodeName = SpecialModeName.Upsurge;
+						break;
+					default:
+						_gamemodeName = SpecialModeName.Normal;
+						break;
+				}
+			}
+		}
+
+		private readonly float _oneLetterWidth = 20f;
+		private readonly RectTransform _base;
+		private readonly RectTransform _targetRow;
+		private readonly RectTransform _entrySlotTemplate;
+		private readonly RectTransform _templateGaugeBackground;
+		private readonly RectTransform _templateGauge;
+		private readonly List<EntrySlot> _list = new();
+
+		private class EntrySlot
+		{
+
+		}
+
+		private void InitiateLayout()
+		{
+			float targetScore = gamemode.TargetScore;
+
+			_templateGaugeBackground.gameObject.
+				SetActive(value: _gamemodeName != SpecialModeName.Rush_Hour);
+
+			if (targetScore == 0f)
+			{
+				_targetRow.gameObject.SetActive(value: false);
+			}
+			else
+			{
+				_targetRow.Find("TargetValue").Find("Value").GetComponent<Text>().text =
+					IntStrDb.GetNumber((int)targetScore);
+
+				if (targetScore < 100f) return;
+
+				Vector2 oneLetterWidthVector2 = new Vector2(_oneLetterWidth, 0);
+				Vector3 oneLetterWidthVector3 = new Vector3(_oneLetterWidth, 0, 0);
+
+				_targetRow.Find("Target").GetComponent<RectTransform>().localPosition -=
+					oneLetterWidthVector3;
+				_targetRow.Find("TargetValue").GetComponent<RectTransform>().sizeDelta +=
+					oneLetterWidthVector2;
+				_templateGaugeBackground.sizeDelta -=
+					oneLetterWidthVector2 / _templateGaugeBackground.localScale;
+				_templateGauge.sizeDelta -=
+					oneLetterWidthVector2 / _templateGauge.localScale;
+				_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().sizeDelta -=
+					oneLetterWidthVector2 /
+					_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localScale;
+				_entrySlotTemplate.Find("Plate").GetComponent<RectTransform>().sizeDelta +=
+					oneLetterWidthVector2;
+			}
+		}
+
+		public Playerboard(RectTransform panelElement)
+		{
+			GamemodeName = gamemode.Name;
+
+			_base = panelElement;
+			_targetRow = panelElement.Find("TargetRow").GetComponent<RectTransform>();
+			_entrySlotTemplate = panelElement.Find("EntrySlot").GetComponent<RectTransform>();
+			_templateGaugeBackground =
+				_entrySlotTemplate.Find("GaugeBackground").GetComponent<RectTransform>();
+			_templateGauge = (RectTransform) _templateGaugeBackground.Find("Gauge");
+
+			InitiateLayout();
 		}
 	}
 }
