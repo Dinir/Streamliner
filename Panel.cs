@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using NgLib;
@@ -9,6 +10,7 @@ using NgTrackData;
 using NgShips;
 using static Streamliner.HudRegister;
 using static Streamliner.PresetColorPicker;
+using static UnityEngine.Object;
 
 namespace Streamliner
 {
@@ -31,19 +33,21 @@ namespace Streamliner
 			Color.HSVToRGB(0.9111f, 0.18f, 0.86f)  // Rose
 		};
 		private static readonly float[] TintAlphaList = new float[] {
-			1f, 0.9f, 0.750f, 0.500f, 0.375f, 0.250f
+			1f, 0.9f, 0.750f, 0.500f, 0.375f, 0.250f, 0.000f
 		};
 		internal enum TextAlpha
 		{
-			Full, NineTenths, ThreeQuarters, Half, ThreeEighths, Quarter
+			Full, NineTenths, ThreeQuarters, Half, ThreeEighths, Quarter, Zero
 		}
 		private static Color _tintColorBuffer;
 		internal static Color GetTintColor(TextAlpha transparencyIndex = TextAlpha.Full)
 		{
 			_tintColorBuffer = TintColorList[OptionValueTint];
-			_tintColorBuffer.a = TintAlphaList[(int)transparencyIndex];
+			_tintColorBuffer.a = TintAlphaList[(int) transparencyIndex];
 			return _tintColorBuffer;
 		}
+		internal static float GetTransparency(TextAlpha transparencyIndex) =>
+			TintAlphaList[(int) transparencyIndex];
 	}
 
 	internal static class SectionManager
@@ -215,31 +219,25 @@ namespace Streamliner
 	internal class Playerboard
 	{
 		private readonly Gamemode gamemode = RaceManager.CurrentGamemode;
-		private enum SpecialModeName
+
+		private enum ValueType
 		{
-			Normal, Eliminator, Rush_Hour, Upsurge
+			Position, Score, Energy
 		}
-		private SpecialModeName _gamemodeName;
-		private string GamemodeName
+		private ValueType _valueType;
+		private void SetValueType(string name)
 		{
-			get => _gamemodeName.ToString().Replace("_", " ");
-			set
+			switch (name)
 			{
-				switch (value)
-				{
-					case "Eliminator":
-						_gamemodeName = SpecialModeName.Eliminator;
-						break;
-					case "Rush Hour":
-						_gamemodeName = SpecialModeName.Rush_Hour;
-						break;
-					case "Upsurge":
-						_gamemodeName = SpecialModeName.Upsurge;
-						break;
-					default:
-						_gamemodeName = SpecialModeName.Normal;
-						break;
-				}
+				case "Eliminator":
+					_valueType = ValueType.Score;
+					break;
+				case "Rush Hour":
+					_valueType = ValueType.Energy;
+					break;
+				default:
+					_valueType = ValueType.Position;
+					break;
 			}
 		}
 
@@ -250,10 +248,127 @@ namespace Streamliner
 		private readonly RectTransform _templateGaugeBackground;
 		private readonly RectTransform _templateGauge;
 		private readonly List<EntrySlot> _list = new();
+		private readonly List<RawValuePair> _rawValueList = new();
+		private bool _reordering;
 
 		private class EntrySlot
 		{
+			private readonly RectTransform _base;
+			private readonly Text _name;
+			private readonly Text _value;
+			private readonly RectTransform _gauge;
+			internal int Id;
+			internal float RawValue;
+			internal float PreviousRawValue;
+			private readonly float _gaugeMaxWidth;
+			private Vector2 _currentSize;
+			private readonly Color _slotColor = GetTintColor(TextAlpha.ThreeQuarters);
 
+			public EntrySlot(RectTransform template)
+			{
+				_base = template;
+				_base.gameObject.SetActive(value: true);
+				_name = _base.Find("Name").GetComponent<Text>();
+				_value = _base.Find("Plate").Find("Value").GetComponent<Text>();
+				_gauge = (RectTransform)_base.Find("GaugeBackground").Find("Gauge");
+				_currentSize = _gauge.sizeDelta;
+				_gaugeMaxWidth = _currentSize.x;
+
+				ChangeColor();
+				Name = "";
+				Position = 0;
+				FillByPercentage(100f);
+			}
+
+			private void ChangeColor()
+			{
+				_name.color = _slotColor;
+				_gauge.GetComponent<Image>().color = _slotColor;
+				_value.color = GetTintColor(TextAlpha.NineTenths);
+			}
+
+			public void ChangeOverallAlpha(TextAlpha transparencyIndex) =>
+				_base.GetComponent<CanvasGroup>().alpha = GetTransparency(transparencyIndex);
+
+			public string Name
+			{
+				get => _name.text;
+				set => _name.text = value;
+			}
+
+			public int Position
+			{
+				get => (int) RawValue;
+				set
+				{
+					PreviousRawValue = RawValue;
+					RawValue = value;
+					_value.text = IntStrDb.GetNoSingleCharNumber(value);
+				}
+			}
+
+			public float Score
+			{
+				get => RawValue;
+				set
+				{
+					PreviousRawValue = RawValue;
+					RawValue = value;
+					_value.text = IntStrDb.GetNumber(Mathf.FloorToInt(value));
+				}
+			}
+
+			public float Energy
+			{
+				get => RawValue;
+				set
+				{
+					PreviousRawValue = RawValue;
+					RawValue = value;
+					_value.text = IntStrDb.GetNumber(
+						Mathf.Clamp(Mathf.FloorToInt(value), 0, 99)
+					);
+				}
+			}
+
+			private void FillByPercentage(float value)
+			{
+				_currentSize.x = ( value / 100f ) * _gaugeMaxWidth;
+				_gauge.sizeDelta = _currentSize;
+			}
+
+			public void FillByValue()
+			{
+				FillByPercentage(RawValue);
+			}
+		}
+
+		private class RawValuePair
+		{
+			internal readonly int Id;
+			internal float Value;
+
+			public RawValuePair(int id, float value)
+			{
+				Id = id;
+				Value = value;
+			}
+		}
+
+		public Playerboard(RectTransform panelElement)
+		{
+			SetValueType(gamemode.Name);
+
+			_base = panelElement;
+			_targetRow = panelElement.Find("TargetRow").GetComponent<RectTransform>();
+			_entrySlotTemplate = panelElement.Find("EntrySlot").GetComponent<RectTransform>();
+			_templateGaugeBackground =
+				_entrySlotTemplate.Find("GaugeBackground").GetComponent<RectTransform>();
+			_templateGauge = (RectTransform) _templateGaugeBackground.Find("Gauge");
+			_entrySlotTemplate.gameObject.SetActive(value: false);
+
+			InitiateLayout();
+			InitiateSlots();
 		}
 
 		private void InitiateLayout()
@@ -261,7 +376,7 @@ namespace Streamliner
 			float targetScore = gamemode.TargetScore;
 
 			_templateGaugeBackground.gameObject.
-				SetActive(value: _gamemodeName != SpecialModeName.Rush_Hour);
+				SetActive(value: _valueType != ValueType.Energy);
 
 			if (targetScore == 0f)
 			{
@@ -293,18 +408,114 @@ namespace Streamliner
 			}
 		}
 
-		public Playerboard(RectTransform panelElement)
+		private void InitiateSlots()
 		{
-			GamemodeName = gamemode.Name;
+			for (int i = 0; i < Ships.Loaded.Count; i++)
+			{
+				RectTransform slot =
+					Instantiate(_entrySlotTemplate.gameObject).GetComponent<RectTransform>();
+				slot.SetParent(_entrySlotTemplate.parent);
+				slot.localScale = _entrySlotTemplate.localScale;
+				slot.anchoredPosition = _entrySlotTemplate.anchoredPosition;
 
-			_base = panelElement;
-			_targetRow = panelElement.Find("TargetRow").GetComponent<RectTransform>();
-			_entrySlotTemplate = panelElement.Find("EntrySlot").GetComponent<RectTransform>();
-			_templateGaugeBackground =
-				_entrySlotTemplate.Find("GaugeBackground").GetComponent<RectTransform>();
-			_templateGauge = (RectTransform) _templateGaugeBackground.Find("Gauge");
+				slot.localPosition += Vector3.down * slot.sizeDelta.y * i;
 
-			InitiateLayout();
+				_list.Add(new EntrySlot(slot));
+
+				_list[i].Name = Ships.Loaded[i].ShipName;
+				switch (_valueType)
+				{
+					case ValueType.Score:
+						_list[i].Score = Ships.Loaded[i].Score;
+						break;
+					case ValueType.Energy:
+						_list[i].Energy = Ships.Loaded[i].ShieldIntegrity;
+						break;
+					case ValueType.Position:
+					default:
+						_list[i].Position = Ships.Loaded[i].CurrentPlace;
+						break;
+				}
+
+				_rawValueList.Add(new RawValuePair(i, _list[i].RawValue));
+			}
+		}
+
+		public void UpdateSlotsScore()
+		{
+			bool startReordering = false;
+			for (int i = 0; i < _rawValueList.Count; i++)
+			{
+				if (Mathf.Approximately(
+					    _rawValueList[_list[i].Id].Value,
+					    Ships.Loaded[_list[i].Id].Score))
+					continue;
+				startReordering = !_reordering;
+				_rawValueList[_list[i].Id].Value = Ships.Loaded[_list[i].Id].Score;
+				_list[i].Score = Ships.Loaded[_list[i].Id].Score;
+			}
+			_reordering = false;
+			if (startReordering)
+				ReorderSlots(_rawValueList.OrderByDescending(p => p.Value).ToList());
+		}
+
+		public void UpdateSlotsEnergy()
+		{
+			bool startReordering = false;
+			for (int i = 0; i < _rawValueList.Count; i++)
+			{
+				if (Mathf.Approximately(
+					    _rawValueList[_list[i].Id].Value,
+					    Ships.Loaded[_list[i].Id].ShieldIntegrity))
+					continue;
+				startReordering = !_reordering;
+				_rawValueList[_list[i].Id].Value = Ships.Loaded[_list[i].Id].ShieldIntegrity;
+				_list[i].Energy = Ships.Loaded[_list[i].Id].ShieldIntegrity;
+				_list[i].FillByValue();
+				if (_list[i].PreviousRawValue <= 0f)
+					_list[i].ChangeOverallAlpha(TextAlpha.Quarter);
+			}
+			_reordering = false;
+			if (startReordering)
+				ReorderSlots(_rawValueList.OrderByDescending(p => p.Value).ToList());
+		}
+
+		public void UpdateSlotsPosition()
+		{
+			bool startReordering = false;
+			for (int i = 0; i < _rawValueList.Count; i++)
+			{
+				if ((int) _rawValueList[_list[i].Id].Value ==
+					Ships.Loaded[_list[i].Id].CurrentPlace)
+					continue;
+				startReordering = !_reordering;
+				if (Ships.Loaded[_list[i].Id].ShieldIntegrity > 0f)
+				{
+					_rawValueList[_list[i].Id].Value = Ships.Loaded[_list[i].Id].CurrentPlace;
+					_list[i].Position = Ships.Loaded[_list[i].Id].CurrentPlace;
+					_list[i].ChangeOverallAlpha(TextAlpha.Full);
+				}
+				else
+				{
+					_rawValueList[_list[i].Id].Value = int.MaxValue;
+					_list[i].ChangeOverallAlpha(TextAlpha.Zero);
+				}
+			}
+			_reordering = false;
+			if (startReordering)
+				ReorderSlots(_rawValueList.OrderBy(p => p.Value).ToList());
+		}
+
+		private void ReorderSlots(List<RawValuePair> orderedList)
+		{
+			_reordering = true;
+			for (int i = 0; i < _list.Count; i++)
+			{
+				_list[i].Id = orderedList[i].Id;
+				_list[i].Name = Ships.Loaded[_list[i].Id].ShipName;
+				_list[i].PreviousRawValue =
+					_valueType == ValueType.Position ? int.MaxValue : float.NegativeInfinity;
+			}
 		}
 	}
 }

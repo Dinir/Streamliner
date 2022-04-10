@@ -818,6 +818,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7635611268468125406}
+  - component: {fileID: 944006276141238849}
   m_Layer: 0
   m_Name: EntrySlot
   m_TagString: Untagged
@@ -847,6 +848,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -25}
   m_SizeDelta: {x: 285, y: 25}
   m_Pivot: {x: 1, y: 1}
+--- !u!225 &944006276141238849
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7635611268468125407}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &7635611268986068260
 GameObject:
   m_ObjectHideFlags: 0

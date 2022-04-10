@@ -178,6 +178,7 @@ namespace Streamliner
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
 			RegisterHud<Timer>(HudRegister.Assets.GetComponent<HudComponents>("Timer", false));
+			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 		}
 	}
 
@@ -193,7 +194,10 @@ namespace Streamliner
 
 	public class CombatHudManager : SceneHudManager
 	{
-
+		public override void OnCreateHuds()
+		{
+			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+		}
 	}
 
 	public class TeamRaceHudManager : SceneHudManager
@@ -218,6 +222,9 @@ namespace Streamliner
 
 	public class RushHourHudManager : SceneHudManager
 	{
-
+		public override void OnCreateHuds()
+		{
+			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+		}
 	}
 }
