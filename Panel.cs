@@ -447,13 +447,14 @@ namespace Streamliner
 			bool startReordering = false;
 			for (int i = 0; i < _rawValueList.Count; i++)
 			{
-				if (Mathf.Approximately(
-					    _rawValueList[_list[i].Id].Value,
-					    Ships.Loaded[_list[i].Id].Score))
+				EntrySlot slotAtVisibilityIndex = _list[i];
+				RawValuePair rawValuePair = _rawValueList[slotAtVisibilityIndex.Id];
+				ShipController ship = Ships.Loaded[slotAtVisibilityIndex.Id];
+				if (Mathf.Approximately( rawValuePair.Value, ship.Score))
 					continue;
 				startReordering = !_reordering;
-				_rawValueList[_list[i].Id].Value = Ships.Loaded[_list[i].Id].Score;
-				_list[i].Score = Ships.Loaded[_list[i].Id].Score;
+				rawValuePair.Value = ship.Score;
+				slotAtVisibilityIndex.Score = ship.Score;
 			}
 			_reordering = false;
 			if (startReordering)
@@ -465,16 +466,19 @@ namespace Streamliner
 			bool startReordering = false;
 			for (int i = 0; i < _rawValueList.Count; i++)
 			{
-				if (Mathf.Approximately(
-					    _rawValueList[_list[i].Id].Value,
-					    Ships.Loaded[_list[i].Id].ShieldIntegrity))
+				EntrySlot slotAtVisibilityIndex = _list[i];
+				RawValuePair rawValuePair = _rawValueList[slotAtVisibilityIndex.Id];
+				ShipController ship = Ships.Loaded[slotAtVisibilityIndex.Id];
+				if (Mathf.Approximately( rawValuePair.Value, ship.ShieldIntegrity))
 					continue;
 				startReordering = !_reordering;
-				_rawValueList[_list[i].Id].Value = Ships.Loaded[_list[i].Id].ShieldIntegrity;
-				_list[i].Energy = Ships.Loaded[_list[i].Id].ShieldIntegrity;
-				_list[i].FillByValue();
-				if (_list[i].PreviousRawValue <= 0f)
-					_list[i].ChangeOverallAlpha(TextAlpha.Quarter);
+				rawValuePair.Value = ship.ShieldIntegrity;
+				slotAtVisibilityIndex.Energy = ship.ShieldIntegrity;
+				slotAtVisibilityIndex.FillByValue();
+				if (slotAtVisibilityIndex.Energy <= 0f)
+					slotAtVisibilityIndex.ChangeOverallAlpha(TextAlpha.Quarter);
+				else
+					slotAtVisibilityIndex.ChangeOverallAlpha(TextAlpha.Full);
 			}
 			_reordering = false;
 			if (startReordering)
@@ -486,20 +490,22 @@ namespace Streamliner
 			bool startReordering = false;
 			for (int i = 0; i < _rawValueList.Count; i++)
 			{
-				if ((int) _rawValueList[_list[i].Id].Value ==
-					Ships.Loaded[_list[i].Id].CurrentPlace)
+				EntrySlot slotAtVisibilityIndex = _list[i];
+				RawValuePair rawValuePair = _rawValueList[slotAtVisibilityIndex.Id];
+				ShipController ship = Ships.Loaded[slotAtVisibilityIndex.Id];
+				if ((int) rawValuePair.Value == ship.CurrentPlace)
 					continue;
 				startReordering = !_reordering;
-				if (Ships.Loaded[_list[i].Id].ShieldIntegrity > 0f)
+				if (ship.ShieldIntegrity > 0f)
 				{
-					_rawValueList[_list[i].Id].Value = Ships.Loaded[_list[i].Id].CurrentPlace;
-					_list[i].Position = Ships.Loaded[_list[i].Id].CurrentPlace;
-					_list[i].ChangeOverallAlpha(TextAlpha.Full);
+					rawValuePair.Value = ship.CurrentPlace;
+					slotAtVisibilityIndex.Position = ship.CurrentPlace;
+					slotAtVisibilityIndex.ChangeOverallAlpha(TextAlpha.Full);
 				}
 				else
 				{
-					_rawValueList[_list[i].Id].Value = int.MaxValue;
-					_list[i].ChangeOverallAlpha(TextAlpha.Zero);
+					rawValuePair.Value = int.MaxValue;
+					slotAtVisibilityIndex.ChangeOverallAlpha(TextAlpha.Zero);
 				}
 			}
 			_reordering = false;
@@ -512,8 +518,11 @@ namespace Streamliner
 			_reordering = true;
 			for (int i = 0; i < _list.Count; i++)
 			{
-				_list[i].Id = orderedList[i].Id;
-				_list[i].Name = Ships.Loaded[_list[i].Id].ShipName;
+				EntrySlot slotAtVisibilityIndex = _list[i];
+				RawValuePair rawValuePairAtNewIndex = orderedList[i];
+				ShipController shipAtNewIndex = Ships.Loaded[slotAtVisibilityIndex.Id];
+				_list[i].Id = rawValuePairAtNewIndex.Id;
+				_list[i].Name = shipAtNewIndex.ShipName;
 				_list[i].PreviousRawValue =
 					_valueType == ValueType.Position ? int.MaxValue : float.NegativeInfinity;
 			}
