@@ -178,7 +178,8 @@ namespace Streamliner
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
 			RegisterHud<Timer>(HudRegister.Assets.GetComponent<HudComponents>("Timer", false));
-			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			if (Hud.GetPositionBoardEnabled())
+				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 		}
 	}
 
@@ -223,7 +224,8 @@ namespace Streamliner
 		{
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
-			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			if (Hud.GetPositionBoardEnabled())
+				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 		}
 	}
 
