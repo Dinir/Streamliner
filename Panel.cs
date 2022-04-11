@@ -167,7 +167,7 @@ namespace Streamliner
 				GetTintColor(TextAlpha.ThreeEighths);
 		}
 
-		public void ChangeDataPartColor(Color color)
+		public virtual void ChangeDataPartColor(Color color)
 		{
 			Value.color = color;
 			_gauge.GetComponent<Image>().color = color;
@@ -214,6 +214,31 @@ namespace Streamliner
 		{
 			_currentAccelSize.x = amount * _accelGaugeMaxWidth;
 			_accelGauge.sizeDelta = _currentAccelSize;
+		}
+	}
+
+	internal class FractionPanel : BasicPanel
+	{
+		internal readonly Text MaxValue;
+
+		public FractionPanel(RectTransform panelElement) : base(panelElement)
+		{
+			MaxValue = panelElement.Find("MaxValue").GetComponent<Text>();
+
+			ChangeFractionPartColor();
+		}
+
+		private void ChangeFractionPartColor()
+		{
+			MaxValue.color = GetTintColor();
+			_base.Find("Separator").GetComponent<Text>().color = GetTintColor();
+		}
+
+		public override void ChangeDataPartColor(Color color)
+		{
+			base.ChangeDataPartColor(color);
+			MaxValue.color = color;
+			_base.Find("Separator").GetComponent<Text>().color = color;
 		}
 	}
 
