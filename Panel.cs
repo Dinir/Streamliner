@@ -389,16 +389,16 @@ namespace Streamliner
 			_rawValueList = new List<RawValuePair>(Ships.Loaded.Count);
 			for (int i = 0; i < Ships.Loaded.Count; i++)
 			{
-				RectTransform slotRT =
+				RectTransform slot =
 					Instantiate(_entrySlotTemplate.gameObject).GetComponent<RectTransform>();
-				slotRT.SetParent(_entrySlotTemplate.parent);
-				slotRT.localScale = _entrySlotTemplate.localScale;
-				slotRT.anchoredPosition = _entrySlotTemplate.anchoredPosition;
+				slot.SetParent(_entrySlotTemplate.parent);
+				slot.localScale = _entrySlotTemplate.localScale;
+				slot.anchoredPosition = _entrySlotTemplate.anchoredPosition;
 
-				slotRT.localPosition += Vector3.down * slotRT.sizeDelta.y * i;
+				slot.localPosition += Vector3.down * slot.sizeDelta.y * i;
 
 				ShipController loadedShip = Ships.Loaded[i];
-				_visibleList.Add(new EntrySlot(slotRT));
+				_visibleList.Add(new EntrySlot(slot));
 				_visibleList[i].SetRefId(loadedShip.ShipId);
 				_visibleList[i].SetName(loadedShip.ShipName);
 
@@ -490,12 +490,6 @@ namespace Streamliner
 					slot.SetRefId(orderedValueList[i].Id);
 				}
 
-				Debug.Log("ReorderSlots() Done.");
-				for (int i = 0; i < _visibleList.Count; i++)
-				{
-					Debug.Log($"[{i}] {_visibleList[i].refId}: {_rawValueList[_visibleList[i].refId].Id} {_rawValueList[_visibleList[i].refId].Value} {_rawValueList[_visibleList[i].refId].Name}");
-				}
-
 				switch (_valueType)
 				{
 					case ValueType.Energy:
@@ -510,7 +504,7 @@ namespace Streamliner
 						break;
 				}
 
-				yield return new WaitForSeconds(.1f);
+				yield return new WaitForSeconds(NgUi.RaceUi.HUD.Position.UpdateTime);
 			}
 		}
 	}
