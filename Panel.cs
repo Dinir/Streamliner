@@ -373,6 +373,8 @@ namespace Streamliner
 					oneLetterWidthVector2 / _templateGaugeBackground.localScale;
 				_templateGauge.sizeDelta -=
 					oneLetterWidthVector2 / _templateGauge.localScale;
+				_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localPosition -=
+					oneLetterWidthVector3;
 				_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().sizeDelta -=
 					oneLetterWidthVector2 /
 					_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localScale;
