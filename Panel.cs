@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -249,7 +250,6 @@ namespace Streamliner
 		private readonly RectTransform _templateGauge;
 		private List<EntrySlot> _visibleList;
 		private List<RawValuePair> _rawValueList;
-		private bool _reordering;
 
 		private class EntrySlot
 		{
@@ -447,46 +447,25 @@ namespace Streamliner
 			}
 		}
 
-		public void UpdateDataAndDraw()
+		public IEnumerator UpdateData()
 		{
-			bool startReordering = false;
 			foreach (RawValuePair rawValuePair in _rawValueList)
 			{
 				ShipController ship = Ships.Loaded[rawValuePair.Id];
 				switch (_valueType)
 				{
 					case ValueType.Energy:
-						if (Mathf.Approximately(rawValuePair.Value, ship.ShieldIntegrity))
-							continue;
-						startReordering = !_reordering;
 						rawValuePair.Value = ship.ShieldIntegrity;
-						UpdateSlotsEnergy();
 						break;
 					case ValueType.Score:
-						if (Mathf.Approximately(rawValuePair.Value, ship.Score))
-							continue;
-						startReordering = !_reordering;
 						rawValuePair.Value = ship.Score;
-						UpdateSlotsScore();
 						break;
 					case ValueType.Position:
 					default:
-						if ((int) rawValuePair.Value == ship.CurrentPlace)
-							continue;
-						startReordering = !_reordering;
 						rawValuePair.Value = ship.CurrentPlace;
-						UpdateSlotsPosition();
 						break;
 				}
 			}
-			_reordering = false;
-			if (startReordering)
-				ReorderSlots();
-		}
-
-		public void ReorderSlots()
-		{
-			_reordering = true;
 
 			List<RawValuePair> orderedValueList;
 			switch (_valueType)
@@ -506,6 +485,28 @@ namespace Streamliner
 				EntrySlot slot = _visibleList[i];
 				slot.SetRefId(orderedValueList[i].Id);
 			}
+
+			Debug.Log("ReorderSlots() Done.");
+			for (int i = 0; i < _visibleList.Count; i++)
+			{
+				Debug.Log($"[{i}] {_visibleList[i].refId}: {_rawValueList[_visibleList[i].refId].Id} {_rawValueList[_visibleList[i].refId].Value} {_rawValueList[_visibleList[i].refId].Name}");
+			}
+
+			switch (_valueType)
+			{
+				case ValueType.Energy:
+					UpdateSlotsEnergy();
+					break;
+				case ValueType.Score:
+					UpdateSlotsScore();
+					break;
+				case ValueType.Position:
+				default:
+					UpdateSlotsPosition();
+					break;
+			}
+
+			yield return new WaitForSeconds(.1f);
 		}
 	}
 }

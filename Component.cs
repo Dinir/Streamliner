@@ -4,21 +4,12 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
-using BallisticUnityTools.AssetApi;
-using BallisticUnityTools.Placeholders;
-using NgModding;
-using NgModding.Huds;
 using NgData;
 using NgSettings;
-using NgUi.MenuUi;
 using NgUi.RaceUi;
 using NgEvents;
-using NgPickups;
 using NgLib;
 using NgShips;
-using NgModes;
-using NgGame;
-using NgSp;
 using static Streamliner.HudRegister;
 using static Streamliner.PresetColorPicker;
 using static Streamliner.SectionManager;
@@ -628,9 +619,6 @@ namespace Streamliner
 	public class Leaderboard : ScriptableHud
 	{
 		internal Playerboard Panel;
-		private bool _UpdateStarted;
-		private readonly float _updateTime = 0.1f;
-		private float _updateTimer;
 
 		public override void Start()
 		{
@@ -644,23 +632,14 @@ namespace Streamliner
 		{
 			Panel.InitiateLayout();
 			Panel.InitiateSlots();
-			_UpdateStarted = true;
-		}
-
-		public override void Update()
-		{
-			base.Update();
-			_updateTimer += Time.deltaTime;
-			if (!_UpdateStarted || _updateTimer <= _updateTime)
-				return;
-			_updateTimer = 0.0f;
-			Panel.UpdateDataAndDraw();
+			StartCoroutine(Panel.UpdateData());
 		}
 
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
 			NgRaceEvents.OnCountdownStart -= Initiate;
+			StopCoroutine(Panel.UpdateData());
 		}
 	}
 
