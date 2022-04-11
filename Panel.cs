@@ -298,7 +298,7 @@ namespace Streamliner
 				{
 					case ValueType.Energy:
 						_value.text = IntStrDb.GetNumber(
-							Mathf.Clamp(Mathf.FloorToInt(value), 0, 99));
+							Mathf.Clamp(Mathf.RoundToInt(value), 0, 99));
 						break;
 					case ValueType.Score:
 						_value.text = IntStrDb.GetNumber(Mathf.FloorToInt(value));
