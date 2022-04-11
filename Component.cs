@@ -143,6 +143,7 @@ namespace Streamliner
 		private bool _isRecharging;
 		private bool _wasRecharging;
 		private bool _energyRegained;
+		private bool _energyConstantlyDischarges;
 
 		private readonly Color _rechargeColor = new Color32(0x88, 0xe3, 0xe0, 0xbf); // Cyan S6 V1
 		private readonly Color _lowColor = new Color32(0xe3, 0xb3, 0x88, 0xbf); // Orange S6 V1
@@ -181,6 +182,8 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
+			_energyConstantlyDischarges =
+				RaceManager.CurrentGamemode.Name == "Rush Hour";
 
 			Panel = CustomComponents.GetById<RectTransform>("Base");
 			Value = Panel.Find("Value").GetComponent<Text>();
@@ -289,9 +292,10 @@ namespace Streamliner
 			// Set timer during which the coloring transition can run
 			// damage flash
 			if (
-				(OptionEnergyChange || RaceManager.CurrentGamemode.Name != "Rush Hour") &&
+				OptionEnergyChange &&
+				!_energyConstantlyDischarges &&
 				_currentEnergy < _previousEnergy
-				)
+			)
 				_damageAnimationTimer = _fastTransitionTimerMax;
 			// transition
 			if (
