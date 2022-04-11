@@ -449,64 +449,67 @@ namespace Streamliner
 
 		public IEnumerator UpdateData()
 		{
-			foreach (RawValuePair rawValuePair in _rawValueList)
+			while (true)
 			{
-				ShipController ship = Ships.Loaded[rawValuePair.Id];
+				foreach (RawValuePair rawValuePair in _rawValueList)
+				{
+					ShipController ship = Ships.Loaded[rawValuePair.Id];
+					switch (_valueType)
+					{
+						case ValueType.Energy:
+							rawValuePair.Value = ship.ShieldIntegrity;
+							break;
+						case ValueType.Score:
+							rawValuePair.Value = ship.Score;
+							break;
+						case ValueType.Position:
+						default:
+							rawValuePair.Value = ship.CurrentPlace;
+							break;
+					}
+				}
+
+				List<RawValuePair> orderedValueList;
 				switch (_valueType)
 				{
 					case ValueType.Energy:
-						rawValuePair.Value = ship.ShieldIntegrity;
-						break;
 					case ValueType.Score:
-						rawValuePair.Value = ship.Score;
+						orderedValueList = _rawValueList.OrderByDescending(p => p.Value).ToList();
 						break;
 					case ValueType.Position:
 					default:
-						rawValuePair.Value = ship.CurrentPlace;
+						orderedValueList = _rawValueList.OrderBy(p => p.Value).ToList();
 						break;
 				}
-			}
 
-			List<RawValuePair> orderedValueList;
-			switch (_valueType)
-			{
-				case ValueType.Energy:
-				case ValueType.Score:
-					orderedValueList = _rawValueList.OrderByDescending(p => p.Value).ToList();
-					break;
-				case ValueType.Position:
-				default:
-					orderedValueList = _rawValueList.OrderBy(p => p.Value).ToList();
-					break;
-			}
+				for (int i = 0; i < _visibleList.Count; i++)
+				{
+					EntrySlot slot = _visibleList[i];
+					slot.SetRefId(orderedValueList[i].Id);
+				}
 
-			for (int i = 0; i < _visibleList.Count; i++)
-			{
-				EntrySlot slot = _visibleList[i];
-				slot.SetRefId(orderedValueList[i].Id);
-			}
+				Debug.Log("ReorderSlots() Done.");
+				for (int i = 0; i < _visibleList.Count; i++)
+				{
+					Debug.Log($"[{i}] {_visibleList[i].refId}: {_rawValueList[_visibleList[i].refId].Id} {_rawValueList[_visibleList[i].refId].Value} {_rawValueList[_visibleList[i].refId].Name}");
+				}
 
-			Debug.Log("ReorderSlots() Done.");
-			for (int i = 0; i < _visibleList.Count; i++)
-			{
-				Debug.Log($"[{i}] {_visibleList[i].refId}: {_rawValueList[_visibleList[i].refId].Id} {_rawValueList[_visibleList[i].refId].Value} {_rawValueList[_visibleList[i].refId].Name}");
-			}
+				switch (_valueType)
+				{
+					case ValueType.Energy:
+						UpdateSlotsEnergy();
+						break;
+					case ValueType.Score:
+						UpdateSlotsScore();
+						break;
+					case ValueType.Position:
+					default:
+						UpdateSlotsPosition();
+						break;
+				}
 
-			switch (_valueType)
-			{
-				case ValueType.Energy:
-					UpdateSlotsEnergy();
-					break;
-				case ValueType.Score:
-					UpdateSlotsScore();
-					break;
-				case ValueType.Position:
-				default:
-					UpdateSlotsPosition();
-					break;
+				yield return new WaitForSeconds(.1f);
 			}
-
-			yield return new WaitForSeconds(.1f);
 		}
 	}
 }
