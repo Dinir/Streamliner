@@ -422,6 +422,7 @@ namespace Streamliner
 
 				_list.Add(new EntrySlot(slot));
 
+				_list[i].Id = Ships.Loaded[i].ShipId;
 				_list[i].Name = Ships.Loaded[i].ShipName;
 				switch (_valueType)
 				{
