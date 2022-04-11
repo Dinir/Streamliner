@@ -376,7 +376,7 @@ namespace Streamliner
 			float targetScore = gamemode.TargetScore;
 
 			_templateGaugeBackground.gameObject.
-				SetActive(value: _valueType != ValueType.Energy);
+				SetActive(value: _valueType == ValueType.Energy);
 
 			if (targetScore == 0f)
 			{
