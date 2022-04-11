@@ -247,8 +247,8 @@ namespace Streamliner
 		private readonly RectTransform _entrySlotTemplate;
 		private readonly RectTransform _templateGaugeBackground;
 		private readonly RectTransform _templateGauge;
-		private readonly List<EntrySlot> _list = new();
-		private readonly List<RawValuePair> _rawValueList = new();
+		private List<EntrySlot> _visibleList;
+		private List<RawValuePair> _rawValueList;
 		private bool _reordering;
 
 		private class EntrySlot
@@ -257,9 +257,7 @@ namespace Streamliner
 			private readonly Text _name;
 			private readonly Text _value;
 			private readonly RectTransform _gauge;
-			internal int Id;
-			internal float RawValue;
-			internal float PreviousRawValue;
+			internal int refId;
 			private readonly float _gaugeMaxWidth;
 			private Vector2 _currentSize;
 			private readonly Color _slotColor = GetTintColor(TextAlpha.ThreeQuarters);
@@ -275,8 +273,8 @@ namespace Streamliner
 				_gaugeMaxWidth = _currentSize.x;
 
 				ChangeColor();
-				Name = "";
-				Position = 0;
+				SetName("");
+				SetDisplayValue(ValueType.Position, 0);
 				FillByPercentage(100f);
 			}
 
@@ -290,67 +288,45 @@ namespace Streamliner
 			public void ChangeOverallAlpha(TextAlpha transparencyIndex) =>
 				_base.GetComponent<CanvasGroup>().alpha = GetTransparency(transparencyIndex);
 
-			public string Name
-			{
-				get => _name.text;
-				set => _name.text = value;
-			}
+			public void SetRefId(int id) => refId = id;
 
-			public int Position
+			public void SetName(string name) => _name.text = name;
+
+			public void SetDisplayValue(ValueType valueType, float value)
 			{
-				get => (int) RawValue;
-				set
+				switch (valueType)
 				{
-					PreviousRawValue = RawValue;
-					RawValue = value;
-					_value.text = IntStrDb.GetNoSingleCharNumber(value);
+					case ValueType.Energy:
+						_value.text = IntStrDb.GetNumber(
+							Mathf.Clamp(Mathf.FloorToInt(value), 0, 99));
+						break;
+					case ValueType.Score:
+						_value.text = IntStrDb.GetNumber(Mathf.FloorToInt(value));
+						break;
+					case ValueType.Position:
+					default:
+						_value.text = IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(value));
+						break;
 				}
 			}
 
-			public float Score
-			{
-				get => RawValue;
-				set
-				{
-					PreviousRawValue = RawValue;
-					RawValue = value;
-					_value.text = IntStrDb.GetNumber(Mathf.FloorToInt(value));
-				}
-			}
-
-			public float Energy
-			{
-				get => RawValue;
-				set
-				{
-					PreviousRawValue = RawValue;
-					RawValue = value;
-					_value.text = IntStrDb.GetNumber(
-						Mathf.Clamp(Mathf.FloorToInt(value), 0, 99)
-					);
-				}
-			}
-
-			private void FillByPercentage(float value)
+			public void FillByPercentage(float value)
 			{
 				_currentSize.x = ( value / 100f ) * _gaugeMaxWidth;
 				_gauge.sizeDelta = _currentSize;
-			}
-
-			public void FillByValue()
-			{
-				FillByPercentage(RawValue);
 			}
 		}
 
 		private class RawValuePair
 		{
-			internal readonly int Id;
-			internal float Value;
+			public readonly int Id;
+			public readonly string Name;
+			public float Value;
 
-			public RawValuePair(int id, float value)
+			public RawValuePair(int id, string name, float value)
 			{
 				Id = id;
+				Name = name;
 				Value = value;
 			}
 		}
@@ -366,12 +342,9 @@ namespace Streamliner
 				_entrySlotTemplate.Find("GaugeBackground").GetComponent<RectTransform>();
 			_templateGauge = (RectTransform) _templateGaugeBackground.Find("Gauge");
 			_entrySlotTemplate.gameObject.SetActive(value: false);
-
-			InitiateLayout();
-			InitiateSlots();
 		}
 
-		private void InitiateLayout()
+		public void InitiateLayout()
 		{
 			float targetScore = gamemode.TargetScore;
 
@@ -408,123 +381,130 @@ namespace Streamliner
 			}
 		}
 
-		private void InitiateSlots()
+		public void InitiateSlots()
 		{
+			_visibleList = new List<EntrySlot>(Ships.Loaded.Count);
+			_rawValueList = new List<RawValuePair>(Ships.Loaded.Count);
 			for (int i = 0; i < Ships.Loaded.Count; i++)
 			{
-				RectTransform slot =
+				RectTransform slotRT =
 					Instantiate(_entrySlotTemplate.gameObject).GetComponent<RectTransform>();
-				slot.SetParent(_entrySlotTemplate.parent);
-				slot.localScale = _entrySlotTemplate.localScale;
-				slot.anchoredPosition = _entrySlotTemplate.anchoredPosition;
+				slotRT.SetParent(_entrySlotTemplate.parent);
+				slotRT.localScale = _entrySlotTemplate.localScale;
+				slotRT.anchoredPosition = _entrySlotTemplate.anchoredPosition;
 
-				slot.localPosition += Vector3.down * slot.sizeDelta.y * i;
+				slotRT.localPosition += Vector3.down * slotRT.sizeDelta.y * i;
 
-				_list.Add(new EntrySlot(slot));
+				ShipController loadedShip = Ships.Loaded[i];
+				_visibleList.Add(new EntrySlot(slotRT));
+				_visibleList[i].SetRefId(loadedShip.ShipId);
+				_visibleList[i].SetName(loadedShip.ShipName);
 
-				_list[i].Id = Ships.Loaded[i].ShipId;
-				_list[i].Name = Ships.Loaded[i].ShipName;
+				_rawValueList.Add(new RawValuePair(
+					loadedShip.ShipId, loadedShip.ShipName, float.NegativeInfinity));
+			}
+		}
+
+		private void UpdateSlotsScore()
+		{
+			foreach (EntrySlot slot in _visibleList)
+			{
+				int refId = slot.refId;
+				RawValuePair rawValuePair = _rawValueList[refId];
+				slot.SetName(rawValuePair.Name);
+				slot.SetDisplayValue(ValueType.Position, rawValuePair.Value);
+			}
+		}
+
+		private void UpdateSlotsEnergy()
+		{
+			foreach (EntrySlot slot in _visibleList)
+			{
+				int refId = slot.refId;
+				RawValuePair rawValuePair = _rawValueList[refId];
+				slot.SetName(rawValuePair.Name);
+				slot.SetDisplayValue(ValueType.Energy, rawValuePair.Value);
+				slot.FillByPercentage(rawValuePair.Value);
+				slot.ChangeOverallAlpha(
+					Ships.Loaded[refId].ShieldIntegrity < 0f ?
+						TextAlpha.Quarter : TextAlpha.Full
+				);
+			}
+		}
+
+		private void UpdateSlotsPosition()
+		{
+			foreach (EntrySlot slot in _visibleList)
+			{
+				int refId = slot.refId;
+				RawValuePair rawValuePair = _rawValueList[refId];
+				slot.SetName(rawValuePair.Name);
+				slot.SetDisplayValue(ValueType.Position, rawValuePair.Value);
+				slot.ChangeOverallAlpha(
+					Ships.Loaded[refId].ShieldIntegrity < 0f ?
+						TextAlpha.Zero : TextAlpha.Full
+				);
+			}
+		}
+
+		public void UpdateDataAndDraw()
+		{
+			bool startReordering = false;
+			foreach (RawValuePair rawValuePair in _rawValueList)
+			{
+				ShipController ship = Ships.Loaded[rawValuePair.Id];
 				switch (_valueType)
 				{
-					case ValueType.Score:
-						_list[i].Score = Ships.Loaded[i].Score;
-						break;
 					case ValueType.Energy:
-						_list[i].Energy = Ships.Loaded[i].ShieldIntegrity;
+						if (Mathf.Approximately(rawValuePair.Value, ship.ShieldIntegrity))
+							continue;
+						startReordering = !_reordering;
+						rawValuePair.Value = ship.ShieldIntegrity;
+						UpdateSlotsEnergy();
+						break;
+					case ValueType.Score:
+						if (Mathf.Approximately(rawValuePair.Value, ship.Score))
+							continue;
+						startReordering = !_reordering;
+						rawValuePair.Value = ship.Score;
+						UpdateSlotsScore();
 						break;
 					case ValueType.Position:
 					default:
-						_list[i].Position = Ships.Loaded[i].CurrentPlace;
+						if ((int) rawValuePair.Value == ship.CurrentPlace)
+							continue;
+						startReordering = !_reordering;
+						rawValuePair.Value = ship.CurrentPlace;
+						UpdateSlotsPosition();
 						break;
 				}
-
-				_rawValueList.Add(new RawValuePair(i, _list[i].RawValue));
-			}
-		}
-
-		public void UpdateSlotsScore()
-		{
-			bool startReordering = false;
-			for (int i = 0; i < _rawValueList.Count; i++)
-			{
-				EntrySlot slotAtVisibilityIndex = _list[i];
-				RawValuePair rawValuePair = _rawValueList[slotAtVisibilityIndex.Id];
-				ShipController ship = Ships.Loaded[slotAtVisibilityIndex.Id];
-				if (Mathf.Approximately( rawValuePair.Value, ship.Score))
-					continue;
-				startReordering = !_reordering;
-				rawValuePair.Value = ship.Score;
-				slotAtVisibilityIndex.Score = ship.Score;
 			}
 			_reordering = false;
 			if (startReordering)
-				ReorderSlots(_rawValueList.OrderByDescending(p => p.Value).ToList());
+				ReorderSlots();
 		}
 
-		public void UpdateSlotsEnergy()
-		{
-			bool startReordering = false;
-			for (int i = 0; i < _rawValueList.Count; i++)
-			{
-				EntrySlot slotAtVisibilityIndex = _list[i];
-				RawValuePair rawValuePair = _rawValueList[slotAtVisibilityIndex.Id];
-				ShipController ship = Ships.Loaded[slotAtVisibilityIndex.Id];
-				if (Mathf.Approximately( rawValuePair.Value, ship.ShieldIntegrity))
-					continue;
-				startReordering = !_reordering;
-				rawValuePair.Value = ship.ShieldIntegrity;
-				slotAtVisibilityIndex.Energy = ship.ShieldIntegrity;
-				slotAtVisibilityIndex.FillByValue();
-				if (slotAtVisibilityIndex.Energy <= 0f)
-					slotAtVisibilityIndex.ChangeOverallAlpha(TextAlpha.Quarter);
-				else
-					slotAtVisibilityIndex.ChangeOverallAlpha(TextAlpha.Full);
-			}
-			_reordering = false;
-			if (startReordering)
-				ReorderSlots(_rawValueList.OrderByDescending(p => p.Value).ToList());
-		}
-
-		public void UpdateSlotsPosition()
-		{
-			bool startReordering = false;
-			for (int i = 0; i < _rawValueList.Count; i++)
-			{
-				EntrySlot slotAtVisibilityIndex = _list[i];
-				RawValuePair rawValuePair = _rawValueList[slotAtVisibilityIndex.Id];
-				ShipController ship = Ships.Loaded[slotAtVisibilityIndex.Id];
-				if ((int) rawValuePair.Value == ship.CurrentPlace)
-					continue;
-				startReordering = !_reordering;
-				if (ship.ShieldIntegrity > 0f)
-				{
-					rawValuePair.Value = ship.CurrentPlace;
-					slotAtVisibilityIndex.Position = ship.CurrentPlace;
-					slotAtVisibilityIndex.ChangeOverallAlpha(TextAlpha.Full);
-				}
-				else
-				{
-					rawValuePair.Value = int.MaxValue;
-					slotAtVisibilityIndex.ChangeOverallAlpha(TextAlpha.Zero);
-				}
-			}
-			_reordering = false;
-			if (startReordering)
-				ReorderSlots(_rawValueList.OrderBy(p => p.Value).ToList());
-		}
-
-		private void ReorderSlots(List<RawValuePair> orderedList)
+		public void ReorderSlots()
 		{
 			_reordering = true;
-			for (int i = 0; i < _list.Count; i++)
+
+			List<RawValuePair> orderedValueList;
+			switch (_valueType)
 			{
-				EntrySlot slotAtVisibilityIndex = _list[i];
-				RawValuePair rawValuePairAtNewIndex = orderedList[i];
-				ShipController shipAtNewIndex = Ships.Loaded[slotAtVisibilityIndex.Id];
-				_list[i].Id = rawValuePairAtNewIndex.Id;
-				_list[i].Name = shipAtNewIndex.ShipName;
-				_list[i].PreviousRawValue =
-					_valueType == ValueType.Position ? int.MaxValue : float.NegativeInfinity;
+				case ValueType.Energy:
+				case ValueType.Score:
+					orderedValueList = _rawValueList.OrderByDescending(p => p.Value).ToList();
+					break;
+				case ValueType.Position:
+				default:
+					orderedValueList = _rawValueList.OrderBy(p => p.Value).ToList();
+					break;
+			}
+
+			for (int i = 0; i < _visibleList.Count; i++)
+			{
+				EntrySlot slot = _visibleList[i];
+				slot.SetRefId(orderedValueList[i].Id);
 			}
 		}
 	}

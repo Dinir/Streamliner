@@ -64,10 +64,12 @@ namespace Streamliner
 		}
 
 		private float GetHudAccelWidth() =>
-			Mathf.Clamp(TargetShip.PysSim.enginePower, 0f, 1f);
+			TargetShip.PysSim is null ? 0f :
+				Mathf.Clamp(TargetShip.PysSim.enginePower, 0f, 1f);
 
 		private float GetHudSpeedWidth()
 		{
+			if (TargetShip.T is null) return 0f;
 			_computedValue =
 				TargetShip.T.InverseTransformDirection(TargetShip.RBody.velocity).z /
 				TargetShip.Settings.ENGINE_MAXSPEED_SPECTRE;
@@ -599,7 +601,10 @@ namespace Streamliner
 		{
 			// The reason of skipping the 0th section is written in
 			// `Streamliner.Panel.GetPassingSectionIndex`.
-			if (TargetShip.CurrentSection.index - 1 == 0)
+			if (
+				TargetShip.CurrentSection is null ||
+				TargetShip.CurrentSection.index - 1 == 0
+				)
 				return;
 			Panel.Fill(GetRaceCompletionRate(TargetShip, _currentLap, _totalSections));
 		}
@@ -621,10 +626,43 @@ namespace Streamliner
 	{}
 
 	public class Leaderboard : ScriptableHud
-	{}
+	{
+		internal Playerboard Panel;
+		private bool _UpdateStarted;
+		private readonly float _updateTime = 0.1f;
+		private float _updateTimer;
 
-	public class CombatScoreboard : ScriptableHud
-	{}
+		public override void Start()
+		{
+			base.Start();
+			Panel = new Playerboard(CustomComponents.GetById<RectTransform>("Base"));
+
+			NgRaceEvents.OnCountdownStart += Initiate;
+		}
+
+		public void Initiate()
+		{
+			Panel.InitiateLayout();
+			Panel.InitiateSlots();
+			_UpdateStarted = true;
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			_updateTimer += Time.deltaTime;
+			if (!_UpdateStarted || _updateTimer <= _updateTime)
+				return;
+			_updateTimer = 0.0f;
+			Panel.UpdateDataAndDraw();
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			NgRaceEvents.OnCountdownStart -= Initiate;
+		}
+	}
 
 	public class UpsurgeScoreboard : ScriptableHud
 	{}

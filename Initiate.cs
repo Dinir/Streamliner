@@ -65,18 +65,18 @@ namespace Streamliner
 				"Speed Lap", Id, new SpeedLapHudManager());
 			// CustomHudRegistry.RegisterSceneManager(
 			// 	"Time Trial", Id, new TrialHudManager());
-			// CustomHudRegistry.RegisterSceneManager(
-			// 	"Eliminator", Id, new CombatHudManager());
+			CustomHudRegistry.RegisterSceneManager(
+				"Eliminator", Id, new CombatHudManager());
 			// CustomHudRegistry.RegisterSceneManager(
 			// 	"Team Race", Id, new TeamRaceHudManager());
 			// CustomHudRegistry.RegisterSceneManager(
 			// 	"Survival", Id, new ZoneHudManager());
 			// CustomHudRegistry.RegisterSceneManager(
 			// 	"Upsurge", Id, new UpsurgeHudManager());
-			// CustomHudRegistry.RegisterSceneManager(
-			// 	"Knockout", Id, new KnockoutHudManager());
-			// CustomHudRegistry.RegisterSceneManager(
-			// 	"Rush Hour", Id, new RushHourHudManager());
+			CustomHudRegistry.RegisterSceneManager(
+				"Knockout", Id, new KnockoutHudManager());
+			CustomHudRegistry.RegisterSceneManager(
+				"Rush Hour", Id, new RushHourHudManager());
 		}
 
 		private void GenerateModUi(ModOptionsUiContext ctx)
@@ -196,6 +196,8 @@ namespace Streamliner
 	{
 		public override void OnCreateHuds()
 		{
+			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
+			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 		}
 	}
@@ -217,13 +219,20 @@ namespace Streamliner
 
 	public class KnockoutHudManager : SceneHudManager
 	{
-
+		public override void OnCreateHuds()
+		{
+			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
+			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
+			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+		}
 	}
 
 	public class RushHourHudManager : SceneHudManager
 	{
 		public override void OnCreateHuds()
 		{
+			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
+			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 		}
 	}
