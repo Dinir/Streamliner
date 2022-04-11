@@ -8,6 +8,7 @@ using NgData;
 using NgSettings;
 using NgUi.RaceUi;
 using NgEvents;
+using NgGame;
 using NgLib;
 using NgShips;
 using static Streamliner.HudRegister;
@@ -130,11 +131,18 @@ namespace Streamliner
 			return IntStrDb.GetNumber(value);
 		}
 
+		internal string ValueGained()
+		{
+			int value = Convert.ToInt32(Value.text) - Convert.ToInt32(_previousValueString);
+			return IntStrDb.GetNumber(value);
+		}
+
 		private float _currentEnergy;
 		private float _previousEnergy;
 		private string _previousValueString;
 		private bool _isRecharging;
 		private bool _wasRecharging;
+		private bool _energyRegained;
 
 		private readonly Color _rechargeColor = new Color32(0x88, 0xe3, 0xe0, 0xbf); // Cyan S6 V1
 		private readonly Color _lowColor = new Color32(0xe3, 0xb3, 0x88, 0xbf); // Orange S6 V1
@@ -211,6 +219,10 @@ namespace Streamliner
 			base.Update();
 			_currentEnergy = TargetShip.ShieldIntegrity;
 			_isRecharging = TargetShip.IsRecharging;
+			_energyRegained =
+				!(_isRecharging || _wasRecharging) &&
+				_currentEnergy > _previousEnergy &&
+				Race.HasCountdownFinished;
 
 			_currentSize.x = GetHudShieldWidth();
 			Gauge.sizeDelta = _currentSize;
@@ -226,6 +238,8 @@ namespace Streamliner
 				else
 					ValueBeforeCharging = _previousValueString;
 			}
+			else if (_energyRegained)
+				Delta.text = ValueGained();
 			ColorEnergyComponent();
 
 			_previousEnergy = _currentEnergy;
@@ -274,7 +288,10 @@ namespace Streamliner
 		{
 			// Set timer during which the coloring transition can run
 			// damage flash
-			if (OptionEnergyChange && _currentEnergy < _previousEnergy)
+			if (
+				(OptionEnergyChange || RaceManager.CurrentGamemode.Name != "Rush Hour") &&
+				_currentEnergy < _previousEnergy
+				)
 				_damageAnimationTimer = _fastTransitionTimerMax;
 			// transition
 			if (
@@ -284,12 +301,12 @@ namespace Streamliner
 					(_currentEnergy > 25f && _previousEnergy <= 25f) ||
 					(_currentEnergy > 10f && _previousEnergy <= 10f)
 				) ||
-				_isRecharging
+				_isRecharging || _energyRegained
 			)
 			{
 				_transitionAnimationTimer = _slowTransitionTimerMax;
 				// Charging takes over damage flash and recharge amount display
-				if (_isRecharging)
+				if (_isRecharging || _energyRegained)
 				{
 					if (OptionRechargeAmount)
 						_deltaAnimationTimer = _slowTransitionTimerMax;
@@ -336,7 +353,7 @@ namespace Streamliner
 			Color deltaColor = Delta.color;
 			if (_deltaAnimationTimer > 0f)
 			{
-				if (_isRecharging)
+				if (_isRecharging || _energyRegained)
 				{
 					deltaColor = _wasRecharging ?
 						Color.Lerp(
