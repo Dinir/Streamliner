@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -10,6 +11,7 @@ using NgEvents;
 using NgGame;
 using NgLib;
 using NgShips;
+using NgUi.RaceUi.HUD;
 using static Streamliner.HudRegister;
 using static Streamliner.PresetColorPicker;
 using static Streamliner.SectionManager;
@@ -622,7 +624,58 @@ namespace Streamliner
 	}
 
 	public class Placement : ScriptableHud
-	{}
+	{
+		internal FractionPanel Panel;
+		private bool _warnOnLastPlace;
+		private bool _onWarning;
+		private readonly Color _highlightColor = new Color32(0xe3, 0x88, 0x8e, 0xbf); // Red S6 V1
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = new FractionPanel(CustomComponents.GetById<RectTransform>("Base"));
+			switch (RaceManager.CurrentGamemode.Name)
+			{
+				case "Knockout":
+				case "Rush Hour":
+					_warnOnLastPlace = true;
+					break;
+				default:
+					_warnOnLastPlace = false;
+					break;
+			}
+
+			NgRaceEvents.OnCountdownStart += Initiate;
+		}
+
+		public void Initiate()
+		{
+			StartCoroutine(UpdateData());
+		}
+
+		public IEnumerator UpdateData()
+		{
+			while (true)
+			{
+				int place = TargetShip.CurrentPlace;
+				int maxPlace = Ships.Active.Count;
+				_onWarning = _warnOnLastPlace && place == maxPlace;
+				Panel.Value.text = IntStrDb.GetNoSingleCharNumber(place);
+				Panel.MaxValue.text = IntStrDb.GetNoSingleCharNumber(maxPlace);
+				Panel.Fill((float) place / maxPlace);
+				Panel.ChangeDataPartColor(_onWarning ? _highlightColor : Panel.GaugeColor);
+
+				yield return new WaitForSeconds(Position.UpdateTime);
+			}
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			NgRaceEvents.OnCountdownStart -= Initiate;
+			StopCoroutine(UpdateData());
+		}
+	}
 
 	public class LapCounter : ScriptableHud
 	{}
