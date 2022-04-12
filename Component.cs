@@ -628,7 +628,7 @@ namespace Streamliner
 		internal FractionPanel Panel;
 		private bool _warnOnLastPlace;
 		private bool _onWarning;
-		private readonly Color _highlightColor = new Color32(0xe3, 0x88, 0x8e, 0xbf); // Red S6 V1
+		private readonly Color _highlightColor = new Color32(0xe3, 0x88, 0x8e, 0xff); // Red S6 V1
 
 		public override void Start()
 		{
