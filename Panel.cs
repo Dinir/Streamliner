@@ -9,6 +9,7 @@ using NgGame;
 using NgModes;
 using NgTrackData;
 using NgShips;
+using NgUi.RaceUi.HUD;
 using static Streamliner.HudRegister;
 using static Streamliner.PresetColorPicker;
 using static UnityEngine.Object;
@@ -529,7 +530,7 @@ namespace Streamliner
 						break;
 				}
 
-				yield return new WaitForSeconds(NgUi.RaceUi.HUD.Position.UpdateTime);
+				yield return new WaitForSeconds(Position.UpdateTime);
 			}
 		}
 	}

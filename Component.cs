@@ -23,7 +23,7 @@ namespace Streamliner
 		internal SpeedPanel Panel;
 		private float _computedValue;
 
-		internal readonly Color HighlightColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
+		private readonly Color _highlightColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
 
 		private float _currentSpeed;
 		private float _previousSpeed;
@@ -91,7 +91,7 @@ namespace Streamliner
 
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
-				color = Color.Lerp(color, HighlightColor, Time.deltaTime * _animationSpeed);
+				color = Color.Lerp(color, _highlightColor, Time.deltaTime * _animationSpeed);
 				_speedDecreaseAnimationTimer -= Time.deltaTime;
 			}
 			else
