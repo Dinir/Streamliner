@@ -416,8 +416,16 @@ namespace Streamliner
 
 			_templateGaugeBackground.sizeDelta -=
 				widthAdjustmentVector2 / _templateGaugeBackground.localScale;
+			/*
+			 * I don't know why I can't do this with
+			 * either `localScale` or `lossyScale` of
+			 * the directly related component `_templateGauge`.
+			 *
+			 * Since I know gauge scale is 1,
+			 * I'll just use the bg scale that's not 1.
+			 */
 			_templateGauge.sizeDelta -=
-				widthAdjustmentVector2 / _templateGauge.localScale;
+				widthAdjustmentVector2 / _templateGaugeBackground.localScale;
 			_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localPosition -=
 				widthAdjustmentVector3;
 			_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().sizeDelta -=
