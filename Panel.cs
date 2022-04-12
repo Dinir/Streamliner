@@ -338,15 +338,14 @@ namespace Streamliner
 				switch (valueType)
 				{
 					case ValueType.Energy:
+						int valueInt = Mathf.RoundToInt(value);
 						_value.text = IntStrDb.GetNumber(
-							Mathf.Clamp(Mathf.RoundToInt(value), 0, 99));
+							valueInt < 0 ? 0 : valueInt > 100 ? 100 : valueInt);
 						break;
 					case ValueType.Score:
-						_value.text = IntStrDb.GetNumber(Mathf.FloorToInt(value));
-						break;
 					case ValueType.Position:
 					default:
-						_value.text = IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(value));
+						_value.text = IntStrDb.GetNumber(Mathf.FloorToInt(value));
 						break;
 				}
 			}
@@ -389,39 +388,44 @@ namespace Streamliner
 		{
 			float targetScore = gamemode.TargetScore;
 
+			/*
+			 * The reason the thresholds are staying at 2*10^n instead of 10^n is
+			 * just because the font has a very narrow width for number 1.
+			 * Energy type is included because it starts with 100.
+			 */
+			if (targetScore < 20f && _valueType != ValueType.Energy) return;
+
 			_templateGaugeBackground.gameObject.
 				SetActive(value: _valueType == ValueType.Energy);
 
+			Vector2 widthAdjustmentVector2 =
+				new Vector2((targetScore < 200f ? 1 : 2) * _oneLetterWidth, 0);
+			Vector3 widthAdjustmentVector3 =
+				new Vector3((targetScore < 200f ? 1 : 2) * _oneLetterWidth, 0, 0);
+
 			if (targetScore == 0f)
-			{
 				_targetRow.gameObject.SetActive(value: false);
-			}
 			else
 			{
 				_targetRow.Find("TargetValue").Find("Value").GetComponent<Text>().text =
 					IntStrDb.GetNumber((int)targetScore);
-
-				if (targetScore < 100f) return;
-
-				Vector2 oneLetterWidthVector2 = new Vector2(_oneLetterWidth, 0);
-				Vector3 oneLetterWidthVector3 = new Vector3(_oneLetterWidth, 0, 0);
-
 				_targetRow.Find("Target").GetComponent<RectTransform>().localPosition -=
-					oneLetterWidthVector3;
+					widthAdjustmentVector3;
 				_targetRow.Find("TargetValue").GetComponent<RectTransform>().sizeDelta +=
-					oneLetterWidthVector2;
-				_templateGaugeBackground.sizeDelta -=
-					oneLetterWidthVector2 / _templateGaugeBackground.localScale;
-				_templateGauge.sizeDelta -=
-					oneLetterWidthVector2 / _templateGauge.localScale;
-				_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localPosition -=
-					oneLetterWidthVector3;
-				_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().sizeDelta -=
-					oneLetterWidthVector2 /
-					_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localScale;
-				_entrySlotTemplate.Find("Plate").GetComponent<RectTransform>().sizeDelta +=
-					oneLetterWidthVector2;
+					widthAdjustmentVector2;
 			}
+
+			_templateGaugeBackground.sizeDelta -=
+				widthAdjustmentVector2 / _templateGaugeBackground.localScale;
+			_templateGauge.sizeDelta -=
+				widthAdjustmentVector2 / _templateGauge.localScale;
+			_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localPosition -=
+				widthAdjustmentVector3;
+			_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().sizeDelta -=
+				widthAdjustmentVector2 /
+				_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localScale;
+			_entrySlotTemplate.Find("Plate").GetComponent<RectTransform>().sizeDelta +=
+				widthAdjustmentVector2;
 		}
 
 		public void InitiateSlots()
