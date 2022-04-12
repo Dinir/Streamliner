@@ -179,6 +179,7 @@ namespace Streamliner
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
 			RegisterHud<Timer>(HudRegister.Assets.GetComponent<HudComponents>("Timer", false));
 			RegisterHud<Placement>(HudRegister.Assets.GetComponent<HudComponents>("Placement", false));
+			RegisterHud<LapCounter>(HudRegister.Assets.GetComponent<HudComponents>("Laps", false));
 			if (Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 		}

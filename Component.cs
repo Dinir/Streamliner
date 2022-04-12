@@ -679,7 +679,26 @@ namespace Streamliner
 	}
 
 	public class LapCounter : ScriptableHud
-	{}
+	{
+		internal FractionPanel Panel;
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = new FractionPanel(CustomComponents.GetById<RectTransform>("Base"))
+			{
+				Value = { text = IntStrDb.GetNoSingleCharNumber(0) },
+				MaxValue = { text = IntStrDb.GetNoSingleCharNumber(Race.MaxLaps) }
+			};
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			Panel.Value.text = IntStrDb.GetNoSingleCharNumber(TargetShip.CurrentLap);
+			Panel.Fill((float) TargetShip.CurrentLap / Race.MaxLaps);
+		}
+	}
 
 	public class PositionTracker : ScriptableHud
 	{}
