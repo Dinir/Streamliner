@@ -139,7 +139,7 @@ namespace Streamliner
 		internal readonly Text Value;
 		protected readonly RectTransform GaugeBackground;
 		private readonly RectTransform _gauge;
-		internal Color GaugeColor;
+		internal readonly Color GaugeColor = GetTintColor();
 		protected readonly Vector2 MaxSize;
 		internal Vector2 CurrentSize;
 
@@ -158,12 +158,27 @@ namespace Streamliner
 
 		private void ChangeColor()
 		{
-			GaugeColor = GetTintColor();
+			Color gaugeBackgroundColor = GaugeColor;
+			gaugeBackgroundColor.a = GetTransparency(TextAlpha.ThreeEighths);
+
 			_label.color = GaugeColor;
 			Value.color = GaugeColor;
 			_gauge.GetComponent<Image>().color = GaugeColor;
-			GaugeBackground.GetComponent<Image>().color =
-				GetTintColor(TextAlpha.ThreeEighths);
+			GaugeBackground.GetComponent<Image>().color = gaugeBackgroundColor;
+		}
+
+		// Identical to the method with no parameters,
+		// but you don't want to make that one virtual since
+		// it will be used in the constructor.
+		public virtual void ChangeColor(Color color)
+		{
+			Color gaugeBackgroundColor = color;
+			gaugeBackgroundColor.a = GetTransparency(TextAlpha.ThreeEighths);
+
+			_label.color = color;
+			Value.color = color;
+			_gauge.GetComponent<Image>().color = color;
+			GaugeBackground.GetComponent<Image>().color = gaugeBackgroundColor;
 		}
 
 		public virtual void ChangeDataPartColor(Color color)
