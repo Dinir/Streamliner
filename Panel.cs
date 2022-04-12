@@ -196,7 +196,6 @@ namespace Streamliner
 				MaxSize.y : CurrentSize.x;
 			_gauge.sizeDelta = CurrentSize;
 		}
-
 	}
 
 	/// <summary>
