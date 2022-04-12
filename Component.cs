@@ -662,7 +662,8 @@ namespace Streamliner
 				_onWarning = _warnOnLastPlace && place == maxPlace;
 				Panel.Value.text = IntStrDb.GetNoSingleCharNumber(place);
 				Panel.MaxValue.text = IntStrDb.GetNoSingleCharNumber(maxPlace);
-				Panel.Fill((float) place / maxPlace);
+				Panel.Fill(maxPlace == 1 ?
+					0f : (float) (maxPlace - place) / (maxPlace - 1));
 				Panel.ChangeDataPartColor(_onWarning ? _highlightColor : Panel.GaugeColor);
 
 				yield return new WaitForSeconds(Position.UpdateTime);
