@@ -140,7 +140,7 @@ namespace Streamliner
 		protected readonly RectTransform GaugeBackground;
 		private readonly RectTransform _gauge;
 		internal Color GaugeColor;
-		private readonly float _gaugeMaxWidth;
+		protected readonly Vector2 MaxSize;
 		internal Vector2 CurrentSize;
 
 		public BasicPanel(RectTransform panelElement)
@@ -150,9 +150,7 @@ namespace Streamliner
 			Value = panelElement.Find("Value").GetComponent<Text>();
 			GaugeBackground = panelElement.Find("GaugeBackground").GetComponent<RectTransform>();
 			_gauge = (RectTransform)GaugeBackground.Find("Gauge");
-			Vector2 sizeDelta = _gauge.sizeDelta;
-			_gaugeMaxWidth = sizeDelta.x;
-			CurrentSize.y = sizeDelta.y;
+			MaxSize = _gauge.sizeDelta;
 
 			ChangeColor();
 			Fill(0f);
@@ -176,7 +174,11 @@ namespace Streamliner
 
 		public void Fill(float amount)
 		{
-			CurrentSize.x = amount * _gaugeMaxWidth;
+			CurrentSize.x = amount * MaxSize.x;
+			// This is only useful because the bar border is
+			// a 45deg slanted straight line.
+			CurrentSize.y = CurrentSize.x >= MaxSize.y ?
+				MaxSize.y : CurrentSize.x;
 			_gauge.sizeDelta = CurrentSize;
 		}
 
@@ -194,15 +196,11 @@ namespace Streamliner
 	internal class SpeedPanel : BasicPanel
 	{
 		private readonly RectTransform _accelGauge;
-		private readonly float _accelGaugeMaxWidth;
 		private Vector2 _currentAccelSize;
 
 		public SpeedPanel(RectTransform panelElement) : base(panelElement)
 		{
 			_accelGauge = (RectTransform)GaugeBackground.Find("AccelGauge");
-			Vector2 sizeDelta = _accelGauge.sizeDelta;
-			_accelGaugeMaxWidth = sizeDelta.x;
-			_currentAccelSize.y = sizeDelta.y;
 
 			ChangeAccelColor();
 			FillAccel(0f);
@@ -213,7 +211,9 @@ namespace Streamliner
 
 		public void FillAccel(float amount)
 		{
-			_currentAccelSize.x = amount * _accelGaugeMaxWidth;
+			_currentAccelSize.x = amount * MaxSize.x;
+			_currentAccelSize.y = _currentAccelSize.x >= MaxSize.y ?
+				MaxSize.y : _currentAccelSize.x;
 			_accelGauge.sizeDelta = _currentAccelSize;
 		}
 	}
