@@ -337,7 +337,7 @@ namespace Streamliner
 				switch (valueType)
 				{
 					case ValueType.Energy:
-						int valueInt = Mathf.RoundToInt(value);
+						int valueInt = Mathf.CeilToInt(value);
 						_value.text = IntStrDb.GetNumber(
 							valueInt < 0 ? 0 : valueInt > 100 ? 100 : valueInt);
 						break;
