@@ -387,6 +387,13 @@ namespace Streamliner
 		{
 			float targetScore = gamemode.TargetScore;
 
+			// Disable components that are irrelevant to the game mode.
+			if (targetScore == 0f)
+				_targetRow.gameObject
+					.SetActive(value: false);
+			_templateGaugeBackground.gameObject
+				.SetActive(value: _valueType == ValueType.Energy);
+
 			/*
 			 * The reason the thresholds are staying at 2*10^n instead of 10^n is
 			 * just because the font has a very narrow width for number 1.
@@ -394,45 +401,36 @@ namespace Streamliner
 			 */
 			if (targetScore < 20f && _valueType != ValueType.Energy) return;
 
-			_templateGaugeBackground.gameObject.
-				SetActive(value: _valueType == ValueType.Energy);
-
 			Vector2 widthAdjustmentVector2 =
 				new Vector2((targetScore < 200f ? 1 : 2) * _oneLetterWidth, 0);
 			Vector3 widthAdjustmentVector3 =
 				new Vector3((targetScore < 200f ? 1 : 2) * _oneLetterWidth, 0, 0);
 
-			if (targetScore == 0f)
-				_targetRow.gameObject.SetActive(value: false);
-			else
-			{
-				_targetRow.Find("TargetValue").Find("Value").GetComponent<Text>().text =
-					IntStrDb.GetNumber((int)targetScore);
-				_targetRow.Find("Target").GetComponent<RectTransform>().localPosition -=
-					widthAdjustmentVector3;
-				_targetRow.Find("TargetValue").GetComponent<RectTransform>().sizeDelta +=
-					widthAdjustmentVector2;
-			}
+			_targetRow.Find("TargetValue").Find("Value").GetComponent<Text>()
+				.text = IntStrDb.GetNumber((int) targetScore);
+			_targetRow.Find("Target").GetComponent<RectTransform>()
+				.localPosition -= widthAdjustmentVector3;
+			_targetRow.Find("TargetValue").GetComponent<RectTransform>()
+				.sizeDelta += widthAdjustmentVector2;
 
-			_templateGaugeBackground.sizeDelta -=
-				widthAdjustmentVector2 / _templateGaugeBackground.localScale;
 			/*
 			 * I don't know why I can't do this with
 			 * either `localScale` or `lossyScale` of
 			 * the directly related component `_templateGauge`.
 			 *
-			 * Since I know gauge scale is 1,
+			 * Since I know gauge scale is 1, and it's a child of the bg,
 			 * I'll just use the bg scale that's not 1.
 			 */
-			_templateGauge.sizeDelta -=
+			Vector2 gaugeAdjustmentVector =
 				widthAdjustmentVector2 / _templateGaugeBackground.localScale;
-			_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localPosition -=
-				widthAdjustmentVector3;
-			_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().sizeDelta -=
-				widthAdjustmentVector2 /
-				_entrySlotTemplate.Find("Name").GetComponent<RectTransform>().localScale;
-			_entrySlotTemplate.Find("Plate").GetComponent<RectTransform>().sizeDelta +=
-				widthAdjustmentVector2;
+			RectTransform name = _entrySlotTemplate.Find("Name").GetComponent<RectTransform>();
+
+			_templateGaugeBackground.sizeDelta -= gaugeAdjustmentVector;
+			_templateGauge.sizeDelta -= gaugeAdjustmentVector;
+			name.localPosition -= widthAdjustmentVector3;
+			name.sizeDelta -= widthAdjustmentVector2 / name.localScale;
+			_entrySlotTemplate.Find("Plate").GetComponent<RectTransform>()
+					.sizeDelta += widthAdjustmentVector2;
 		}
 
 		public void InitiateSlots()
