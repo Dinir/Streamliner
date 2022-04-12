@@ -116,7 +116,7 @@ namespace Streamliner
 		internal Text Delta;
 		internal Image GaugeBackground;
 		internal RectTransform Gauge;
-		internal float MaxWidth;
+		private Vector2 _maxSize;
 		private Vector2 _currentSize;
 		private float _computedValue;
 		private float _adjustedDamageMult;
@@ -131,7 +131,6 @@ namespace Streamliner
 			int value = Convert.ToInt32(Value.text) - _valueBeforeCharging;
 			return IntStrDb.GetNumber(value);
 		}
-
 		internal string ValueGained()
 		{
 			int value = Convert.ToInt32(Value.text) - Convert.ToInt32(_previousValueString);
@@ -194,14 +193,11 @@ namespace Streamliner
 				.Find("Gauge");
 
 			// Gauge is stored in its maximum size, store the max width here.
-			Vector2 sizeDelta = Gauge.sizeDelta;
-			MaxWidth = sizeDelta.x;
+			_maxSize = Gauge.sizeDelta;
 
 			// Initiate the gauge size.
-			_currentSize.x = MaxWidth;
-			_currentSize.y = sizeDelta.y;
-			sizeDelta = _currentSize;
-			Gauge.sizeDelta = sizeDelta;
+			_currentSize = _maxSize;
+			Gauge.sizeDelta = _currentSize;
 
 			// Coloring
 			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
@@ -229,6 +225,8 @@ namespace Streamliner
 				Race.HasCountdownFinished;
 
 			_currentSize.x = GetHudShieldWidth();
+			_currentSize.y = _currentSize.x >= _maxSize.y ?
+				_maxSize.y : _currentSize.x;
 			Gauge.sizeDelta = _currentSize;
 			Value.text = GetShieldValueString();
 
@@ -263,7 +261,7 @@ namespace Streamliner
 				_currentEnergy / TargetShip.Settings.DAMAGE_SHIELD;
 			_computedValue = Mathf.Clamp(_computedValue, 0f, 1f);
 
-			return _computedValue * MaxWidth;
+			return _computedValue * _maxSize.x;
 		}
 
 		private string GetShieldValueString()
