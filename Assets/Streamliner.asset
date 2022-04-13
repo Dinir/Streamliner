@@ -22,24 +22,39 @@ MonoBehaviour:
   - Name: Timer
     Object: {fileID: 7647195360747535430, guid: 75f73db09c01b4f49b6fbdbc502689f2,
       type: 3}
-  - Name: Laps
-    Object: {fileID: 3080575010040519669, guid: f985f0c3d90ab38498d7558d0ca430e2,
-      type: 3}
-  - Name: Placement
-    Object: {fileID: 6035729690267585189, guid: 2b2b3226b88b84640b0a028a80f76d3a,
-      type: 3}
-  - Name: Position
-    Object: {fileID: 3032468065754203600, guid: 8756f239fb5aae346987fd52fb54ff3f,
-      type: 3}
-  - Name: Pickup
-    Object: {fileID: 8985735125140589613, guid: 0cd50d073a2028d46a2afc7df9e7255b,
-      type: 3}
-  - Name: Messages
-    Object: {fileID: 2963833797088565114, guid: 7e8522d8dc312734ca545eeef284e662,
+  - Name: BestTime
+    Object: {fileID: 5282508372833822636, guid: 3c67ff04ad962ba44987c05ce3d5c7a2,
       type: 3}
   - Name: Zone
     Object: {fileID: 7964244116308749818, guid: e8d30db26b864214a9c9109aca0470f1,
       type: 3}
+  - Name: Placement
+    Object: {fileID: 6035729690267585189, guid: 2b2b3226b88b84640b0a028a80f76d3a,
+      type: 3}
+  - Name: Laps
+    Object: {fileID: 3080575010040519669, guid: f985f0c3d90ab38498d7558d0ca430e2,
+      type: 3}
+  - Name: Position
+    Object: {fileID: 3032468065754203600, guid: 8756f239fb5aae346987fd52fb54ff3f,
+      type: 3}
+  - Name: Pitlane
+    Object: {fileID: 8356017483527231837, guid: 61cdf846aef026a45be0ac7fc0c7a5a2,
+      type: 3}
+  - Name: Messages
+    Object: {fileID: 2963833797088565114, guid: 7e8522d8dc312734ca545eeef284e662,
+      type: 3}
+  - Name: Pickup
+    Object: {fileID: 8985735125140589613, guid: 0cd50d073a2028d46a2afc7df9e7255b,
+      type: 3}
+  - Name: Turbo
+    Object: {fileID: 5536957345834799886, guid: db32107fba79442468176971e1c91e96,
+      type: 3}
   - Name: Leaderboard
     Object: {fileID: 7635611268986068260, guid: 95bd9449eeeae824d9567938537104f2,
+      type: 3}
+  - Name: Teamboard
+    Object: {fileID: 8263509452614207246, guid: 45bf0abb13873514ba492a5390babd33,
+      type: 3}
+  - Name: Awards
+    Object: {fileID: 3652333357894129320, guid: 56577e324a0ee124b95e7dec04e0c9f4,
       type: 3}

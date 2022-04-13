@@ -621,6 +621,21 @@ namespace Streamliner
 		}
 	}
 
+	public class LapTimer : ScriptableHud
+	{}
+
+	public class BestTime : ScriptableHud
+	{}
+
+	public class ZoneTracker : ScriptableHud
+	{}
+
+	public class UpsurgeTracker : ScriptableHud
+	{}
+
+	public class ZoneEnergyMeter : ScriptableHud
+	{}
+
 	public class Placement : ScriptableHud
 	{
 		internal FractionPanel Panel;
@@ -701,10 +716,16 @@ namespace Streamliner
 	public class PositionTracker : ScriptableHud
 	{}
 
-	public class PickupDisplay : ScriptableHud
+	public class Pitlane : ScriptableHud
 	{}
 
 	public class MessageLogger : ScriptableHud
+	{}
+
+	public class PickupDisplay : ScriptableHud
+	{}
+
+	public class TurboDisplay : ScriptableHud
 	{}
 
 	public class Leaderboard : ScriptableHud
@@ -734,27 +755,12 @@ namespace Streamliner
 		}
 	}
 
+	public class TeamScoreboard : ScriptableHud
+	{}
+
 	public class UpsurgeScoreboard : ScriptableHud
 	{}
 
-	public class NowPlaying : ScriptableHud
-	{}
-
-	public class SpeedLapTimer : ScriptableHud
-	{}
-
-	public class ZoneTracker : ScriptableHud
-	{}
-
-	public class ZoneEnergyMeter : ScriptableHud
-	{}
-
-	public class TargetTimeDisplay : ScriptableHud
-	{}
-
-	public class TargetZoneDisplay : ScriptableHud
-	{}
-
-	public class TeamScoreboard : ScriptableHud
+	public class Awards : ScriptableHud
 	{}
 }
