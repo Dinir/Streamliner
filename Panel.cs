@@ -305,7 +305,7 @@ namespace Streamliner
 			public EntrySlot(RectTransform template)
 			{
 				_base = template;
-				_base.gameObject.SetActive(value: true);
+				_base.gameObject.SetActive(true);
 				_name = _base.Find("Name").GetComponent<Text>();
 				_value = _base.Find("Plate").Find("Value").GetComponent<Text>();
 				_gauge = (RectTransform)_base.Find("GaugeBackground").Find("Gauge");
@@ -380,7 +380,7 @@ namespace Streamliner
 			_templateGaugeBackground =
 				_entrySlotTemplate.Find("GaugeBackground").GetComponent<RectTransform>();
 			_templateGauge = (RectTransform) _templateGaugeBackground.Find("Gauge");
-			_entrySlotTemplate.gameObject.SetActive(value: false);
+			_entrySlotTemplate.gameObject.SetActive(false);
 		}
 
 		public void InitiateLayout()
@@ -390,7 +390,7 @@ namespace Streamliner
 			// Disable components that are irrelevant to the game mode.
 			if (targetScore == 0f)
 				_targetRow.gameObject
-					.SetActive(value: false);
+					.SetActive(false);
 			_templateGaugeBackground.gameObject
 				.SetActive(value: _valueType == ValueType.Energy);
 

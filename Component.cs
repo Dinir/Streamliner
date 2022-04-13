@@ -36,14 +36,12 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-
 			Panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Base"));
 		}
 
 		public override void Update()
 		{
 			base.Update();
-
 			Panel.FillAccel(GetHudAccelWidth());
 			Panel.Fill(GetHudSpeedWidth());
 			Panel.Value.text = GetSpeedValueString();
@@ -475,7 +473,7 @@ namespace Streamliner
 				_perfectLine = template.Find("PerfectLine").GetComponent<Image>();
 
 				Value.text = "";
-				Value.gameObject.SetActive(value: true);
+				Value.gameObject.SetActive(true);
 				_perfectLapStatus = false;
 
 				ChangeColor(GetTintColor(TextAlpha.ThreeQuarters));
@@ -493,8 +491,8 @@ namespace Streamliner
 			LapSlotTemplate = CustomComponents.GetById<RectTransform>("LapSlot");
 			// I am hiding the components here, not on Unity,
 			// because I want to keep them visible on Unity.
-			LapSlotTemplate.Find("Time").gameObject.SetActive(value: false);
-			LapSlotTemplate.Find("PerfectLine").gameObject.SetActive(value: false);
+			LapSlotTemplate.Find("Time").gameObject.SetActive(false);
+			LapSlotTemplate.Find("PerfectLine").gameObject.SetActive(false);
 			InitiateSlots();
 			_currentSlot = _slots[0];
 
@@ -717,7 +715,56 @@ namespace Streamliner
 	{}
 
 	public class Pitlane : ScriptableHud
-	{}
+	{
+		internal RectTransform Panel;
+		internal Animator Left;
+		internal Animator Right;
+		private static readonly int Active = Animator.StringToHash("Active");
+		private static readonly int PointRight = Animator.StringToHash("Point Right");
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = CustomComponents.GetById<RectTransform>("Base");
+			Left = Panel.Find("Left").GetComponent<Animator>();
+			Right = Panel.Find("Right").GetComponent<Animator>();
+
+			Clear();
+
+			Left.SetBool(PointRight, false);
+			Right.SetBool(PointRight, true);
+
+			NgTrackData.Triggers.PitlaneIndicator.OnPitlaneIndicatorTriggered += Play;
+		}
+
+		private void Clear()
+		{
+			Left.gameObject.SetActive(false);
+			Right.gameObject.SetActive(false);
+			Left.GetComponent<Image>().enabled = false;
+			Left.GetComponent<RectTransform>()
+				.Find("Text").GetComponent<Text>().enabled = false;
+			Right.GetComponent<Image>().enabled = false;
+			Right.GetComponent<RectTransform>()
+				.Find("Text").GetComponent<Text>().enabled = false;
+			Left.gameObject.SetActive(true);
+			Right.gameObject.SetActive(true);
+		}
+
+		private void Play(ShipController ship, int rightSide)
+		{
+			if (rightSide == 0)
+				Left.SetTrigger(Active);
+			else
+				Right.SetTrigger(Active);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			NgTrackData.Triggers.PitlaneIndicator.OnPitlaneIndicatorTriggered -= Play;
+		}
+	}
 
 	public class MessageLogger : ScriptableHud
 	{}
