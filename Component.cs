@@ -753,8 +753,7 @@ namespace Streamliner
 	public class Pitlane : ScriptableHud
 	{
 		internal RectTransform Panel;
-		internal Animator Left;
-		internal Animator Right;
+		internal Animator PanelAnimator;
 		private static readonly int Active = Animator.StringToHash("Active");
 		private static readonly int PointRight = Animator.StringToHash("Point Right");
 
@@ -762,37 +761,25 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById<RectTransform>("Base");
-			Left = Panel.Find("Left").GetComponent<Animator>();
-			Right = Panel.Find("Right").GetComponent<Animator>();
+			PanelAnimator = Panel.GetComponent<Animator>();
 
-			Clear();
-
-			Left.SetBool(PointRight, false);
-			Right.SetBool(PointRight, true);
+			Panel.Find("Left").gameObject.SetActive(false);
+			Panel.Find("Right").gameObject.SetActive(false);
 
 			NgTrackData.Triggers.PitlaneIndicator.OnPitlaneIndicatorTriggered += Play;
 		}
 
-		private void Clear()
-		{
-			Left.gameObject.SetActive(false);
-			Right.gameObject.SetActive(false);
-			Left.GetComponent<Image>().enabled = false;
-			Left.GetComponent<RectTransform>()
-				.Find("Text").GetComponent<Text>().enabled = false;
-			Right.GetComponent<Image>().enabled = false;
-			Right.GetComponent<RectTransform>()
-				.Find("Text").GetComponent<Text>().enabled = false;
-			Left.gameObject.SetActive(true);
-			Right.gameObject.SetActive(true);
-		}
-
 		private void Play(ShipController ship, int side)
 		{
+			if (ship != TargetShip)
+				return;
+
 			if (side == -1)
-				Left.SetTrigger(Active);
+				PanelAnimator.SetBool(PointRight, false);
 			if (side == 1)
-				Right.SetTrigger(Active);
+				PanelAnimator.SetBool(PointRight, true);
+
+			PanelAnimator.SetTrigger(Active);
 		}
 
 		public override void OnDestroy()
