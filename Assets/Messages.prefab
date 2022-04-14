@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &7242029071588645567
 RectTransform:
   m_ObjectHideFlags: 0
@@ -404,7 +404,7 @@ MonoBehaviour:
   Ids:
   - Base
   - TimeKinds
-  - MessageLines
+  - MessageLine
   - NowPlaying
   - WrongWay
   Rects:
@@ -604,9 +604,9 @@ MonoBehaviour:
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 1
-    m_VerticalOverflow: 1
+    m_VerticalOverflow: 0
     m_LineSpacing: 1.46
-  m_Text: 
+  m_Text: message
 --- !u!1 &2963833798023714281
 GameObject:
   m_ObjectHideFlags: 0

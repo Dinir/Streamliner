@@ -482,6 +482,26 @@ namespace Streamliner
 			internal void ChangeColor(Color color) => Value.color = color;
 		}
 
+		private void InitiateSlots()
+		{
+			_totalSlots = Mathf.Clamp(Race.MaxLaps, 0, 5);
+			for (int i = 0; i < _totalSlots; i++)
+			{
+				RectTransform slot =
+					Instantiate(LapSlotTemplate.gameObject).GetComponent<RectTransform>();
+				slot.SetParent(LapSlotTemplate.parent);
+				slot.localScale = LapSlotTemplate.localScale;
+				slot.anchoredPosition = LapSlotTemplate.anchoredPosition;
+
+				slot.localPosition += Vector3.up * slot.sizeDelta.y * i;
+
+				_slots.Add(new LapSlot(slot));
+			}
+
+			// Emphasis the current lap slot by a bit.
+			_slots[0].ChangeColor(GetTintColor(TextAlpha.NineTenths));
+		}
+
 		public override void Start()
 		{
 			base.Start();
@@ -522,26 +542,6 @@ namespace Streamliner
 		{
 			base.OnDestroy();
 			NgRaceEvents.OnShipLapUpdate -= OnLapUpdate;
-		}
-
-		private void InitiateSlots()
-		{
-			_totalSlots = Mathf.Clamp(Race.MaxLaps, 0, 5);
-			for (int i = 0; i < _totalSlots; i++)
-			{
-				RectTransform slot =
-					Instantiate(LapSlotTemplate.gameObject).GetComponent<RectTransform>();
-				slot.SetParent(LapSlotTemplate.parent);
-				slot.localScale = LapSlotTemplate.localScale;
-				slot.anchoredPosition = LapSlotTemplate.anchoredPosition;
-
-				slot.localPosition += Vector3.up * slot.sizeDelta.y * i;
-
-				_slots.Add(new LapSlot(slot));
-			}
-
-			// Emphasis the current lap slot by a bit.
-			_slots[0].ChangeColor(GetTintColor(TextAlpha.NineTenths));
 		}
 
 		private void ShiftSlotData()
@@ -767,7 +767,102 @@ namespace Streamliner
 	}
 
 	public class MessageLogger : ScriptableHud
-	{}
+	{
+		internal RectTransform Panel;
+		internal Text TimeDiff;
+		internal Text LapResult;
+		internal Text FinalLap;
+		internal RectTransform LineTemplate;
+		internal const int LineMax = 3;
+		internal const float DisplayTimeMax = 3.0f;
+		internal Text NowPlaying;
+		internal Text WrongWay;
+
+		private readonly Color _tint75 = GetTintColor(TextAlpha.ThreeQuarters);
+		private readonly Color _tint90 = GetTintColor(TextAlpha.NineTenths);
+		private readonly Color _tint100 = GetTintColor();
+
+		private readonly List<Line> _lines = new(3);
+
+		private class Line
+		{
+			internal readonly Text Value;
+			internal float DisplayTime;
+
+			public Line(RectTransform template)
+			{
+				Value = template.GetComponent<Text>();
+				DisplayTime = DisplayTimeMax;
+			}
+		}
+
+		private void InitiateLines()
+		{
+			/*
+			 * sizeDelta.y == 30, but 29.75 moves a line of
+			 * SpireNbp at the font size of 30 by 30 pixels.
+			 */
+			float lineHeight = LineTemplate.sizeDelta.y - 0.25f;
+			for (int i = 0; i < LineMax; i++)
+			{
+				RectTransform line =
+					Instantiate(LineTemplate.gameObject).GetComponent<RectTransform>();
+				line.SetParent(LineTemplate.parent);
+				line.localScale = LineTemplate.localScale;
+				line.anchoredPosition = LineTemplate.anchoredPosition;
+
+				line.localPosition += Vector3.up * lineHeight * i;
+
+				_lines.Add(new Line(line));
+			}
+		}
+
+		public override void Start()
+		{
+			base.Start();
+			Initiate();
+
+			NgUiEvents.OnTriggerMessage += Test;
+		}
+
+		private void Initiate()
+		{
+			Panel = CustomComponents.GetById<RectTransform>("Base");
+			RectTransform TimeKinds = CustomComponents.GetById<RectTransform>("TimeKinds");
+			TimeDiff = TimeKinds.Find("Difference").GetComponent<Text>();
+			LapResult = TimeKinds.Find("LapResult").GetComponent<Text>();
+			FinalLap = TimeKinds.Find("FinalLap").GetComponent<Text>();
+			LineTemplate = CustomComponents.GetById<RectTransform>("MessageLine");
+			NowPlaying = CustomComponents.GetById<Text>("NowPlaying");
+			WrongWay = CustomComponents.GetById<Text>("WrongWay");
+
+			TimeDiff.color = _tint90;
+			LapResult.color = _tint75;
+			FinalLap.color = _tint75;
+			LineTemplate.GetComponent<Text>().color = _tint75;
+			NowPlaying.color = _tint75;
+			WrongWay.color = _tint100;
+
+			TimeDiff.text = "";
+			LapResult.text = "";
+			LineTemplate.GetComponent<Text>().text = "";
+			FinalLap.gameObject.SetActive(false);
+			WrongWay.gameObject.SetActive(false);
+
+			InitiateLines();
+		}
+
+		private void Test(string message, ShipController ship, Color color)
+		{
+			Debug.Log(message);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			NgUiEvents.OnTriggerMessage -= Test;
+		}
+	}
 
 	public class PickupDisplay : ScriptableHud
 	{}
