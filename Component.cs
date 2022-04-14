@@ -751,11 +751,11 @@ namespace Streamliner
 			Right.gameObject.SetActive(true);
 		}
 
-		private void Play(ShipController ship, int rightSide)
+		private void Play(ShipController ship, int side)
 		{
-			if (rightSide == 0)
+			if (side == -1)
 				Left.SetTrigger(Active);
-			else
+			if (side == 1)
 				Right.SetTrigger(Active);
 		}
 
