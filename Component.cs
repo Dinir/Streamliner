@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using NgAudio;
 using UnityEngine;
 using UnityEngine.UI;
 using NgData;
@@ -640,6 +641,9 @@ namespace Streamliner
 		private bool _warnOnLastPlace;
 		private bool _onWarning;
 		private readonly Color _highlightColor = new Color32(0xe3, 0x88, 0x8e, 0xff); // Red S6 V1
+		private float _warningTimer;
+		private float _warningSin;
+		private bool _playedWarningSound;
 
 		public override void Start()
 		{
@@ -679,6 +683,38 @@ namespace Streamliner
 
 				yield return new WaitForSeconds(Position.UpdateTime);
 			}
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			/*
+			 * I wanted to just let it play at every fixed interval,
+			 * but then I couldn't get the exact length of the interval:
+			 * I don't know the length of the audio file,
+			 * so I can't decide if the time the sound is done and the sin goes below 0.1
+			 * would be always finite.
+			 * This is how I think it's done in the default hud.
+			 */
+			if (!_warnOnLastPlace)
+				return;
+
+			_warningTimer += Time.deltaTime * 3f;
+			_warningSin = Mathf.Abs(Mathf.Sin(_warningTimer));
+
+			if (_warningSin > Position.UpdateTime)
+				_playedWarningSound = false;
+			if (
+				!_onWarning ||
+				_warningSin >= Position.UpdateTime ||
+				_playedWarningSound ||
+				!Race.HasCountdownFinished ||
+				TargetShip.Eliminated ||
+				Ships.Active.Count <= 1
+			)
+				return;
+			NgSound.PlayOneShot(NgSound.UI_KnockoutWarning, EAudioChannel.Interface, 1f, 1f);
+			_playedWarningSound = true;
 		}
 
 		public override void OnDestroy()
