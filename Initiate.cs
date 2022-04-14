@@ -224,6 +224,7 @@ namespace Streamliner
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			if (Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
@@ -240,6 +241,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			// RegisterHud<TeamScoreboard>(HudRegister.Assets.GetComponent<HudComponents>("Teamboard", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
@@ -269,6 +271,7 @@ namespace Streamliner
 				RegisterHud<BestTime>(HudRegister.Assets.GetComponent<HudComponents>("BestTime", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<TurboDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Turbo", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
@@ -282,6 +285,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			if (NgCampaign.Enabled)
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
@@ -298,6 +302,7 @@ namespace Streamliner
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			if (Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
@@ -311,6 +316,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
@@ -324,6 +330,7 @@ namespace Streamliner
 			RegisterHud<UpsurgeTracker>(HudRegister.Assets.GetComponent<HudComponents>("Zone", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<UpsurgeScoreboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
@@ -338,6 +345,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 }
