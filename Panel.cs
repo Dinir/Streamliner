@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -283,6 +284,7 @@ namespace Streamliner
 		}
 
 		private readonly float _oneLetterWidth = 20f;
+		private readonly float _oneDotWidth = 4f;
 		private readonly RectTransform _base;
 		private readonly RectTransform _targetRow;
 		private readonly RectTransform _entrySlotTemplate;
@@ -342,6 +344,9 @@ namespace Streamliner
 							valueInt < 0 ? 0 : valueInt > 100 ? 100 : valueInt);
 						break;
 					case ValueType.Score:
+						float score = (int) (value * 100.0) * 0.01f;
+						_value.text = score.ToString(CultureInfo.InvariantCulture);
+						break;
 					case ValueType.Position:
 					default:
 						_value.text = IntStrDb.GetNumber(Mathf.FloorToInt(value));
@@ -397,14 +402,21 @@ namespace Streamliner
 			/*
 			 * The reason the thresholds are staying at 2*10^n instead of 10^n is
 			 * just because the font has a very narrow width for number 1.
-			 * Energy type is included because it starts with 100.
+			 * Energy type is included because it starts with 100, which is bigger than 2*10^1.
 			 */
-			if (targetScore < 20f && _valueType != ValueType.Energy) return;
+			float additionalWidth =
+				(_valueType == ValueType.Energy ? 1f :
+					targetScore < 20f ? 0f : targetScore < 200f ? 1f : 2f
+				) * _oneLetterWidth
+				+ (_valueType == ValueType.Score ? _oneDotWidth + _oneLetterWidth * 2f : 0f);
+
+			if (additionalWidth == 0f)
+				return;
 
 			Vector2 widthAdjustmentVector2 =
-				new Vector2((targetScore < 200f ? 1 : 2) * _oneLetterWidth, 0);
+				new Vector2(additionalWidth, 0);
 			Vector3 widthAdjustmentVector3 =
-				new Vector3((targetScore < 200f ? 1 : 2) * _oneLetterWidth, 0, 0);
+				new Vector3(additionalWidth, 0, 0);
 
 			_targetRow.Find("TargetValue").Find("Value").GetComponent<Text>()
 				.text = IntStrDb.GetNumber((int) targetScore);
