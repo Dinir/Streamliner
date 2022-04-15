@@ -86,7 +86,7 @@ GameObject:
   - component: {fileID: 898751659276323302}
   - component: {fileID: 1613340942674906541}
   m_Layer: 0
-  m_Name: Text
+  m_Name: Value
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -400,11 +400,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Container: {fileID: 1259129577256661549}
   Ids:
-  - Base
   - Normal
   - Big
   Rects:
-  - {fileID: 4097616627025532748}
   - {fileID: 3629288275748703813}
   - {fileID: 2938873756901776525}
 --- !u!1 &5929142374525159641
@@ -711,11 +709,11 @@ RectTransform:
   m_Father: {fileID: 4097616627025532748}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -420, y: -119.99996}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 150, y: 30}
-  m_Pivot: {x: 0, y: 1}
+  m_Pivot: {x: 0, y: 0}
 --- !u!222 &3171467237618301410
 CanvasRenderer:
   m_ObjectHideFlags: 0
