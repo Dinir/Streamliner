@@ -269,18 +269,12 @@ namespace Streamliner
 		private ValueType _valueType;
 		private void SetValueType(string name)
 		{
-			switch (name)
+			_valueType = name switch
 			{
-				case "Eliminator":
-					_valueType = ValueType.Score;
-					break;
-				case "Rush Hour":
-					_valueType = ValueType.Energy;
-					break;
-				default:
-					_valueType = ValueType.Position;
-					break;
-			}
+				"Eliminator" => ValueType.Score,
+				"Rush Hour" => ValueType.Energy,
+				_ => ValueType.Position
+			};
 		}
 
 		private readonly float _oneLetterWidth = 20f;
@@ -400,7 +394,7 @@ namespace Streamliner
 				_entrySlotTemplate.localPosition = Vector3.zero;
 			}
 			_templateGaugeBackground.gameObject
-				.SetActive(value: _valueType == ValueType.Energy);
+				.SetActive(_valueType == ValueType.Energy);
 
 			/*
 			 * The reason the thresholds are staying at 2*10^n instead of 10^n is
