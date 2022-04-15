@@ -135,18 +135,18 @@ namespace Streamliner
 	/// </summary>
 	internal class BasicPanel
 	{
-		internal readonly RectTransform _base;
+		internal readonly RectTransform Base;
 		private readonly Text _label;
 		internal readonly Text Value;
 		protected readonly RectTransform GaugeBackground;
-		private readonly RectTransform _gauge;
+		protected readonly RectTransform _gauge;
 		internal readonly Color GaugeColor = GetTintColor();
 		protected readonly Vector2 MaxSize;
 		internal Vector2 CurrentSize;
 
 		public BasicPanel(RectTransform panelElement)
 		{
-			_base = panelElement;
+			Base = panelElement;
 			_label = panelElement.Find("Label").GetComponent<Text>();
 			Value = panelElement.Find("Value").GetComponent<Text>();
 			GaugeBackground = panelElement.Find("GaugeBackground").GetComponent<RectTransform>();
@@ -246,15 +246,72 @@ namespace Streamliner
 
 		private void ChangeFractionPartColor()
 		{
-			MaxValue.color = GetTintColor();
-			_base.Find("Separator").GetComponent<Text>().color = GetTintColor();
+			MaxValue.color = GaugeColor;
+			Base.Find("Separator").GetComponent<Text>().color = GaugeColor;
 		}
 
 		public override void ChangeDataPartColor(Color color)
 		{
 			base.ChangeDataPartColor(color);
 			MaxValue.color = color;
-			_base.Find("Separator").GetComponent<Text>().color = color;
+			Base.Find("Separator").GetComponent<Text>().color = color;
+		}
+	}
+
+	internal class DoubleGaugePanel : BasicPanel
+	{
+		private readonly RectTransform _rightGauge;
+
+		internal enum StartingPoint
+		{
+			Edge, Center
+		}
+
+		public DoubleGaugePanel(RectTransform panelElement) : base(panelElement)
+		{
+			_rightGauge = (RectTransform) GaugeBackground.Find("RightGauge");
+			// the bar borders are perpendicular straight lines
+			CurrentSize.y = MaxSize.y;
+
+			ChangeRightGaugeColor();
+			FillBoth(0f);
+		}
+
+		private void ChangeRightGaugeColor() =>
+			_rightGauge.GetComponent<Image>().color = GaugeColor;
+
+		public override void ChangeColor(Color color)
+		{
+			base.ChangeColor(color);
+			_rightGauge.GetComponent<Image>().color = color;
+		}
+
+		public override void ChangeDataPartColor(Color color)
+		{
+			base.ChangeDataPartColor(color);
+			_rightGauge.GetComponent<Image>().color = color;
+		}
+
+		public void FillBoth(float amount)
+		{
+			CurrentSize.x = amount * MaxSize.x;
+			_gauge.sizeDelta = CurrentSize;
+			_rightGauge.sizeDelta = CurrentSize;
+		}
+
+		public void SetFillStartingSide(StartingPoint sp)
+		{
+			switch (sp)
+			{
+				case StartingPoint.Edge:
+					_gauge.pivot = new Vector2(0, 1);
+					_rightGauge.pivot = new Vector2(1, 1);
+					break;
+				case StartingPoint.Center:
+					_gauge.pivot = new Vector2(1, 1);
+					_rightGauge.pivot = new Vector2(0, 1);
+					break;
+			}
 		}
 	}
 
