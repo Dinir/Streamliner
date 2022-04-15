@@ -680,7 +680,41 @@ namespace Streamliner
 	}
 
 	public class BestTime : ScriptableHud
-	{}
+	{
+		internal RectTransform Panel => _onNormalDisplay ? NormalDisplay : BigDisplay.Base;
+		private bool _onNormalDisplay = true;
+		internal RectTransform NormalDisplay;
+		internal Text NormalDisplayValue;
+		internal DoubleGaugePanel BigDisplay;
+
+		public override void Start()
+		{
+			base.Start();
+
+			_onNormalDisplay =
+				RaceManager.CurrentGamemode.Name != "Time Trial"
+				&& RaceManager.CurrentGamemode.Name != "Speed Lap"
+				|| !OptionSpeedLapEmphasise;
+
+			if (_onNormalDisplay)
+			{
+				NormalDisplay = CustomComponents.GetById<RectTransform>("Normal");
+				NormalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
+				NormalDisplayValue = NormalDisplay.Find("Text").GetComponent<Text>();
+				NormalDisplayValue.color = GetTintColor();
+			}
+			else
+			{
+				BigDisplay = new DoubleGaugePanel(CustomComponents.GetById<RectTransform>("Big"));
+				BigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
+			}
+		}
+
+		private float GetBestLap(ShipController ship)
+		{
+			return -1f;
+		}
+	}
 
 	public class ZoneTracker : ScriptableHud
 	{}
