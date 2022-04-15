@@ -394,8 +394,11 @@ namespace Streamliner
 
 			// Disable components that are irrelevant to the game mode.
 			if (targetScore == 0f)
+			{
 				_targetRow.gameObject
 					.SetActive(false);
+				_entrySlotTemplate.localPosition = Vector3.zero;
+			}
 			_templateGaugeBackground.gameObject
 				.SetActive(value: _valueType == ValueType.Energy);
 
