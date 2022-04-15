@@ -466,6 +466,87 @@ namespace Streamliner
 			}
 		}
 
+		public IEnumerator Update()
+		{
+			while (true)
+			{
+				UpdateData();
+				UpdateRefIdByOrder();
+				UpdateSlots();
+
+				yield return new WaitForSeconds(Position.UpdateTime);
+			}
+		}
+
+		/// <summary>
+		/// Update stored data in <c>_rawValueList</c> with corresponding ones in the loaded ships.
+		/// </summary>
+		public void UpdateData()
+		{
+			foreach (RawValuePair rawValuePair in _rawValueList)
+			{
+				ShipController ship = Ships.Loaded[rawValuePair.Id];
+				switch (_valueType)
+				{
+					case ValueType.Energy:
+						rawValuePair.Value = ship.ShieldIntegrity;
+						break;
+					case ValueType.Score:
+						rawValuePair.Value = ship.Score;
+						break;
+					case ValueType.Position:
+					default:
+						rawValuePair.Value = ship.CurrentPlace;
+						break;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Get a sorted copy of <c>_rawValueList</c>, and update reference ship id in <c>_visibleList</c>. Next time the slots update, they will fetch data from <c>_rawValueList</c> with the new ids.
+		/// </summary>
+		public void UpdateRefIdByOrder()
+		{
+			List<RawValuePair> orderedValueList;
+			switch (_valueType)
+			{
+				case ValueType.Energy:
+				case ValueType.Score:
+					orderedValueList = _rawValueList.OrderByDescending(p => p.Value).ToList();
+					break;
+				case ValueType.Position:
+				default:
+					orderedValueList = _rawValueList.OrderBy(p => p.Value).ToList();
+					break;
+			}
+
+			for (int i = 0; i < _visibleList.Count; i++)
+			{
+				EntrySlot slot = _visibleList[i];
+				slot.SetRefId(orderedValueList[i].Id);
+			}
+		}
+
+		/// <summary>
+		/// Update the slots of <c>_visibleList</c> with data found with the given reference id in <c>_rawValueList</c>.
+		/// </summary>
+		public void UpdateSlots()
+		{
+			switch (_valueType)
+			{
+				case ValueType.Energy:
+					UpdateSlotsEnergy();
+					break;
+				case ValueType.Score:
+					UpdateSlotsScore();
+					break;
+				case ValueType.Position:
+				default:
+					UpdateSlotsPosition();
+					break;
+			}
+		}
+
 		private void UpdateSlotsScore()
 		{
 			foreach (EntrySlot slot in _visibleList)
@@ -505,65 +586,6 @@ namespace Streamliner
 					Ships.Loaded[refId].ShieldIntegrity < 0f ?
 						TextAlpha.Zero : TextAlpha.Full
 				);
-			}
-		}
-
-		public IEnumerator UpdateData()
-		{
-			while (true)
-			{
-				foreach (RawValuePair rawValuePair in _rawValueList)
-				{
-					ShipController ship = Ships.Loaded[rawValuePair.Id];
-					switch (_valueType)
-					{
-						case ValueType.Energy:
-							rawValuePair.Value = ship.ShieldIntegrity;
-							break;
-						case ValueType.Score:
-							rawValuePair.Value = ship.Score;
-							break;
-						case ValueType.Position:
-						default:
-							rawValuePair.Value = ship.CurrentPlace;
-							break;
-					}
-				}
-
-				List<RawValuePair> orderedValueList;
-				switch (_valueType)
-				{
-					case ValueType.Energy:
-					case ValueType.Score:
-						orderedValueList = _rawValueList.OrderByDescending(p => p.Value).ToList();
-						break;
-					case ValueType.Position:
-					default:
-						orderedValueList = _rawValueList.OrderBy(p => p.Value).ToList();
-						break;
-				}
-
-				for (int i = 0; i < _visibleList.Count; i++)
-				{
-					EntrySlot slot = _visibleList[i];
-					slot.SetRefId(orderedValueList[i].Id);
-				}
-
-				switch (_valueType)
-				{
-					case ValueType.Energy:
-						UpdateSlotsEnergy();
-						break;
-					case ValueType.Score:
-						UpdateSlotsScore();
-						break;
-					case ValueType.Position:
-					default:
-						UpdateSlotsPosition();
-						break;
-				}
-
-				yield return new WaitForSeconds(Position.UpdateTime);
 			}
 		}
 	}

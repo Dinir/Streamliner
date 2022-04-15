@@ -909,14 +909,14 @@ namespace Streamliner
 		{
 			Panel.InitiateLayout();
 			Panel.InitiateSlots();
-			StartCoroutine(Panel.UpdateData());
+			StartCoroutine(Panel.Update());
 		}
 
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
 			NgRaceEvents.OnCountdownStart -= Initiate;
-			StopCoroutine(Panel.UpdateData());
+			StopCoroutine(Panel.Update());
 		}
 	}
 
