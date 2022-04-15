@@ -763,15 +763,19 @@ namespace Streamliner
 			Panel = CustomComponents.GetById<RectTransform>("Base");
 			PanelAnimator = Panel.GetComponent<Animator>();
 
-			Panel.Find("Left").gameObject.SetActive(false);
-			Panel.Find("Right").gameObject.SetActive(false);
+			/*
+			 * Using `SetActive()` is ineffective here,
+			 * so instead I made an empty animation for the default state.
+			 * Now the components won't show up at start
+			 * even if I use `SetActive(true)`.
+			 */
 
 			NgTrackData.Triggers.PitlaneIndicator.OnPitlaneIndicatorTriggered += Play;
 		}
 
 		private void Play(ShipController ship, int side)
 		{
-			if (ship != TargetShip)
+			if (ship != TargetShip || side != -1 && side != 1)
 				return;
 
 			if (side == -1)
