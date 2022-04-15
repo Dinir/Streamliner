@@ -558,7 +558,7 @@ namespace Streamliner
 				int refId = slot.refId;
 				RawValuePair rawValuePair = _rawValueList[refId];
 				slot.SetName(rawValuePair.Name);
-				slot.SetDisplayValue(ValueType.Position, rawValuePair.Value);
+				slot.SetDisplayValue(_valueType, rawValuePair.Value);
 			}
 		}
 
@@ -569,7 +569,7 @@ namespace Streamliner
 				int refId = slot.refId;
 				RawValuePair rawValuePair = _rawValueList[refId];
 				slot.SetName(rawValuePair.Name);
-				slot.SetDisplayValue(ValueType.Energy, rawValuePair.Value);
+				slot.SetDisplayValue(_valueType, rawValuePair.Value);
 				slot.FillByPercentage(rawValuePair.Value);
 				slot.ChangeOverallAlpha(
 					Ships.Loaded[refId].ShieldIntegrity < 0f ?
@@ -587,7 +587,7 @@ namespace Streamliner
 				slot.SetName(rawValuePair.Name);
 				if (rawValuePair.Value <= Ships.Loaded.Count)
 				{
-					slot.SetDisplayValue(ValueType.Position, rawValuePair.Value);
+					slot.SetDisplayValue(_valueType, rawValuePair.Value);
 					slot.ChangeOverallAlpha(TextAlpha.Full);
 				}
 				else
