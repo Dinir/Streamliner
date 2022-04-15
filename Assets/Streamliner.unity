@@ -587,11 +587,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 323490561450466613, guid: 7e8522d8dc312734ca545eeef284e662,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7e8522d8dc312734ca545eeef284e662, type: 3}
 --- !u!1001 &3032468066766667133
@@ -1677,11 +1672,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: BestTime
       objectReference: {fileID: 0}
-    - target: {fileID: 5282508372833822636, guid: 3c67ff04ad962ba44987c05ce3d5c7a2,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 7604832613632700936, guid: 3c67ff04ad962ba44987c05ce3d5c7a2,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2157,11 +2147,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Pickup
-      objectReference: {fileID: 0}
-    - target: {fileID: 8985735125140589613, guid: 0cd50d073a2028d46a2afc7df9e7255b,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8985735125140589601, guid: 0cd50d073a2028d46a2afc7df9e7255b,
         type: 3}
