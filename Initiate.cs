@@ -267,8 +267,7 @@ namespace Streamliner
 		{
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<LapTimer>(HudRegister.Assets.GetComponent<HudComponents>("Timer", false));
-			if (OptionSpeedLapEmphasise)
-				RegisterHud<BestTime>(HudRegister.Assets.GetComponent<HudComponents>("BestTime", false));
+			RegisterHud<BestTime>(HudRegister.Assets.GetComponent<HudComponents>("BestTime", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<TurboDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Turbo", false));
 			RegisterInternalHud("RespawnDarkener");
