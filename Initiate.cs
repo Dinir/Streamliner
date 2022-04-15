@@ -200,7 +200,7 @@ namespace Streamliner
 	 * Position   V  V  .  .  .  V  V  .  V
 	 * Pitlane    V  V  V  .  .  V  .  .  .
 	 * Message    V  V  V  V  V  V  V  ?  V
-	 * Pickup     V  V  .  V  .  V  V  .  V
+	 * Pickup     V  V  .  V  .  .  V  .  V
 	 * Board      V1 V2 .  .  .  V1 V  V2 V
 	 * Awards     .  .  V3 .  V3 .  .  .  .
 	 * 1: when `Hud.GetPositionBoardEnabled()` is `true`

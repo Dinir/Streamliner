@@ -621,7 +621,63 @@ namespace Streamliner
 	}
 
 	public class LapTimer : ScriptableHud
-	{}
+	{
+		internal BasicPanel Panel;
+		private RectTransform _bestTimeSlot;
+		private Text _bestTime;
+		private int _totalSections;
+
+		internal readonly StringBuilder CurrentTimeBuilder = new StringBuilder();
+		private string ConvertForCurrentTimer(float value)
+		{
+			CurrentTimeBuilder.Clear();
+			string minutes = IntStrDb.GetNumber(
+				Mathf.FloorToInt(value / 60f));
+			string seconds = IntStrDb.GetNoSingleCharNumber(
+				Mathf.FloorToInt(value) % 60);
+			string hundredths = IntStrDb.GetNoSingleCharNumber(
+				Mathf.FloorToInt(value * 100f % 100f));
+
+			// 0:00.<size=20> </size><size=150>00</size>
+			// Default font size in the component is 300.
+			CurrentTimeBuilder.Append(minutes);
+			CurrentTimeBuilder.Append(":");
+			CurrentTimeBuilder.Append(seconds);
+			CurrentTimeBuilder.Append(".<size=20> </size><size=150>");
+			CurrentTimeBuilder.Append(hundredths);
+			CurrentTimeBuilder.Append("</size>");
+
+			return CurrentTimeBuilder.ToString();
+		}
+
+		// NgEvents.NgUiEventsOnGamemodeUpdateCurrentLapTime
+		// NgEvents.NgUiEvents.OnGamemodeInvalidatedLap
+		public override void Start()
+		{
+			base.Start();
+			_totalSections = GetTotalSectionCount();
+			Panel = new BasicPanel(CustomComponents.GetById<RectTransform>("Base"));
+			_bestTimeSlot = CustomComponents.GetById<RectTransform>("LapSlot");
+			_bestTime = _bestTimeSlot.Find("Time").GetComponent<Text>();
+			_bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			UpdateTotalTime();
+		}
+
+		private void UpdateTotalTime()
+		{
+			// Panel.Value.text = ConvertForCurrentTimer(TargetShip.TotalRaceTime);
+		}
+
+		private void UpdateBestTime()
+		{
+			// _bestTime.text = FloatToTime.Convert(TargetShip.CurrentLapTime, TimeFormat);
+		}
+	}
 
 	public class BestTime : ScriptableHud
 	{}
