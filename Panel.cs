@@ -348,6 +348,9 @@ namespace Streamliner
 				}
 			}
 
+			public void SetDisplayValue() =>
+				_value.text = "-";
+
 			public void FillByPercentage(float value)
 			{
 				_currentSize.x = ( value / 100f ) * _gaugeMaxWidth;
@@ -496,7 +499,8 @@ namespace Streamliner
 						break;
 					case ValueType.Position:
 					default:
-						rawValuePair.Value = ship.CurrentPlace;
+						rawValuePair.Value = ship.ShieldIntegrity < 0f ?
+							Ships.Loaded.Count + 1 : ship.CurrentPlace;
 						break;
 				}
 			}
@@ -581,11 +585,16 @@ namespace Streamliner
 				int refId = slot.refId;
 				RawValuePair rawValuePair = _rawValueList[refId];
 				slot.SetName(rawValuePair.Name);
-				slot.SetDisplayValue(ValueType.Position, rawValuePair.Value);
-				slot.ChangeOverallAlpha(
-					Ships.Loaded[refId].ShieldIntegrity < 0f ?
-						TextAlpha.Zero : TextAlpha.Full
-				);
+				if (rawValuePair.Value <= Ships.Loaded.Count)
+				{
+					slot.SetDisplayValue(ValueType.Position, rawValuePair.Value);
+					slot.ChangeOverallAlpha(TextAlpha.Full);
+				}
+				else
+				{
+					slot.SetDisplayValue();
+					slot.ChangeOverallAlpha(TextAlpha.Zero);
+				}
 			}
 		}
 	}
