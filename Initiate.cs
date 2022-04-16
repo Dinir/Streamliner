@@ -66,20 +66,20 @@ namespace Streamliner
 		{
 			CustomHudRegistry.RegisterSceneManager(
 				"Race", Id, new RaceHudManager());
-			// CustomHudRegistry.RegisterSceneManager(
-			// 	"Team Race", Id, new TeamRaceHudManager());
-			// CustomHudRegistry.RegisterSceneManager(
-			// 	"Time Trial", Id, new TrialHudManager());
+			CustomHudRegistry.RegisterSceneManager(
+				"Team Race", Id, new TeamRaceHudManager());
+			CustomHudRegistry.RegisterSceneManager(
+				"Time Trial", Id, new TrialHudManager());
 			CustomHudRegistry.RegisterSceneManager(
 				"Speed Lap", Id, new SpeedLapHudManager());
-			// CustomHudRegistry.RegisterSceneManager(
-			// 	"Survival", Id, new ZoneHudManager());
+			CustomHudRegistry.RegisterSceneManager(
+				"Survival", Id, new ZoneHudManager());
 			CustomHudRegistry.RegisterSceneManager(
 				"Knockout", Id, new KnockoutHudManager());
 			CustomHudRegistry.RegisterSceneManager(
 				"Eliminator", Id, new CombatHudManager());
-			// CustomHudRegistry.RegisterSceneManager(
-			// 	"Upsurge", Id, new UpsurgeHudManager());
+			CustomHudRegistry.RegisterSceneManager(
+				"Upsurge", Id, new UpsurgeHudManager());
 			CustomHudRegistry.RegisterSceneManager(
 				"Rush Hour", Id, new RushHourHudManager());
 		}
