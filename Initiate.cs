@@ -29,13 +29,16 @@ namespace Streamliner
 
 		// options
 		private string _settingsPath;
+		public static readonly string OptionSectionDisplay = "Display";
+		public static readonly string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint;
 		public static bool OptionMotion = true;
-		public static bool OptionSpeedLapEmphasise = true;
+		public static bool OptionBestTimeEmphasise = true;
 		public static bool OptionSpeedHighlight = true;
 		public static bool OptionEnergyChange = true;
 		public static int OptionLowEnergy = 1;
 		public static bool OptionRechargeAmount = true;
+		public static int OptionBestTime = 1;
 
 		public override void OnRegistered(string modPath)
 		{
@@ -83,7 +86,7 @@ namespace Streamliner
 
 		private void GenerateModUi(ModOptionsUiContext ctx)
 		{
-			ctx.GenerateHeader("Display");
+			ctx.GenerateHeader(OptionSectionDisplay);
 
 			ctx.GenerateSelector(
 				"TextTint", "Text Tint",
@@ -100,13 +103,13 @@ namespace Streamliner
 			);
 
 			ctx.GenerateSelector(
-				"SpeedLapEmphasise", "speed lap best time emphasise",
-				"Put the timer on top middle or bottom left of the screen.",
-				OptionSpeedLapEmphasise ? 1 : 0,
+				"BestTimeEmphasise", "speed lap best time emphasise",
+				"Put the timer on top middle or bottom left of the screen on Race and Time Trial mode.",
+				OptionBestTimeEmphasise ? 1 : 0,
 				"off", "on"
 			);
 
-			ctx.GenerateHeader("Additional Information");
+			ctx.GenerateHeader(OptionSectionAddition);
 
 			ctx.GenerateSelector(
 				"SpeedHighlight", "speed reduction",
@@ -137,17 +140,27 @@ namespace Streamliner
 				OptionRechargeAmount ? 1 : 0,
 				"off", "on"
 			);
+
+			ctx.GenerateSpace();
+
+			ctx.GenerateSelector(
+				"BestTime", "best time",
+				"Set which time to show as the best time on Race and Time Trial mode.",
+				OptionBestTime,
+				"off", "total time", "lap time"
+			);
 		}
 
 		private void ModUiToCode(ModOptionsUiContext ctx)
 		{
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
 			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
-			OptionSpeedLapEmphasise = ctx.GetSelectorValue("SpeedLapEmphasise") == 1;
+			OptionBestTimeEmphasise = ctx.GetSelectorValue("BestTimeEmphasise") == 1;
 			OptionSpeedHighlight = ctx.GetSelectorValue("SpeedHighlight") == 1;
 			OptionEnergyChange = ctx.GetSelectorValue("EnergyChange") == 1;
 			OptionLowEnergy = ctx.GetSelectorValue("LowEnergyTransition");
 			OptionRechargeAmount = ctx.GetSelectorValue("RechargeAmount") == 1;
+			OptionBestTime = ctx.GetSelectorValue("BestTime");
 		}
 
 		private void OnLoadSettings()
@@ -155,13 +168,14 @@ namespace Streamliner
 			INIParser ini = new INIParser();
 			ini.Open(_settingsPath);
 
-			OptionValueTint = ini.ReadValue("Display", "TextTint", OptionValueTint);
-			OptionMotion = ini.ReadValue("Display", "Motion", OptionMotion);
-			OptionSpeedLapEmphasise = ini.ReadValue("Display", "SpeedLapEmphasise", OptionMotion);
-			OptionSpeedHighlight = ini.ReadValue("AdditionalInformation", "SpeedHighlight", OptionSpeedHighlight);
-			OptionEnergyChange = ini.ReadValue("AdditionalInformation", "EnergyChange", OptionEnergyChange);
-			OptionLowEnergy = ini.ReadValue("AdditionalInformation", "LowEnergyTransition", OptionLowEnergy);
-			OptionRechargeAmount = ini.ReadValue("AdditionalInformation", "RechargeAmount", OptionRechargeAmount);
+			OptionValueTint = ini.ReadValue(OptionSectionDisplay, "TextTint", OptionValueTint);
+			OptionMotion = ini.ReadValue(OptionSectionDisplay, "Motion", OptionMotion);
+			OptionBestTimeEmphasise = ini.ReadValue(OptionSectionDisplay, "BestTimeEmphasise", OptionMotion);
+			OptionSpeedHighlight = ini.ReadValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
+			OptionEnergyChange = ini.ReadValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
+			OptionLowEnergy = ini.ReadValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
+			OptionRechargeAmount = ini.ReadValue(OptionSectionAddition, "RechargeAmount", OptionRechargeAmount);
+			OptionBestTime = ini.ReadValue(OptionSectionAddition, "BestTime", OptionBestTime);
 
 			ini.Close();
 		}
@@ -171,13 +185,14 @@ namespace Streamliner
 			INIParser ini = new INIParser();
 			ini.Open(_settingsPath);
 
-			ini.WriteValue("Display", "TextTint", OptionValueTint);
-			ini.WriteValue("Display", "Motion", OptionMotion);
-			ini.WriteValue("Display", "SpeedLapEmphasise", OptionMotion);
-			ini.WriteValue("AdditionalInformation", "SpeedHighlight", OptionSpeedHighlight);
-			ini.WriteValue("AdditionalInformation", "EnergyChange", OptionEnergyChange);
-			ini.WriteValue("AdditionalInformation", "LowEnergyTransition", OptionLowEnergy);
-			ini.WriteValue("AdditionalInformation", "RechargeAmount", OptionRechargeAmount);
+			ini.WriteValue(OptionSectionDisplay, "TextTint", OptionValueTint);
+			ini.WriteValue(OptionSectionDisplay, "Motion", OptionMotion);
+			ini.WriteValue(OptionSectionDisplay, "BestTimeEmphasise", OptionMotion);
+			ini.WriteValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
+			ini.WriteValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
+			ini.WriteValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
+			ini.WriteValue(OptionSectionAddition, "RechargeAmount", OptionRechargeAmount);
+			ini.WriteValue(OptionSectionAddition, "BestTime", OptionBestTime);
 
 			ini.Close();
 		}
