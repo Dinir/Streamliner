@@ -230,7 +230,7 @@ namespace Streamliner
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
 			RegisterHud<Timer>(HudRegister.Assets.GetComponent<HudComponents>("Timer", false));
-			RegisterHud<BestTime>(HudRegister.Assets.GetComponent<HudComponents>("BestTime", false));
+			RegisterHud<TargetTime>(HudRegister.Assets.GetComponent<HudComponents>("TargetTime", false));
 			RegisterHud<Placement>(HudRegister.Assets.GetComponent<HudComponents>("Placement", false));
 			RegisterHud<LapCounter>(HudRegister.Assets.GetComponent<HudComponents>("Laps", false));
 			RegisterHud<PositionTracker>(HudRegister.Assets.GetComponent<HudComponents>("Position", false));
@@ -267,7 +267,7 @@ namespace Streamliner
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
 			RegisterHud<Timer>(HudRegister.Assets.GetComponent<HudComponents>("Timer", false));
-			RegisterHud<BestTime>(HudRegister.Assets.GetComponent<HudComponents>("BestTime", false));
+			RegisterHud<TargetTime>(HudRegister.Assets.GetComponent<HudComponents>("TargetTime", false));
 			RegisterHud<LapCounter>(HudRegister.Assets.GetComponent<HudComponents>("Laps", false));
 			RegisterHud<Pitlane>(HudRegister.Assets.GetComponent<HudComponents>("Pitlane", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
@@ -282,7 +282,7 @@ namespace Streamliner
 		{
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<LapTimer>(HudRegister.Assets.GetComponent<HudComponents>("Timer", false));
-			RegisterHud<BestTime>(HudRegister.Assets.GetComponent<HudComponents>("BestTime", false));
+			RegisterHud<TargetTime>(HudRegister.Assets.GetComponent<HudComponents>("TargetTime", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<TurboDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Turbo", false));
 			RegisterInternalHud("RespawnDarkener");

@@ -22,7 +22,7 @@ MonoBehaviour:
   - Name: Timer
     Object: {fileID: 7647195360747535430, guid: 75f73db09c01b4f49b6fbdbc502689f2,
       type: 3}
-  - Name: BestTime
+  - Name: TargetTime
     Object: {fileID: 5282508372833822636, guid: 3c67ff04ad962ba44987c05ce3d5c7a2,
       type: 3}
   - Name: Zone

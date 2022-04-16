@@ -400,9 +400,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Container: {fileID: 1259129577256661549}
   Ids:
+  - Base
   - Normal
   - Big
   Rects:
+  - {fileID: 4097616627025532748}
   - {fileID: 3629288275748703813}
   - {fileID: 2938873756901776525}
 --- !u!1 &5929142374525159641

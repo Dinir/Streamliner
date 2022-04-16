@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using NgAudio;
 using UnityEngine;
@@ -12,6 +13,7 @@ using NgEvents;
 using NgGame;
 using NgLib;
 using NgShips;
+using NgSp;
 using NgUi.RaceUi.HUD;
 using static Streamliner.HudRegister;
 using static Streamliner.PresetColorPicker;
@@ -637,40 +639,207 @@ namespace Streamliner
 		}
 	}
 
-	public class BestTime : ScriptableHud
+	public class TargetTime : ScriptableHud
 	{
-		internal RectTransform Panel => _onNormalDisplay ? NormalDisplay : BigDisplay.Base;
-		private bool _onNormalDisplay = true;
+		internal RectTransform Panel;
 		internal RectTransform NormalDisplay;
 		internal Text NormalDisplayValue;
 		internal DoubleGaugePanel BigDisplay;
 
-		public override void Start()
+		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
+
+		private enum TimeType
 		{
-			base.Start();
-
-			_onNormalDisplay =
-				RaceManager.CurrentGamemode.Name != "Time Trial"
-				&& RaceManager.CurrentGamemode.Name != "Speed Lap"
-				|| !OptionSpeedLapEmphasise;
-
-			if (_onNormalDisplay)
+			Total, Lap
+		}
+		private TimeType _timeType;
+		private void SetTimeType(string gamemodeName)
+		{
+			_timeType = gamemodeName switch
 			{
-				NormalDisplay = CustomComponents.GetById<RectTransform>("Normal");
-				NormalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
-				NormalDisplayValue = NormalDisplay.Find("Text").GetComponent<Text>();
-				NormalDisplayValue.color = GetTintColor();
-			}
-			else
+				"Speed Lap" => TimeType.Lap,
+				"Time Trial" when _isCampaign => TimeType.Total,
+				"Time Trial" => OptionBestTime == 2 ? TimeType.Lap : TimeType.Total,
+				_ => OptionBestTime == 2 ? TimeType.Lap : TimeType.Total
+			};
+		}
+		private enum DisplayType
+		{
+			None, Normal, Big, Both
+		}
+		private DisplayType _displayType;
+		private void SetDisplayType(string gamemodeName)
+		{
+			/*
+			 * Display Setup
+			 * TT   -> Normal(Total/Lap Time) / Big(Total/Lap Left) /
+			 *         Both(Total Time, Target Left)
+			 * SL   -> None / Big(Lap Left)
+			 * Race -> Normal(Total/Lap Time)
+			 * Then if OptionBestTime is set to off, remove Normal.
+			 */
+			_displayType = gamemodeName switch
 			{
-				BigDisplay = new DoubleGaugePanel(CustomComponents.GetById<RectTransform>("Big"));
-				BigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
+				"Time Trial" => _isCampaign ? DisplayType.Both :
+					OptionCountdownTimer ? DisplayType.Big : DisplayType.Normal,
+				"Speed Lap" => OptionCountdownTimer ? DisplayType.Big : DisplayType.None,
+				_ => DisplayType.Normal
+			};
+			if (OptionBestTime == 0)
+			{
+				_displayType = _displayType switch
+				{
+					DisplayType.Both => DisplayType.Big,
+					DisplayType.Normal => DisplayType.None,
+					_ => _displayType
+				};
 			}
 		}
 
-		private float GetBestLap(ShipController ship)
+		private bool _usingBestTimeDisplay;
+		private bool _usingLeftTimeDisplay;
+		private bool _isCampaign;
+		private float _bestTime;
+		private float _bronzeTarget;
+		private float _silverTarget;
+		private float _goldTarget;
+		private float _platinumTarget;
+		private float _targetTime;
+		private float _currentTime;
+
+		public override void Start()
 		{
-			return -1f;
+			base.Start();
+			Panel = CustomComponents.GetById("Base");
+			NormalDisplay = CustomComponents.GetById("Normal");
+			NormalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
+			NormalDisplayValue = NormalDisplay.Find("Text").GetComponent<Text>();
+			NormalDisplayValue.color = GetTintColor();
+			BigDisplay = new DoubleGaugePanel(CustomComponents.GetById("Big"));
+			BigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
+
+			_isCampaign = NgCampaign.Enabled;
+			SetTimeType(RaceManager.CurrentGamemode.Name);
+			SetDisplayType(RaceManager.CurrentGamemode.Name);
+			switch (_displayType)
+			{
+				case DisplayType.None:
+					Panel.gameObject.SetActive(false);
+					break;
+				case DisplayType.Normal:
+					BigDisplay.Base.gameObject.SetActive(false);
+					break;
+				case DisplayType.Big:
+					NormalDisplay.gameObject.SetActive(false);
+					break;
+				case DisplayType.Both:
+					break;
+			}
+
+			if (_displayType == DisplayType.None)
+				return;
+
+			_usingBestTimeDisplay =
+				OptionBestTime != 0 &&
+				_displayType is DisplayType.Normal or DisplayType.Both;
+			_usingLeftTimeDisplay =
+				_displayType is DisplayType.Big or DisplayType.Both;
+
+			UpdateBestTime(TargetShip);
+			Debug.Log($"Best time loaded in Start() is {_bestTime.ToString(CultureInfo.InvariantCulture)}");
+			Debug.Log($"Best time stored in TargetShip on Start(): Lap: {TargetShip.BestLapTime}, Total: {TargetShip.TargetTime}");
+
+			if (_usingBestTimeDisplay)
+			{
+				SetBestTime(TargetShip);
+				NgRaceEvents.OnShipLapUpdate += SetBestTime;
+			}
+
+			if (_usingLeftTimeDisplay)
+			{
+				if (_isCampaign)
+				{
+					_bronzeTarget = NgCampaign.CurrentEvent.EventProgress.BronzeValue;
+					_silverTarget = NgCampaign.CurrentEvent.EventProgress.SilverValue;
+					_goldTarget = NgCampaign.CurrentEvent.EventProgress.GoldValue;
+					_platinumTarget = NgCampaign.CurrentEvent.EventProgress.PlatinumValue;
+
+					_targetTime = _platinumTarget;
+				}
+				else
+				{
+					_targetTime = _bestTime;
+				}
+				SetLeftTime(0f);
+			}
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			if (
+				_displayType == DisplayType.None
+				|| !TargetShip || !_usingLeftTimeDisplay
+			)
+				return;
+
+			_currentTime = _timeType == TimeType.Total ?
+				TargetShip.TotalRaceTime : TargetShip.CurrentLapTime;
+			UpdateBestTime(TargetShip);
+			if (_isCampaign) ChangeTargetTime(_currentTime);
+			SetLeftTime(_currentTime);
+		}
+
+		private void UpdateBestTime(ShipController ship)
+		{
+			_bestTime =
+				ship.LoadedBestLapTime ?
+					_timeType == TimeType.Total ? ship.TargetTime : ship.BestLapTime :
+					ship.HasBestLapTime ? ship.BestLapTime : -1f;
+		}
+
+		private void ChangeTargetTime(float currentTime)
+		{
+			if ((double) currentTime <= _platinumTarget)
+				_targetTime = _platinumTarget;
+			else if ((double) currentTime <= _goldTarget)
+				_targetTime = _goldTarget;
+			else if ((double) currentTime <= _silverTarget)
+				_targetTime = _silverTarget;
+			else if ((double) currentTime <= _bronzeTarget)
+				_targetTime = _bronzeTarget;
+		}
+
+		private void SetBestTime(ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+
+			NormalDisplayValue.text = _bestTime >= 0f ?
+				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
+		}
+
+		private void SetLeftTime(float currentTime)
+		{
+			if (_targetTime == 0f)
+			{
+				BigDisplay.Value.text = _bigTimeTextBuilder.ToString(currentTime);
+				BigDisplay.FillBoth(1f);
+				return;
+			}
+
+			float timeLeft = _targetTime - currentTime;
+			timeLeft = timeLeft < 0f ? 0f : timeLeft > _targetTime ? _targetTime : timeLeft;
+
+			BigDisplay.Value.text = _bigTimeTextBuilder.ToString(timeLeft);
+			BigDisplay.FillBoth(timeLeft / _targetTime);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			if (_usingBestTimeDisplay)
+				NgRaceEvents.OnShipLapUpdate -= SetBestTime;
 		}
 	}
 
