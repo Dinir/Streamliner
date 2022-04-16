@@ -33,7 +33,7 @@ namespace Streamliner
 		public static readonly string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint;
 		public static bool OptionMotion = true;
-		public static bool OptionBestTimeEmphasise = true;
+		public static bool OptionCountdownTimer = true;
 		public static bool OptionSpeedHighlight = true;
 		public static bool OptionEnergyChange = true;
 		public static int OptionLowEnergy = 1;
@@ -103,9 +103,9 @@ namespace Streamliner
 			);
 
 			ctx.GenerateSelector(
-				"BestTimeEmphasise", "speed lap best time emphasise",
-				"Put the timer on top middle or bottom left of the screen on Race and Time Trial mode.",
-				OptionBestTimeEmphasise ? 1 : 0,
+				"CountDownTimer", "countdown timer",
+				"Put a countdown timer on top of the screen on Time Trial and Speed Lap mode.",
+				OptionCountdownTimer ? 1 : 0,
 				"off", "on"
 			);
 
@@ -155,7 +155,7 @@ namespace Streamliner
 		{
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
 			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
-			OptionBestTimeEmphasise = ctx.GetSelectorValue("BestTimeEmphasise") == 1;
+			OptionCountdownTimer = ctx.GetSelectorValue("CountDownTimer") == 1;
 			OptionSpeedHighlight = ctx.GetSelectorValue("SpeedHighlight") == 1;
 			OptionEnergyChange = ctx.GetSelectorValue("EnergyChange") == 1;
 			OptionLowEnergy = ctx.GetSelectorValue("LowEnergyTransition");
@@ -170,7 +170,7 @@ namespace Streamliner
 
 			OptionValueTint = ini.ReadValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			OptionMotion = ini.ReadValue(OptionSectionDisplay, "Motion", OptionMotion);
-			OptionBestTimeEmphasise = ini.ReadValue(OptionSectionDisplay, "BestTimeEmphasise", OptionMotion);
+			OptionCountdownTimer = ini.ReadValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
 			OptionSpeedHighlight = ini.ReadValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
 			OptionEnergyChange = ini.ReadValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
 			OptionLowEnergy = ini.ReadValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
@@ -187,7 +187,7 @@ namespace Streamliner
 
 			ini.WriteValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			ini.WriteValue(OptionSectionDisplay, "Motion", OptionMotion);
-			ini.WriteValue(OptionSectionDisplay, "BestTimeEmphasise", OptionMotion);
+			ini.WriteValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
 			ini.WriteValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
 			ini.WriteValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
 			ini.WriteValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
