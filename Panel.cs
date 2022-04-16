@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using NgLib;
@@ -51,6 +52,34 @@ namespace Streamliner
 		}
 		internal static float GetTransparency(TextAlpha transparencyIndex) =>
 			TintAlphaList[(int) transparencyIndex];
+	}
+
+	internal class BigTimeTextBuilder
+	{
+		private StringBuilder _sb;
+		internal string ToString(float value)
+		{
+			_sb.Clear();
+			string minutes = IntStrDb.GetNumber(
+				Mathf.FloorToInt(value / 60f));
+			string seconds = IntStrDb.GetNoSingleCharNumber(
+				Mathf.FloorToInt(value) % 60);
+			string hundredths = IntStrDb.GetNoSingleCharNumber(
+				Mathf.FloorToInt(value * 100f % 100f));
+
+			// 0:00.<size=20> </size><size=150>00</size>
+			// Default font size in the component is 300.
+			_sb.Append(minutes);
+			_sb.Append(":");
+			_sb.Append(seconds);
+			_sb.Append(".<size=20> </size><size=150>");
+			_sb.Append(hundredths);
+			_sb.Append("</size>");
+
+			return _sb.ToString();
+		}
+
+		public BigTimeTextBuilder(StringBuilder sb) => _sb = sb;
 	}
 
 	internal static class SectionManager

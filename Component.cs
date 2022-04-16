@@ -419,6 +419,8 @@ namespace Streamliner
 		internal BasicPanel Panel;
 		internal RectTransform LapSlotTemplate;
 
+		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
+
 		private readonly List<LapSlot> _slots = new(5);
 		private LapSlot _currentSlot;
 		private int _totalSlots;
@@ -428,29 +430,6 @@ namespace Streamliner
 		private int _currentLap;
 		private int _totalLaps;
 		private int _totalSections;
-
-		internal readonly StringBuilder CurrentTimeBuilder = new StringBuilder();
-		private string ConvertForCurrentTimer(float value)
-		{
-			CurrentTimeBuilder.Clear();
-			string minutes = IntStrDb.GetNumber(
-				Mathf.FloorToInt(value / 60f));
-			string seconds = IntStrDb.GetNoSingleCharNumber(
-				Mathf.FloorToInt(value) % 60);
-			string hundredths = IntStrDb.GetNoSingleCharNumber(
-				Mathf.FloorToInt(value * 100f % 100f));
-
-			// 0:00.<size=20> </size><size=150>00</size>
-			// Default font size in the component is 300.
-			CurrentTimeBuilder.Append(minutes);
-			CurrentTimeBuilder.Append(":");
-			CurrentTimeBuilder.Append(seconds);
-			CurrentTimeBuilder.Append(".<size=20> </size><size=150>");
-			CurrentTimeBuilder.Append(hundredths);
-			CurrentTimeBuilder.Append("</size>");
-
-			return CurrentTimeBuilder.ToString();
-		}
 
 		private class LapSlot
 		{
@@ -594,7 +573,7 @@ namespace Streamliner
 		}
 
 		private void UpdateTotalTime() =>
-			Panel.Value.text = ConvertForCurrentTimer(TargetShip.TotalRaceTime);
+			Panel.Value.text = _bigTimeTextBuilder.ToString(TargetShip.TotalRaceTime);
 
 		private void UpdateCurrentLapTime()
 		{
@@ -627,28 +606,7 @@ namespace Streamliner
 		private Text _bestTime;
 		private int _totalSections;
 
-		internal readonly StringBuilder CurrentTimeBuilder = new StringBuilder();
-		private string ConvertForCurrentTimer(float value)
-		{
-			CurrentTimeBuilder.Clear();
-			string minutes = IntStrDb.GetNumber(
-				Mathf.FloorToInt(value / 60f));
-			string seconds = IntStrDb.GetNoSingleCharNumber(
-				Mathf.FloorToInt(value) % 60);
-			string hundredths = IntStrDb.GetNoSingleCharNumber(
-				Mathf.FloorToInt(value * 100f % 100f));
-
-			// 0:00.<size=20> </size><size=150>00</size>
-			// Default font size in the component is 300.
-			CurrentTimeBuilder.Append(minutes);
-			CurrentTimeBuilder.Append(":");
-			CurrentTimeBuilder.Append(seconds);
-			CurrentTimeBuilder.Append(".<size=20> </size><size=150>");
-			CurrentTimeBuilder.Append(hundredths);
-			CurrentTimeBuilder.Append("</size>");
-
-			return CurrentTimeBuilder.ToString();
-		}
+		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
 
 		// NgEvents.NgUiEventsOnGamemodeUpdateCurrentLapTime
 		// NgEvents.NgUiEvents.OnGamemodeInvalidatedLap
@@ -670,7 +628,7 @@ namespace Streamliner
 
 		private void UpdateTotalTime()
 		{
-			// Panel.Value.text = ConvertForCurrentTimer(TargetShip.TotalRaceTime);
+			// Panel.Value.text = _bigTimeTextBuilder.ToString(TargetShip.TotalRaceTime);
 		}
 
 		private void UpdateBestTime()
