@@ -38,7 +38,7 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = new SpeedPanel(CustomComponents.GetById<RectTransform>("Base"));
+			Panel = new SpeedPanel(CustomComponents.GetById("Base"));
 		}
 
 		public override void Update()
@@ -185,7 +185,7 @@ namespace Streamliner
 			_energyConstantlyDischarges =
 				RaceManager.CurrentGamemode.Name == "Rush Hour";
 
-			Panel = CustomComponents.GetById<RectTransform>("Base");
+			Panel = CustomComponents.GetById("Base");
 			Value = Panel.Find("Value").GetComponent<Text>();
 			Delta = Panel.Find("Delta").GetComponent<Text>();
 			GaugeBackground = Panel.Find("GaugeBackground").GetComponent<Image>();
@@ -488,8 +488,8 @@ namespace Streamliner
 			base.Start();
 			_totalLaps = Race.MaxLaps;
 			_totalSections = GetTotalSectionCount();
-			Panel = new BasicPanel(CustomComponents.GetById<RectTransform>("Base"));
-			LapSlotTemplate = CustomComponents.GetById<RectTransform>("LapSlot");
+			Panel = new BasicPanel(CustomComponents.GetById("Base"));
+			LapSlotTemplate = CustomComponents.GetById("LapSlot");
 			// I am hiding the components here, not on Unity,
 			// because I want to keep them visible on Unity.
 			LapSlotTemplate.Find("Time").gameObject.SetActive(false);
@@ -615,8 +615,8 @@ namespace Streamliner
 		{
 			base.Start();
 			_totalSections = GetTotalSectionCount();
-			Panel = new BasicPanel(CustomComponents.GetById<RectTransform>("Base"));
-			_bestTimeSlot = CustomComponents.GetById<RectTransform>("LapSlot");
+			Panel = new BasicPanel(CustomComponents.GetById("Base"));
+			_bestTimeSlot = CustomComponents.GetById("LapSlot");
 			_bestTime = _bestTimeSlot.Find("Time").GetComponent<Text>();
 			_bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
 		}
@@ -933,7 +933,7 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = new FractionPanel(CustomComponents.GetById<RectTransform>("Base"));
+			Panel = new FractionPanel(CustomComponents.GetById("Base"));
 			switch (RaceManager.CurrentGamemode.Name)
 			{
 				case "Knockout":
@@ -1017,7 +1017,7 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = new FractionPanel(CustomComponents.GetById<RectTransform>("Base"))
+			Panel = new FractionPanel(CustomComponents.GetById("Base"))
 			{
 				Value = { text = IntStrDb.GetNoSingleCharNumber(0) },
 				MaxValue = { text = IntStrDb.GetNoSingleCharNumber(Race.MaxLaps) }
@@ -1045,7 +1045,7 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = CustomComponents.GetById<RectTransform>("Base");
+			Panel = CustomComponents.GetById("Base");
 			PanelAnimator = Panel.GetComponent<Animator>();
 
 			Panel.Find("Left").Find("Text").GetComponent<Text>().color = GetTintColor();
@@ -1142,12 +1142,12 @@ namespace Streamliner
 
 		private void Initiate()
 		{
-			Panel = CustomComponents.GetById<RectTransform>("Base");
-			RectTransform TimeKinds = CustomComponents.GetById<RectTransform>("TimeKinds");
+			Panel = CustomComponents.GetById("Base");
+			RectTransform TimeKinds = CustomComponents.GetById("TimeKinds");
 			TimeDiff = TimeKinds.Find("Difference").GetComponent<Text>();
 			LapResult = TimeKinds.Find("LapResult").GetComponent<Text>();
 			FinalLap = TimeKinds.Find("FinalLap").GetComponent<Text>();
-			LineTemplate = CustomComponents.GetById<RectTransform>("MessageLine");
+			LineTemplate = CustomComponents.GetById("MessageLine");
 			NowPlaying = CustomComponents.GetById<Text>("NowPlaying");
 			WrongWay = CustomComponents.GetById<Text>("WrongWay");
 
@@ -1192,7 +1192,7 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = new Playerboard(CustomComponents.GetById<RectTransform>("Base"));
+			Panel = new Playerboard(CustomComponents.GetById("Base"));
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
