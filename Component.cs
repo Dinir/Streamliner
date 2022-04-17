@@ -822,10 +822,17 @@ namespace Streamliner
 
 		private void UpdateBestTime()
 		{
-			_bestTime =
-				TargetShip.LoadedBestLapTime ?
-					_timeType == TimeType.Total ? TargetShip.TargetTime : TargetShip.BestLapTime :
-					TargetShip.HasBestLapTime ? TargetShip.BestLapTime : -1f;
+			_bestTime = TargetShip.LoadedBestLapTime switch
+			{
+				true when _timeType == TimeType.Total =>
+					TargetShip.TargetTime,
+				true when TargetShip.BestLapTime <= 0f
+				          && TargetShip.TargetTime > 0f =>
+					TargetShip.TargetTime / Race.MaxLaps,
+				true => TargetShip.BestLapTime,
+				false => TargetShip.HasBestLapTime ?
+					TargetShip.BestLapTime : -1f
+			};
 		}
 
 		private void ChangeTargetTime()
