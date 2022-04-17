@@ -674,13 +674,16 @@ namespace Streamliner
 			/*
 			 * Display Setup
 			 * TT   -> Normal(Total/Lap) / Both(Total/Lap, Total/Lap Left) / Both(Total, Target Left)
-			 * SL   -> Normal(Lap) / Both(Lap, Lap Left)
+			 * SL   -> None / Big(Lap Left) / Big(Target Left)
 			 * Race -> Normal(Total/Lap)
 			 * Then if OptionBestTime is set to off, remove Normal.
 			 */
-			_displayType = gamemodeName is StringTimeTrial or StringSpeedLap ?
-				_isCampaign || OptionCountdownTimer ? DisplayType.Both : DisplayType.Normal :
-				DisplayType.Normal;
+			_displayType = gamemodeName switch
+			{
+				StringSpeedLap => _isCampaign || OptionCountdownTimer ? DisplayType.Big : DisplayType.None,
+				StringTimeTrial => _isCampaign || OptionCountdownTimer ? DisplayType.Both : DisplayType.Normal,
+				_ => DisplayType.Normal
+			};
 
 			if (OptionBestTime == 0)
 			{
@@ -931,10 +934,6 @@ namespace Streamliner
 
 			NormalDisplayValue.text = _bestTime >= 0f ?
 				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
-
-			Debug.Log($"SBT() at the start of lap {TargetShip.CurrentLap}");
-			Debug.Log($"  LoadedBestLapTime? {TargetShip.LoadedBestLapTime}, HasBestLapTime? {TargetShip.HasBestLapTime} and it's {TargetShip.BestLapTime}, TargetTime? {TargetShip.TargetTime}");
-			Debug.Log($"  _bestTime? {_bestTime} _targetTime? {_targetTime}");
 		}
 
 		private void UpdateAverageLapTimeAdvantage(ShipController ship)
@@ -947,8 +946,6 @@ namespace Streamliner
 
 			_averageLapTimeAdvantage +=
 				_bestTime - TargetShip.GetLapTime(TargetShip.CurrentLap - 1);
-			Debug.Log($"UALTA() at the start of lap {TargetShip.CurrentLap}");
-			Debug.Log($"  Lap {TargetShip.CurrentLap - 1} Time: {TargetShip.GetLapTime(TargetShip.CurrentLap - 1)}, Advantage: {_averageLapTimeAdvantage}");
 		}
 
 		private void SetLeftLabel(ShipController ship)
@@ -1263,7 +1260,7 @@ namespace Streamliner
 
 		private void Test(string message, ShipController ship, Color color)
 		{
-			Debug.Log(message);
+			Debug.Log($"Message: {message}");
 		}
 
 		public override void OnDestroy()
