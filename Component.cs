@@ -640,6 +640,8 @@ namespace Streamliner
 
 	public class TargetTime : ScriptableHud
 	{
+		private const string StringTimeTrial = "Time Trial";
+		private const string StringSpeedLap = "Speed Lap";
 		internal RectTransform Panel;
 		internal RectTransform NormalDisplay;
 		internal Text NormalDisplayValue;
@@ -656,9 +658,9 @@ namespace Streamliner
 		{
 			_timeType = gamemodeName switch
 			{
-				"Speed Lap" => TimeType.Lap,
-				"Time Trial" when _isCampaign => TimeType.Total,
-				"Time Trial" => OptionBestTime == 2 ? TimeType.Lap : TimeType.Total,
+				StringSpeedLap => TimeType.Lap,
+				StringTimeTrial when _isCampaign => TimeType.Total,
+				StringTimeTrial => OptionBestTime == 2 ? TimeType.Lap : TimeType.Total,
 				_ => OptionBestTime == 2 ? TimeType.Lap : TimeType.Total
 			};
 		}
@@ -679,9 +681,9 @@ namespace Streamliner
 			 */
 			_displayType = gamemodeName switch
 			{
-				"Time Trial" => _isCampaign ? DisplayType.Both :
+				StringTimeTrial => _isCampaign ? DisplayType.Both :
 					OptionCountdownTimer ? DisplayType.Big : DisplayType.Normal,
-				"Speed Lap" => OptionCountdownTimer ? DisplayType.Big : DisplayType.None,
+				StringSpeedLap => OptionCountdownTimer ? DisplayType.Big : DisplayType.None,
 				_ => DisplayType.Normal
 			};
 			if (OptionBestTime == 0)
@@ -707,9 +709,9 @@ namespace Streamliner
 		private float _targetTime;
 		private float _awardTimeDifference;
 		private float _currentTime;
+		private float _averageLapTimeAdvantage;
 		private bool _lapInvalidated;
 		private bool _initiated;
-		private bool _debugmessegesent;
 
 		public override void Start()
 		{
@@ -775,7 +777,9 @@ namespace Streamliner
 			{
 				SetLeftTime();
 
-				if (_gamemodeName == "Speed Lap")
+				if (_gamemodeName == StringTimeTrial)
+					NgRaceEvents.OnShipLapUpdate += UpdateAverageLapTimeAdvantage;
+				if (_gamemodeName == StringSpeedLap)
 				{
 					NgUiEvents.OnGamemodeUpdateCurrentLapTime += UpdateSpeedLapCurrentTime;
 					NgUiEvents.OnGamemodeInvalidatedLap += InvalidateLap;
@@ -795,7 +799,7 @@ namespace Streamliner
 			UpdateBestTime();
 			if (_usingLeftTimeDisplay)
 			{
-				if (_gamemodeName != "Speed Lap") UpdateCurrentTime();
+				if (_gamemodeName != StringSpeedLap) UpdateCurrentTime();
 				if (_isCampaign) ChangeTargetTime();
 				SetLeftTime();
 			}
@@ -863,14 +867,16 @@ namespace Streamliner
 				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
 		}
 
+		private void UpdateAverageLapTimeAdvantage(ShipController ship)
+		{
+			if (_gamemodeName != StringTimeTrial || _timeType != TimeType.Lap || ship != TargetShip)
+				return;
+
+			_averageLapTimeAdvantage +=
+				_bestTime - TargetShip.GetLapTime(TargetShip.CurrentLap);
+		}
 		private void SetLeftTime()
 		{
-			if (!_debugmessegesent)
-			{
-				Debug.Log("SetLeftTime()");
-				Debug.Log($"  CurrentTime: {_currentTime}, TargetTime: {_targetTime}");
-			}
-
 			if (_currentTime < 0f || _lapInvalidated)
 			{
 				BigDisplay.Value.text = _bigTimeTextBuilder.ToString(-1f);
@@ -886,15 +892,11 @@ namespace Streamliner
 
 			float timeLeft = _targetTime - _currentTime;
 			float timeMax = _isCampaign ? _awardTimeDifference : _targetTime;
+			if (_gamemodeName == StringTimeTrial && _timeType == TimeType.Lap)
+				timeLeft += _averageLapTimeAdvantage;
 			timeLeft = timeLeft < 0f ? 0f : timeLeft > _targetTime ? _targetTime : timeLeft;
 			BigDisplay.Value.text = _bigTimeTextBuilder.ToString(timeLeft);
 			BigDisplay.FillBoth(timeLeft / timeMax);
-
-			if (!_debugmessegesent)
-			{
-				Debug.Log($"  TimeLeft: {timeLeft}, TimeMax: {timeMax}");
-				_debugmessegesent = true;
-			}
 		}
 
 		public override void OnDestroy()
@@ -903,10 +905,15 @@ namespace Streamliner
 			if (_usingBestTimeDisplay)
 				NgRaceEvents.OnShipLapUpdate -= SetBestTime;
 
-			if (_usingLeftTimeDisplay && _gamemodeName == "Speed Lap")
+			switch (_usingLeftTimeDisplay)
 			{
-				NgUiEvents.OnGamemodeUpdateCurrentLapTime -= UpdateSpeedLapCurrentTime;
-				NgUiEvents.OnGamemodeInvalidatedLap -= InvalidateLap;
+				case true when _gamemodeName == StringTimeTrial:
+					NgRaceEvents.OnShipLapUpdate -= UpdateAverageLapTimeAdvantage;
+					break;
+				case true when _gamemodeName == StringSpeedLap:
+					NgUiEvents.OnGamemodeUpdateCurrentLapTime -= UpdateSpeedLapCurrentTime;
+					NgUiEvents.OnGamemodeInvalidatedLap -= InvalidateLap;
+					break;
 			}
 		}
 	}
