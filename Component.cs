@@ -673,19 +673,15 @@ namespace Streamliner
 		{
 			/*
 			 * Display Setup
-			 * TT   -> Normal(Total/Lap Time) / Big(Total/Lap Left) /
-			 *         Both(Total Time, Target Left)
-			 * SL   -> None / Big(Lap Left)
-			 * Race -> Normal(Total/Lap Time)
+			 * TT   -> Normal(Total/Lap) / Both(Total/Lap, Total/Lap Left) / Both(Total, Target Left)
+			 * SL   -> Normal(Lap) / Both(Lap, Lap Left)
+			 * Race -> Normal(Total/Lap)
 			 * Then if OptionBestTime is set to off, remove Normal.
 			 */
-			_displayType = gamemodeName switch
-			{
-				StringTimeTrial => _isCampaign ? DisplayType.Both :
-					OptionCountdownTimer ? DisplayType.Big : DisplayType.Normal,
-				StringSpeedLap => OptionCountdownTimer ? DisplayType.Big : DisplayType.None,
-				_ => DisplayType.Normal
-			};
+			_displayType = gamemodeName is StringTimeTrial or StringSpeedLap ?
+				_isCampaign || OptionCountdownTimer ? DisplayType.Both : DisplayType.Normal :
+				DisplayType.Normal;
+
 			if (OptionBestTime == 0)
 			{
 				_displayType = _displayType switch
@@ -713,6 +709,7 @@ namespace Streamliner
 		private float _averageLapTimeAdvantage;
 		private bool _lapInvalidated;
 		private bool _initiated;
+		private bool _bestTimeIsUpAtLapUpdate;
 
 		public override void Start()
 		{
@@ -770,6 +767,16 @@ namespace Streamliner
 			}
 			ChangeTargetTime();
 
+			/*
+			 * OnShipLapUpdate executes before Update is done.
+			 * Two methods above that updates data for methods below,
+			 * are executed in Update.
+			 *
+			 * So I am making an exception and make them update at
+			 * OnShipLapUpdate instead.
+			 */
+			NgRaceEvents.OnShipLapUpdate += UpdateBestAndTargetTimeOnLapUpdate;
+
 			if (_usingBestTimeDisplay)
 			{
 				SetBestTime(TargetShip);
@@ -778,8 +785,10 @@ namespace Streamliner
 
 			if (_usingLeftTimeDisplay)
 			{
+				SetLeftLabel(TargetShip);
 				SetLeftTime();
 
+				NgRaceEvents.OnShipLapUpdate += SetLeftLabel;
 				if (_showingLapTimeAdvantage)
 					// ei yo are we triggering this at the START of the lap now? wth
 					NgRaceEvents.OnShipLapUpdate += UpdateAverageLapTimeAdvantage;
@@ -801,10 +810,10 @@ namespace Streamliner
 				return;
 
 			UpdateBestTime();
+			ChangeTargetTime();
 			if (_usingLeftTimeDisplay)
 			{
 				if (_gamemodeName != StringSpeedLap) UpdateCurrentTime();
-				if (_isCampaign) ChangeTargetTime();
 				SetLeftTime();
 			}
 		}
@@ -824,8 +833,24 @@ namespace Streamliner
 		private void InvalidateLap() =>
 			_lapInvalidated = true;
 
+		private void UpdateBestAndTargetTimeOnLapUpdate(ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+
+			UpdateBestTime();
+			ChangeTargetTime();
+			_bestTimeIsUpAtLapUpdate = true;
+		}
+
 		private void UpdateBestTime()
 		{
+			if (_bestTimeIsUpAtLapUpdate)
+			{
+				_bestTimeIsUpAtLapUpdate = false;
+				return;
+			}
+
 			_bestTime = TargetShip.LoadedBestLapTime switch
 			{
 				true when _timeType == TimeType.Total =>
@@ -841,9 +866,39 @@ namespace Streamliner
 
 		private void ChangeTargetTime()
 		{
+			if (_bestTimeIsUpAtLapUpdate)
+			{
+				_bestTimeIsUpAtLapUpdate = false;
+				return;
+			}
+
+			/*
+			 * If best time is not loaded from the start
+			 * (the track was never played in current setting before),
+			 * _bestTime will update on every faster finished lap.
+			 *
+			 * If it's loaded from the start,
+			 * _bestTime will keep loading from the same value,
+			 * effectively staying at it.
+			 *
+			 * When not loaded and panel is tracking lap time,
+			 * updating _targetTime can gives a lap time to chase
+			 * from the second lap.
+			 *
+			 * But if panel is tracking total time,
+			 * this makes the panel stuck at 0 as
+			 * _currentTime that won't reset on lap update can't be
+			 * any smaller than the first lap time.
+			 *
+			 * When best time is loaded from the start,
+			 * _targetTime can be updated in either tracking mode,
+			 * which won't change on lap updates
+			 * but will put the loaded time to the panel on the first update.
+			 */
 			if (!_isCampaign)
 			{
-				_targetTime = _bestTime;
+				if (TargetShip.LoadedBestLapTime || _timeType == TimeType.Lap)
+					_targetTime = _bestTime;
 				return;
 			}
 
@@ -876,11 +931,18 @@ namespace Streamliner
 
 			NormalDisplayValue.text = _bestTime >= 0f ?
 				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
+
+			Debug.Log($"SBT() at the start of lap {TargetShip.CurrentLap}");
+			Debug.Log($"  LoadedBestLapTime? {TargetShip.LoadedBestLapTime}, HasBestLapTime? {TargetShip.HasBestLapTime} and it's {TargetShip.BestLapTime}, TargetTime? {TargetShip.TargetTime}");
+			Debug.Log($"  _bestTime? {_bestTime} _targetTime? {_targetTime}");
 		}
 
 		private void UpdateAverageLapTimeAdvantage(ShipController ship)
 		{
 			if (ship != TargetShip || TargetShip.CurrentLap <= 1)
+				return;
+
+			if (_bestTime <= 0f)
 				return;
 
 			_averageLapTimeAdvantage +=
@@ -905,7 +967,7 @@ namespace Streamliner
 				BigDisplay.FillBoth(0f);
 				return;
 			}
-			if (_targetTime == 0f)
+			if (_targetTime <= 0f)
 			{
 				BigDisplay.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
 				BigDisplay.FillBoth(1f);
@@ -925,9 +987,11 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
+			NgRaceEvents.OnShipLapUpdate -= UpdateBestAndTargetTimeOnLapUpdate;
 			if (_usingBestTimeDisplay)
 				NgRaceEvents.OnShipLapUpdate -= SetBestTime;
-
+			if (_usingLeftTimeDisplay)
+				NgRaceEvents.OnShipLapUpdate -= SetLeftLabel;
 			switch (_usingLeftTimeDisplay)
 			{
 				case true when _showingLapTimeAdvantage:
