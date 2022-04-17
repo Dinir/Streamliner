@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 using NgAudio;
 using UnityEngine;
@@ -698,6 +697,7 @@ namespace Streamliner
 
 		private bool _usingBestTimeDisplay;
 		private bool _usingLeftTimeDisplay;
+		private string _gamemodeName;
 		private bool _isCampaign;
 		private float _bestTime;
 		private float _bronzeTarget;
@@ -705,7 +705,11 @@ namespace Streamliner
 		private float _goldTarget;
 		private float _platinumTarget;
 		private float _targetTime;
+		private float _awardTimeDifference;
 		private float _currentTime;
+		private bool _lapInvalidated;
+		private bool _initiated;
+		private bool _debugmessegesent;
 
 		public override void Start()
 		{
@@ -713,14 +717,15 @@ namespace Streamliner
 			Panel = CustomComponents.GetById("Base");
 			NormalDisplay = CustomComponents.GetById("Normal");
 			NormalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
-			NormalDisplayValue = NormalDisplay.Find("Text").GetComponent<Text>();
+			NormalDisplayValue = NormalDisplay.Find("Value").GetComponent<Text>();
 			NormalDisplayValue.color = GetTintColor();
 			BigDisplay = new DoubleGaugePanel(CustomComponents.GetById("Big"));
 			BigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
 
+			_gamemodeName = RaceManager.CurrentGamemode.Name;
 			_isCampaign = NgCampaign.Enabled;
-			SetTimeType(RaceManager.CurrentGamemode.Name);
-			SetDisplayType(RaceManager.CurrentGamemode.Name);
+			SetTimeType(_gamemodeName);
+			SetDisplayType(_gamemodeName);
 			switch (_displayType)
 			{
 				case DisplayType.None:
@@ -745,9 +750,20 @@ namespace Streamliner
 			_usingLeftTimeDisplay =
 				_displayType is DisplayType.Big or DisplayType.Both;
 
-			UpdateBestTime(TargetShip);
-			Debug.Log($"Best time loaded in Start() is {_bestTime.ToString(CultureInfo.InvariantCulture)}");
-			Debug.Log($"Best time stored in TargetShip on Start(): Lap: {TargetShip.BestLapTime}, Total: {TargetShip.TargetTime}");
+			NgRaceEvents.OnCountdownStart += Initiate;
+		}
+
+		private void Initiate()
+		{
+			UpdateBestTime();
+			if (_isCampaign)
+			{
+				_bronzeTarget = NgCampaign.CurrentEvent.EventProgress.BronzeValue;
+				_silverTarget = NgCampaign.CurrentEvent.EventProgress.SilverValue;
+				_goldTarget = NgCampaign.CurrentEvent.EventProgress.GoldValue;
+				_platinumTarget = NgCampaign.CurrentEvent.EventProgress.PlatinumValue;
+			}
+			ChangeTargetTime();
 
 			if (_usingBestTimeDisplay)
 			{
@@ -757,57 +773,85 @@ namespace Streamliner
 
 			if (_usingLeftTimeDisplay)
 			{
-				if (_isCampaign)
-				{
-					_bronzeTarget = NgCampaign.CurrentEvent.EventProgress.BronzeValue;
-					_silverTarget = NgCampaign.CurrentEvent.EventProgress.SilverValue;
-					_goldTarget = NgCampaign.CurrentEvent.EventProgress.GoldValue;
-					_platinumTarget = NgCampaign.CurrentEvent.EventProgress.PlatinumValue;
+				SetLeftTime();
 
-					_targetTime = _platinumTarget;
-				}
-				else
+				if (_gamemodeName == "Speed Lap")
 				{
-					_targetTime = _bestTime;
+					NgUiEvents.OnGamemodeUpdateCurrentLapTime += UpdateSpeedLapCurrentTime;
+					NgUiEvents.OnGamemodeInvalidatedLap += InvalidateLap;
 				}
-				SetLeftTime(0f);
 			}
+
+			_initiated = true;
+			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
 
 		public override void Update()
 		{
 			base.Update();
-			if (
-				_displayType == DisplayType.None
-				|| !TargetShip || !_usingLeftTimeDisplay
-			)
+			if (_displayType == DisplayType.None || !_initiated || !TargetShip)
 				return;
 
+			UpdateBestTime();
+			if (_usingLeftTimeDisplay)
+			{
+				if (_gamemodeName != "Speed Lap") UpdateCurrentTime();
+				if (_isCampaign) ChangeTargetTime();
+				SetLeftTime();
+			}
+		}
+
+		private void UpdateSpeedLapCurrentTime(float currentTime)
+		{
+			_currentTime = currentTime;
+			_lapInvalidated = false;
+		}
+
+		private void UpdateCurrentTime()
+		{
 			_currentTime = _timeType == TimeType.Total ?
 				TargetShip.TotalRaceTime : TargetShip.CurrentLapTime;
-			UpdateBestTime(TargetShip);
-			if (_isCampaign) ChangeTargetTime(_currentTime);
-			SetLeftTime(_currentTime);
 		}
 
-		private void UpdateBestTime(ShipController ship)
+		private void InvalidateLap() =>
+			_lapInvalidated = true;
+
+		private void UpdateBestTime()
 		{
 			_bestTime =
-				ship.LoadedBestLapTime ?
-					_timeType == TimeType.Total ? ship.TargetTime : ship.BestLapTime :
-					ship.HasBestLapTime ? ship.BestLapTime : -1f;
+				TargetShip.LoadedBestLapTime ?
+					_timeType == TimeType.Total ? TargetShip.TargetTime : TargetShip.BestLapTime :
+					TargetShip.HasBestLapTime ? TargetShip.BestLapTime : -1f;
 		}
 
-		private void ChangeTargetTime(float currentTime)
+		private void ChangeTargetTime()
 		{
-			if ((double) currentTime <= _platinumTarget)
+			if (!_isCampaign)
+			{
+				_targetTime = _bestTime;
+				return;
+			}
+
+			if ((double) _currentTime <= _platinumTarget)
+			{
 				_targetTime = _platinumTarget;
-			else if ((double) currentTime <= _goldTarget)
+				_awardTimeDifference = _platinumTarget;
+			}
+			else if ((double) _currentTime <= _goldTarget)
+			{
 				_targetTime = _goldTarget;
-			else if ((double) currentTime <= _silverTarget)
+				_awardTimeDifference = _goldTarget - _platinumTarget;
+			}
+			else if ((double) _currentTime <= _silverTarget)
+			{
 				_targetTime = _silverTarget;
-			else if ((double) currentTime <= _bronzeTarget)
+				_awardTimeDifference = _silverTarget - _goldTarget;
+			}
+			else if ((double) _currentTime <= _bronzeTarget)
+			{
 				_targetTime = _bronzeTarget;
+				_awardTimeDifference = _bronzeTarget - _silverTarget;
+			}
 		}
 
 		private void SetBestTime(ShipController ship)
@@ -819,20 +863,38 @@ namespace Streamliner
 				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
 		}
 
-		private void SetLeftTime(float currentTime)
+		private void SetLeftTime()
 		{
+			if (!_debugmessegesent)
+			{
+				Debug.Log("SetLeftTime()");
+				Debug.Log($"  CurrentTime: {_currentTime}, TargetTime: {_targetTime}");
+			}
+
+			if (_currentTime < 0f || _lapInvalidated)
+			{
+				BigDisplay.Value.text = _bigTimeTextBuilder.ToString(-1f);
+				BigDisplay.FillBoth(0f);
+				return;
+			}
 			if (_targetTime == 0f)
 			{
-				BigDisplay.Value.text = _bigTimeTextBuilder.ToString(currentTime);
+				BigDisplay.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
 				BigDisplay.FillBoth(1f);
 				return;
 			}
 
-			float timeLeft = _targetTime - currentTime;
+			float timeLeft = _targetTime - _currentTime;
+			float timeMax = _isCampaign ? _awardTimeDifference : _targetTime;
 			timeLeft = timeLeft < 0f ? 0f : timeLeft > _targetTime ? _targetTime : timeLeft;
-
 			BigDisplay.Value.text = _bigTimeTextBuilder.ToString(timeLeft);
-			BigDisplay.FillBoth(timeLeft / _targetTime);
+			BigDisplay.FillBoth(timeLeft / timeMax);
+
+			if (!_debugmessegesent)
+			{
+				Debug.Log($"  TimeLeft: {timeLeft}, TimeMax: {timeMax}");
+				_debugmessegesent = true;
+			}
 		}
 
 		public override void OnDestroy()
@@ -840,6 +902,12 @@ namespace Streamliner
 			base.OnDestroy();
 			if (_usingBestTimeDisplay)
 				NgRaceEvents.OnShipLapUpdate -= SetBestTime;
+
+			if (_usingLeftTimeDisplay && _gamemodeName == "Speed Lap")
+			{
+				NgUiEvents.OnGamemodeUpdateCurrentLapTime -= UpdateSpeedLapCurrentTime;
+				NgUiEvents.OnGamemodeInvalidatedLap -= InvalidateLap;
+			}
 		}
 	}
 

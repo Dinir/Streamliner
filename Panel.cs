@@ -56,9 +56,14 @@ namespace Streamliner
 
 	internal class BigTimeTextBuilder
 	{
-		private StringBuilder _sb;
+		private readonly StringBuilder _sb;
+		private const string _emptyTime =
+			"-:--.<size=20> </size><size=150>--</size>";
 		internal string ToString(float value)
 		{
+			if (value < 0f)
+				return _emptyTime;
+
 			_sb.Clear();
 			string minutes = IntStrDb.GetNumber(
 				Mathf.FloorToInt(value / 60f));
