@@ -1048,6 +1048,9 @@ namespace Streamliner
 			Panel = CustomComponents.GetById<RectTransform>("Base");
 			PanelAnimator = Panel.GetComponent<Animator>();
 
+			Panel.Find("Left").Find("Text").GetComponent<Text>().color = GetTintColor();
+			Panel.Find("Right").Find("Text").GetComponent<Text>().color = GetTintColor();
+
 			/*
 			 * Using `SetActive()` is ineffective here,
 			 * so instead I made an empty animation for the default state.
