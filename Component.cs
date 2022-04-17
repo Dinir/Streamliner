@@ -699,6 +699,7 @@ namespace Streamliner
 
 		private bool _usingBestTimeDisplay;
 		private bool _usingLeftTimeDisplay;
+		private bool _showingLapTimeAdvantage;
 		private string _gamemodeName;
 		private bool _isCampaign;
 		private float _bestTime;
@@ -751,6 +752,8 @@ namespace Streamliner
 				_displayType is DisplayType.Normal or DisplayType.Both;
 			_usingLeftTimeDisplay =
 				_displayType is DisplayType.Big or DisplayType.Both;
+			_showingLapTimeAdvantage =
+				_gamemodeName == StringTimeTrial && _timeType == TimeType.Lap;
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
@@ -777,7 +780,8 @@ namespace Streamliner
 			{
 				SetLeftTime();
 
-				if (_gamemodeName == StringTimeTrial)
+				if (_showingLapTimeAdvantage)
+					// ei yo are we triggering this at the START of the lap now? wth
 					NgRaceEvents.OnShipLapUpdate += UpdateAverageLapTimeAdvantage;
 				if (_gamemodeName == StringSpeedLap)
 				{
@@ -876,12 +880,15 @@ namespace Streamliner
 
 		private void UpdateAverageLapTimeAdvantage(ShipController ship)
 		{
-			if (_gamemodeName != StringTimeTrial || _timeType != TimeType.Lap || ship != TargetShip)
+			if (ship != TargetShip || TargetShip.CurrentLap <= 1)
 				return;
 
 			_averageLapTimeAdvantage +=
-				_bestTime - TargetShip.GetLapTime(TargetShip.CurrentLap);
+				_bestTime - TargetShip.GetLapTime(TargetShip.CurrentLap - 1);
+			Debug.Log($"UALTA() at the start of lap {TargetShip.CurrentLap}");
+			Debug.Log($"  Lap {TargetShip.CurrentLap - 1} Time: {TargetShip.GetLapTime(TargetShip.CurrentLap - 1)}, Advantage: {_averageLapTimeAdvantage}");
 		}
+
 		private void SetLeftTime()
 		{
 			if (_currentTime < 0f || _lapInvalidated)
@@ -899,10 +906,11 @@ namespace Streamliner
 
 			float timeLeft = _targetTime - _currentTime;
 			float timeMax = _isCampaign ? _awardTimeDifference : _targetTime;
-			if (_gamemodeName == StringTimeTrial && _timeType == TimeType.Lap)
+			if (_showingLapTimeAdvantage)
 				timeLeft += _averageLapTimeAdvantage;
-			timeLeft = timeLeft < 0f ? 0f : timeLeft > _targetTime ? _targetTime : timeLeft;
+			timeLeft = timeLeft < 0f ? 0f : timeLeft;
 			BigDisplay.Value.text = _bigTimeTextBuilder.ToString(timeLeft);
+			timeLeft = timeLeft > _targetTime ? _targetTime : timeLeft;
 			BigDisplay.FillBoth(timeLeft / timeMax);
 		}
 
@@ -914,7 +922,7 @@ namespace Streamliner
 
 			switch (_usingLeftTimeDisplay)
 			{
-				case true when _gamemodeName == StringTimeTrial:
+				case true when _showingLapTimeAdvantage:
 					NgRaceEvents.OnShipLapUpdate -= UpdateAverageLapTimeAdvantage;
 					break;
 				case true when _gamemodeName == StringSpeedLap:
