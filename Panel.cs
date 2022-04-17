@@ -340,10 +340,14 @@ namespace Streamliner
 				case StartingPoint.Edge:
 					_gauge.pivot = new Vector2(0, 1);
 					_rightGauge.pivot = new Vector2(1, 1);
+					_gauge.localPosition = Vector3.zero;
+					_rightGauge.localPosition = Vector3.zero;
 					break;
 				case StartingPoint.Center:
 					_gauge.pivot = new Vector2(1, 1);
 					_rightGauge.pivot = new Vector2(0, 1);
+					_gauge.localPosition = Vector3.right * _gauge.sizeDelta.x;
+					_rightGauge.localPosition = Vector3.left *_rightGauge.sizeDelta.x;
 					break;
 			}
 		}
