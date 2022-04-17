@@ -889,6 +889,14 @@ namespace Streamliner
 			Debug.Log($"  Lap {TargetShip.CurrentLap - 1} Time: {TargetShip.GetLapTime(TargetShip.CurrentLap - 1)}, Advantage: {_averageLapTimeAdvantage}");
 		}
 
+		private void SetLeftLabel(ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+
+			BigDisplay.Label.text = _targetTime <= 0f ? "best" : "target";
+		}
+
 		private void SetLeftTime()
 		{
 			if (_currentTime < 0f || _lapInvalidated)

@@ -170,7 +170,7 @@ namespace Streamliner
 	internal class BasicPanel
 	{
 		internal readonly RectTransform Base;
-		private readonly Text _label;
+		internal readonly Text Label;
 		internal readonly Text Value;
 		protected readonly RectTransform GaugeBackground;
 		protected readonly RectTransform _gauge;
@@ -181,7 +181,7 @@ namespace Streamliner
 		public BasicPanel(RectTransform panelElement)
 		{
 			Base = panelElement;
-			_label = panelElement.Find("Label").GetComponent<Text>();
+			Label = panelElement.Find("Label").GetComponent<Text>();
 			Value = panelElement.Find("Value").GetComponent<Text>();
 			GaugeBackground = panelElement.Find("GaugeBackground").GetComponent<RectTransform>();
 			_gauge = (RectTransform)GaugeBackground.Find("Gauge");
@@ -196,7 +196,7 @@ namespace Streamliner
 			Color gaugeBackgroundColor = GaugeColor;
 			gaugeBackgroundColor.a = GetTransparency(TextAlpha.ThreeEighths);
 
-			_label.color = GaugeColor;
+			Label.color = GaugeColor;
 			Value.color = GaugeColor;
 			_gauge.GetComponent<Image>().color = GaugeColor;
 			GaugeBackground.GetComponent<Image>().color = gaugeBackgroundColor;
@@ -210,7 +210,7 @@ namespace Streamliner
 			Color gaugeBackgroundColor = color;
 			gaugeBackgroundColor.a = GetTransparency(TextAlpha.ThreeEighths);
 
-			_label.color = color;
+			Label.color = color;
 			Value.color = color;
 			_gauge.GetComponent<Image>().color = color;
 			GaugeBackground.GetComponent<Image>().color = gaugeBackgroundColor;
