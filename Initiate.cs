@@ -339,7 +339,6 @@ namespace Streamliner
 		{
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
-			RegisterHud<ZoneEnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("ZoneEnergy", false));
 			RegisterHud<UpsurgeTracker>(HudRegister.Assets.GetComponent<HudComponents>("Zone", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
