@@ -7,8 +7,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using NgLib;
 using NgData;
-using NgGame;
-using NgModes;
 using NgTrackData;
 using NgShips;
 using NgUi.RaceUi.HUD;

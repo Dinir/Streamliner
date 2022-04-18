@@ -1,23 +1,10 @@
-﻿using System;
-using System.IO;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using System.IO;
 using BallisticUnityTools.AssetApi;
 using BallisticUnityTools.Placeholders;
 using NgModding;
 using NgModding.Huds;
-using NgData;
 using NgSettings;
-using NgUi.MenuUi;
-using NgUi.RaceUi;
-using NgEvents;
-using NgPickups;
-using NgLib;
-using NgShips;
-using NgModes;
-using NgGame;
 using NgSp;
-using static Streamliner.HudRegister;
 
 namespace Streamliner
 {
