@@ -1313,9 +1313,6 @@ namespace Streamliner
 	public class TeamScoreboard : ScriptableHud
 	{}
 
-	public class UpsurgeScoreboard : ScriptableHud
-	{}
-
 	public class Awards : ScriptableHud
 	{}
 }
