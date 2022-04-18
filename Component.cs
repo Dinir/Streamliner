@@ -1283,23 +1283,30 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = new Playerboard(CustomComponents.GetById("Base"));
+			Panel = new Playerboard(CustomComponents.GetById("Base"),
+				RaceManager.CurrentGamemode.Name);
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
 
 		public void Initiate()
 		{
-			Panel.InitiateLayout();
-			Panel.InitiateSlots();
-			StartCoroutine(Panel.Update());
+			/*
+			 * CurrentGamemode can be Gamemode or inheritances of it.
+			 * Accessing it through RaceManager instead of
+			 * assigning it to a field can make it easy to
+			 * access common fields.
+			 */
+			Panel.InitiateLayout(RaceManager.CurrentGamemode.TargetScore);
+			Panel.InitiateSlots(Ships.Loaded);
+			StartCoroutine(Panel.Update(Ships.Loaded));
 		}
 
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
 			NgRaceEvents.OnCountdownStart -= Initiate;
-			StopCoroutine(Panel.Update());
+			StopCoroutine(Panel.Update(Ships.Loaded));
 		}
 	}
 

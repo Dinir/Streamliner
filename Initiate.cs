@@ -342,7 +342,7 @@ namespace Streamliner
 			RegisterHud<ZoneEnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("ZoneEnergy", false));
 			RegisterHud<UpsurgeTracker>(HudRegister.Assets.GetComponent<HudComponents>("Zone", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
-			RegisterHud<UpsurgeScoreboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}

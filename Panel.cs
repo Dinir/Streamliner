@@ -370,6 +370,7 @@ namespace Streamliner
 			_valueType = name switch
 			{
 				"Eliminator" => ValueType.Score,
+				"Upsurge" => ValueType.Score,
 				"Rush Hour" => ValueType.Energy,
 				_ => ValueType.Position
 			};
@@ -377,7 +378,7 @@ namespace Streamliner
 
 		private readonly float _oneLetterWidth = 20f;
 		private readonly float _oneDotWidth = 4f;
-		private readonly RectTransform _base;
+		internal readonly RectTransform Base;
 		private readonly RectTransform _targetRow;
 		private readonly RectTransform _entrySlotTemplate;
 		private readonly RectTransform _templateGaugeBackground;
@@ -470,11 +471,11 @@ namespace Streamliner
 			}
 		}
 
-		public Playerboard(RectTransform panelElement)
+		public Playerboard(RectTransform panelElement, string gamemodeName)
 		{
-			SetValueType(gamemode.Name);
+			SetValueType(gamemodeName);
 
-			_base = panelElement;
+			Base = panelElement;
 			_targetRow = panelElement.Find("TargetRow").GetComponent<RectTransform>();
 			_entrySlotTemplate = panelElement.Find("EntrySlot").GetComponent<RectTransform>();
 			_templateGaugeBackground =
@@ -483,10 +484,8 @@ namespace Streamliner
 			_entrySlotTemplate.gameObject.SetActive(false);
 		}
 
-		public void InitiateLayout()
+		public void InitiateLayout(float targetScore)
 		{
-			float targetScore = gamemode.TargetScore;
-
 			// Disable components that are irrelevant to the game mode.
 			if (targetScore == 0f)
 			{
@@ -543,11 +542,11 @@ namespace Streamliner
 					.sizeDelta += widthAdjustmentVector2;
 		}
 
-		public void InitiateSlots()
+		public void InitiateSlots(List<ShipController> loadedShips)
 		{
-			_visibleList = new List<EntrySlot>(Ships.Loaded.Count);
-			_rawValueList = new List<RawValuePair>(Ships.Loaded.Count);
-			for (int i = 0; i < Ships.Loaded.Count; i++)
+			_visibleList = new List<EntrySlot>(loadedShips.Count);
+			_rawValueList = new List<RawValuePair>(loadedShips.Count);
+			for (int i = 0; i < loadedShips.Count; i++)
 			{
 				RectTransform slot =
 					Instantiate(_entrySlotTemplate.gameObject).GetComponent<RectTransform>();
@@ -557,7 +556,7 @@ namespace Streamliner
 
 				slot.localPosition += Vector3.down * slot.sizeDelta.y * i;
 
-				ShipController loadedShip = Ships.Loaded[i];
+				ShipController loadedShip = loadedShips[i];
 				_visibleList.Add(new EntrySlot(slot));
 				_visibleList[i].SetRefId(loadedShip.ShipId);
 				_visibleList[i].SetName(loadedShip.ShipName);
@@ -567,11 +566,11 @@ namespace Streamliner
 			}
 		}
 
-		public IEnumerator Update()
+		public IEnumerator Update(List<ShipController> loadedShips)
 		{
 			while (true)
 			{
-				UpdateData();
+				UpdateData(loadedShips);
 				UpdateRefIdByOrder();
 				UpdateSlots();
 
@@ -582,11 +581,11 @@ namespace Streamliner
 		/// <summary>
 		/// Update stored data in <c>_rawValueList</c> with corresponding ones in the loaded ships.
 		/// </summary>
-		public void UpdateData()
+		public void UpdateData(List<ShipController> loadedShips)
 		{
 			foreach (RawValuePair rawValuePair in _rawValueList)
 			{
-				ShipController ship = Ships.Loaded[rawValuePair.Id];
+				ShipController ship = loadedShips[rawValuePair.Id];
 				switch (_valueType)
 				{
 					case ValueType.Energy:
@@ -598,7 +597,7 @@ namespace Streamliner
 					case ValueType.Position:
 					default:
 						rawValuePair.Value = ship.ShieldIntegrity < 0f ?
-							Ships.Loaded.Count + 1 : ship.CurrentPlace;
+							_rawValueList.Count + 1 : ship.CurrentPlace;
 						break;
 				}
 			}
@@ -670,7 +669,7 @@ namespace Streamliner
 				slot.SetDisplayValue(_valueType, rawValuePair.Value);
 				slot.FillByPercentage(rawValuePair.Value);
 				slot.ChangeOverallAlpha(
-					Ships.Loaded[refId].ShieldIntegrity < 0f ?
+					rawValuePair.Value < 0f ?
 						TextAlpha.Quarter : TextAlpha.Full
 				);
 			}
@@ -683,7 +682,7 @@ namespace Streamliner
 				int refId = slot.refId;
 				RawValuePair rawValuePair = _rawValueList[refId];
 				slot.SetName(rawValuePair.Name);
-				if (rawValuePair.Value <= Ships.Loaded.Count)
+				if (rawValuePair.Value <= _rawValueList.Count)
 				{
 					slot.SetDisplayValue(_valueType, rawValuePair.Value);
 					slot.ChangeOverallAlpha(TextAlpha.Full);
