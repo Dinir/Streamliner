@@ -393,7 +393,7 @@ namespace Streamliner
 			private readonly Text _value;
 			private readonly RectTransform _gauge;
 			internal int refId;
-			private readonly float _gaugeMaxWidth;
+			protected readonly Vector2 MaxSize;
 			private Vector2 _currentSize;
 			private readonly Color _slotColor = GetTintColor(TextAlpha.ThreeQuarters);
 
@@ -404,8 +404,7 @@ namespace Streamliner
 				_name = _base.Find("Name").GetComponent<Text>();
 				_value = _base.Find("Plate").Find("Value").GetComponent<Text>();
 				_gauge = (RectTransform)_base.Find("GaugeBackground").Find("Gauge");
-				_currentSize = _gauge.sizeDelta;
-				_gaugeMaxWidth = _currentSize.x;
+				MaxSize = _gauge.sizeDelta;
 
 				ChangeColor();
 				SetName("");
@@ -452,7 +451,10 @@ namespace Streamliner
 
 			public void FillByPercentage(float value)
 			{
-				_currentSize.x = ( value / 100f ) * _gaugeMaxWidth;
+				value = value < 0f ? 0f : value > 100f ? 100f : value;
+				_currentSize.x = ( value / 100f ) * MaxSize.x;
+				_currentSize.y = _currentSize.x >= MaxSize.y ?
+					MaxSize.y : _currentSize.x;
 				_gauge.sizeDelta = _currentSize;
 			}
 		}
