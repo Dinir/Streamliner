@@ -20,33 +20,36 @@ namespace Streamliner
 {
 	internal static class PresetColorPicker
 	{
-		private static readonly Color[] TintColorList = new Color[] {
-			// S2 V2
-			Color.HSVToRGB(0.9944f, 0.00f, 0.86f), // Grey
-			Color.HSVToRGB(0.9944f, 0.18f, 0.86f), // Red
-			Color.HSVToRGB(0.0778f, 0.18f, 0.86f), // Orange
-			Color.HSVToRGB(0.1611f, 0.18f, 0.86f), // Yellow
-			Color.HSVToRGB(0.2444f, 0.18f, 0.86f), // Lime
-			Color.HSVToRGB(0.3278f, 0.18f, 0.86f), // Green
-			Color.HSVToRGB(0.4111f, 0.18f, 0.86f), // Mint
-			Color.HSVToRGB(0.4944f, 0.18f, 0.86f), // Cyan
-			Color.HSVToRGB(0.5778f, 0.18f, 0.86f), // Azure
-			Color.HSVToRGB(0.6611f, 0.18f, 0.86f), // Blue
-			Color.HSVToRGB(0.7444f, 0.18f, 0.86f), // Violet
-			Color.HSVToRGB(0.8278f, 0.18f, 0.86f), // Magenta
-			Color.HSVToRGB(0.9111f, 0.18f, 0.86f)  // Rose
+		private static Color _tintColorBuffer;
+		private static readonly float[] StandardH = {
+			// for Grey
+			0f,
+			// Red, Orange, Yellow, Lime, Green, Mint
+			0.9944f, 0.0778f, 0.1611f, 0.2444f, 0.3278f, 0.4111f,
+			// Cyan, Azure, Blue, Violet, Magenta, Rose
+			0.4944f, 0.5778f, 0.6611f, 0.7444f, 0.8278f, 0.9111f
 		};
-		private static readonly float[] TintAlphaList = new float[] {
+		private const float StandardS = 0.18f; // S2
+		private const float StandardV = 0.86f; // V2
+		private const float DarkerS = 0.32f; // S4
+		private const float DarkerV = 0.40f;
+		private static readonly float[] TintAlphaList = {
 			1f, 0.9f, 0.750f, 0.500f, 0.375f, 0.250f, 0.000f
 		};
 		internal enum TextAlpha
 		{
 			Full, NineTenths, ThreeQuarters, Half, ThreeEighths, Quarter, Zero
 		}
-		private static Color _tintColorBuffer;
+
 		internal static Color GetTintColor(TextAlpha transparencyIndex = TextAlpha.Full)
 		{
-			_tintColorBuffer = TintColorList[OptionValueTint];
+			_tintColorBuffer = Color.HSVToRGB(StandardH[OptionValueTint], StandardS, StandardV);
+			_tintColorBuffer.a = TintAlphaList[(int) transparencyIndex];
+			return _tintColorBuffer;
+		}
+		internal static Color GetDarkerColor(TextAlpha transparencyIndex = TextAlpha.Full)
+		{
+			_tintColorBuffer = Color.HSVToRGB(StandardH[OptionValueTint], DarkerS, DarkerV);
 			_tintColorBuffer.a = TintAlphaList[(int) transparencyIndex];
 			return _tintColorBuffer;
 		}

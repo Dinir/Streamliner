@@ -25,7 +25,7 @@ namespace Streamliner
 		internal SpeedPanel Panel;
 		private float _computedValue;
 
-		private readonly Color _highlightColor = new Color32(0xf2, 0x61, 0x6b, 0xff); // Red S.60 V.95
+		private readonly Color _highlightColor = GetDarkerColor();
 
 		private float _currentSpeed;
 		private float _previousSpeed;
