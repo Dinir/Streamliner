@@ -601,11 +601,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Position
       objectReference: {fileID: 0}
-    - target: {fileID: 3032468065754203600, guid: 8756f239fb5aae346987fd52fb54ff3f,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3032468065754203596, guid: 8756f239fb5aae346987fd52fb54ff3f,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1201,11 +1196,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Turbo
       objectReference: {fileID: 0}
-    - target: {fileID: 5536957345834799886, guid: db32107fba79442468176971e1c91e96,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2378325752977746889, guid: db32107fba79442468176971e1c91e96,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1682,11 +1672,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: TargetTime
       objectReference: {fileID: 0}
-    - target: {fileID: 5282508372833822636, guid: 3c67ff04ad962ba44987c05ce3d5c7a2,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7604832613632700936, guid: 3c67ff04ad962ba44987c05ce3d5c7a2,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2162,11 +2147,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Pickup
-      objectReference: {fileID: 0}
-    - target: {fileID: 8985735125140589613, guid: 0cd50d073a2028d46a2afc7df9e7255b,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8985735125140589601, guid: 0cd50d073a2028d46a2afc7df9e7255b,
         type: 3}
