@@ -48,7 +48,7 @@ namespace Streamliner
 			_settingsPath = Path.Combine(modPath, "settings.ini");
 
 			Assets = ModAssets.Load(
-				Path.Combine(modPath, "streamliner.nga"));
+				Path.Combine(modPath, "mod assets.nga"));
 
 			// register the mod
 			CustomHudRegistry.RegisterMod(Id);
