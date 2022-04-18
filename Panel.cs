@@ -259,7 +259,7 @@ namespace Streamliner
 		}
 
 		private void ChangeAccelColor() =>
-			_accelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.Quarter);
+			_accelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.ThreeEighths);
 
 		public void FillAccel(float amount)
 		{
