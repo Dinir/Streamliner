@@ -366,6 +366,78 @@ namespace Streamliner
 		}
 	}
 
+	internal class LayeredDoubleGaugePanel : DoubleGaugePanel
+	{
+		protected readonly RectTransform SecondGauge;
+		protected readonly Image SecondGaugeImage;
+		protected readonly RectTransform SecondRightGauge;
+		protected readonly Image SecondRightGaugeImage;
+		internal Vector2 CurrentSecondSize;
+		internal readonly Color SecondGaugeColor;
+
+		public LayeredDoubleGaugePanel(RectTransform panelElement) : base(panelElement)
+		{
+			SecondGauge = (RectTransform) GaugeBackground.Find("SecondGauge");
+			SecondGaugeImage = SecondGauge.GetComponent<Image>();
+			SecondRightGauge = (RectTransform) GaugeBackground.Find("SecondRightGauge");
+			SecondRightGaugeImage = SecondRightGauge.GetComponent<Image>();
+			SecondGaugeColor = GetTintColor(TextAlpha.ThreeEighths);
+			CurrentSecondSize.y = MaxSize.y;
+
+			ChangeSecondGaugesColor();
+			FillSecondGauges(0f);
+		}
+
+		private void ChangeSecondGaugesColor()
+		{
+			SecondGaugeImage.color = SecondGaugeColor;
+			SecondRightGaugeImage.color = SecondGaugeColor;
+		}
+
+		public override void ChangeColor(Color color)
+		{
+			base.ChangeColor(color);
+			color.a = GetTransparency(TextAlpha.ThreeEighths);
+			SecondGaugeImage.color = color;
+			SecondRightGaugeImage.color = color;
+		}
+
+		public override void ChangeDataPartColor(Color color)
+		{
+			base.ChangeDataPartColor(color);
+			color.a = GetTransparency(TextAlpha.ThreeEighths);
+			SecondGaugeImage.color = color;
+			SecondRightGaugeImage.color = color;
+		}
+
+		public void FillSecondGauges(float amount)
+		{
+			CurrentSecondSize.x = amount * MaxSize.x;
+			SecondGauge.sizeDelta = CurrentSecondSize;
+			SecondRightGauge.sizeDelta = CurrentSecondSize;
+		}
+
+		public override void SetFillStartingSide(StartingPoint sp)
+		{
+			base.SetFillStartingSide(sp);
+			switch (sp)
+			{
+				case StartingPoint.Edge:
+					SecondGauge.pivot = new Vector2(0, 1);
+					SecondRightGauge.pivot = new Vector2(1, 1);
+					SecondGauge.localPosition = Vector3.zero;
+					SecondRightGauge.localPosition = Vector3.zero;
+					break;
+				case StartingPoint.Center:
+					SecondGauge.pivot = new Vector2(1, 1);
+					SecondRightGauge.pivot = new Vector2(0, 1);
+					SecondGauge.localPosition = Vector3.right * SecondGauge.sizeDelta.x;
+					SecondRightGauge.localPosition = Vector3.left * SecondRightGauge.sizeDelta.x;
+					break;
+			}
+		}
+	}
+
 	internal class Playerboard
 	{
 		private enum ValueType
