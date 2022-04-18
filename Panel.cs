@@ -176,7 +176,9 @@ namespace Streamliner
 		internal readonly Text Label;
 		internal readonly Text Value;
 		protected readonly RectTransform GaugeBackground;
-		protected readonly RectTransform _gauge;
+		protected readonly Image GaugeBackgroundImage;
+		protected readonly RectTransform Gauge;
+		protected readonly Image GaugeImage;
 		internal readonly Color GaugeColor = GetTintColor();
 		protected readonly Vector2 MaxSize;
 		internal Vector2 CurrentSize;
@@ -187,8 +189,10 @@ namespace Streamliner
 			Label = panelElement.Find("Label").GetComponent<Text>();
 			Value = panelElement.Find("Value").GetComponent<Text>();
 			GaugeBackground = panelElement.Find("GaugeBackground").GetComponent<RectTransform>();
-			_gauge = (RectTransform)GaugeBackground.Find("Gauge");
-			MaxSize = _gauge.sizeDelta;
+			GaugeBackgroundImage = GaugeBackground.GetComponent<Image>();
+			Gauge = (RectTransform)GaugeBackground.Find("Gauge");
+			GaugeImage = Gauge.GetComponent<Image>();
+			MaxSize = Gauge.sizeDelta;
 
 			ChangeColor();
 			Fill(0f);
@@ -201,8 +205,8 @@ namespace Streamliner
 
 			Label.color = GaugeColor;
 			Value.color = GaugeColor;
-			_gauge.GetComponent<Image>().color = GaugeColor;
-			GaugeBackground.GetComponent<Image>().color = gaugeBackgroundColor;
+			GaugeImage.color = GaugeColor;
+			GaugeBackgroundImage.color = gaugeBackgroundColor;
 		}
 
 		// Identical to the method with no parameters,
@@ -215,14 +219,14 @@ namespace Streamliner
 
 			Label.color = color;
 			Value.color = color;
-			_gauge.GetComponent<Image>().color = color;
-			GaugeBackground.GetComponent<Image>().color = gaugeBackgroundColor;
+			GaugeImage.color = color;
+			GaugeBackgroundImage.color = gaugeBackgroundColor;
 		}
 
 		public virtual void ChangeDataPartColor(Color color)
 		{
 			Value.color = color;
-			_gauge.GetComponent<Image>().color = color;
+			GaugeImage.color = color;
 		}
 
 		public void Fill(float amount)
@@ -232,7 +236,7 @@ namespace Streamliner
 			// a 45deg slanted straight line.
 			CurrentSize.y = CurrentSize.x >= MaxSize.y ?
 				MaxSize.y : CurrentSize.x;
-			_gauge.sizeDelta = CurrentSize;
+			Gauge.sizeDelta = CurrentSize;
 		}
 	}
 
@@ -247,36 +251,40 @@ namespace Streamliner
 	/// </summary>
 	internal class SpeedPanel : BasicPanel
 	{
-		private readonly RectTransform _accelGauge;
-		private Vector2 _currentAccelSize;
+		protected readonly RectTransform AccelGauge;
+		protected readonly Image AccelGaugeImage;
+		internal Vector2 CurrentAccelSize;
 
 		public SpeedPanel(RectTransform panelElement) : base(panelElement)
 		{
-			_accelGauge = (RectTransform)GaugeBackground.Find("AccelGauge");
+			AccelGauge = (RectTransform)GaugeBackground.Find("AccelGauge");
+			AccelGaugeImage = AccelGauge.GetComponent<Image>();
 
 			ChangeAccelColor();
 			FillAccel(0f);
 		}
 
 		private void ChangeAccelColor() =>
-			_accelGauge.GetComponent<Image>().color = GetTintColor(TextAlpha.ThreeEighths);
+			AccelGaugeImage.color = GetTintColor(TextAlpha.ThreeEighths);
 
 		public void FillAccel(float amount)
 		{
-			_currentAccelSize.x = amount * MaxSize.x;
-			_currentAccelSize.y = _currentAccelSize.x >= MaxSize.y ?
-				MaxSize.y : _currentAccelSize.x;
-			_accelGauge.sizeDelta = _currentAccelSize;
+			CurrentAccelSize.x = amount * MaxSize.x;
+			CurrentAccelSize.y = CurrentAccelSize.x >= MaxSize.y ?
+				MaxSize.y : CurrentAccelSize.x;
+			AccelGauge.sizeDelta = CurrentAccelSize;
 		}
 	}
 
 	internal class FractionPanel : BasicPanel
 	{
 		internal readonly Text MaxValue;
+		internal readonly Text Separator;
 
 		public FractionPanel(RectTransform panelElement) : base(panelElement)
 		{
 			MaxValue = panelElement.Find("MaxValue").GetComponent<Text>();
+			Separator = Base.Find("Separator").GetComponent<Text>();
 
 			ChangeFractionPartColor();
 		}
@@ -284,20 +292,21 @@ namespace Streamliner
 		private void ChangeFractionPartColor()
 		{
 			MaxValue.color = GaugeColor;
-			Base.Find("Separator").GetComponent<Text>().color = GaugeColor;
+			Separator.color = GaugeColor;
 		}
 
 		public override void ChangeDataPartColor(Color color)
 		{
 			base.ChangeDataPartColor(color);
 			MaxValue.color = color;
-			Base.Find("Separator").GetComponent<Text>().color = color;
+			Separator.color = color;
 		}
 	}
 
 	internal class DoubleGaugePanel : BasicPanel
 	{
-		private readonly RectTransform _rightGauge;
+		protected readonly RectTransform RightGauge;
+		protected readonly Image RightGaugeImage;
 
 		internal enum StartingPoint
 		{
@@ -306,7 +315,8 @@ namespace Streamliner
 
 		public DoubleGaugePanel(RectTransform panelElement) : base(panelElement)
 		{
-			_rightGauge = (RectTransform) GaugeBackground.Find("RightGauge");
+			RightGauge = (RectTransform) GaugeBackground.Find("RightGauge");
+			RightGaugeImage = RightGauge.GetComponent<Image>();
 			// the bar borders are perpendicular straight lines
 			CurrentSize.y = MaxSize.y;
 
@@ -315,42 +325,42 @@ namespace Streamliner
 		}
 
 		private void ChangeRightGaugeColor() =>
-			_rightGauge.GetComponent<Image>().color = GaugeColor;
+			RightGaugeImage.color = GaugeColor;
 
 		public override void ChangeColor(Color color)
 		{
 			base.ChangeColor(color);
-			_rightGauge.GetComponent<Image>().color = color;
+			RightGaugeImage.color = color;
 		}
 
 		public override void ChangeDataPartColor(Color color)
 		{
 			base.ChangeDataPartColor(color);
-			_rightGauge.GetComponent<Image>().color = color;
+			RightGaugeImage.color = color;
 		}
 
 		public void FillBoth(float amount)
 		{
 			CurrentSize.x = amount * MaxSize.x;
-			_gauge.sizeDelta = CurrentSize;
-			_rightGauge.sizeDelta = CurrentSize;
+			Gauge.sizeDelta = CurrentSize;
+			RightGauge.sizeDelta = CurrentSize;
 		}
 
-		public void SetFillStartingSide(StartingPoint sp)
+		public virtual void SetFillStartingSide(StartingPoint sp)
 		{
 			switch (sp)
 			{
 				case StartingPoint.Edge:
-					_gauge.pivot = new Vector2(0, 1);
-					_rightGauge.pivot = new Vector2(1, 1);
-					_gauge.localPosition = Vector3.zero;
-					_rightGauge.localPosition = Vector3.zero;
+					Gauge.pivot = new Vector2(0, 1);
+					RightGauge.pivot = new Vector2(1, 1);
+					Gauge.localPosition = Vector3.zero;
+					RightGauge.localPosition = Vector3.zero;
 					break;
 				case StartingPoint.Center:
-					_gauge.pivot = new Vector2(1, 1);
-					_rightGauge.pivot = new Vector2(0, 1);
-					_gauge.localPosition = Vector3.right * _gauge.sizeDelta.x;
-					_rightGauge.localPosition = Vector3.left *_rightGauge.sizeDelta.x;
+					Gauge.pivot = new Vector2(1, 1);
+					RightGauge.pivot = new Vector2(0, 1);
+					Gauge.localPosition = Vector3.right * Gauge.sizeDelta.x;
+					RightGauge.localPosition = Vector3.left * RightGauge.sizeDelta.x;
 					break;
 			}
 		}
@@ -358,8 +368,6 @@ namespace Streamliner
 
 	internal class Playerboard
 	{
-		private readonly Gamemode gamemode = RaceManager.CurrentGamemode;
-
 		private enum ValueType
 		{
 			Position, Score, IntScore, Energy
@@ -379,31 +387,35 @@ namespace Streamliner
 		private readonly float _oneLetterWidth = 20f;
 		private readonly float _oneDotWidth = 4f;
 		internal readonly RectTransform Base;
-		private readonly RectTransform _targetRow;
-		private readonly RectTransform _entrySlotTemplate;
-		private readonly RectTransform _templateGaugeBackground;
-		private readonly RectTransform _templateGauge;
+		protected readonly RectTransform TargetRow;
+		protected readonly RectTransform EntrySlotTemplate;
+		protected readonly RectTransform TemplateGaugeBackground;
+		protected readonly RectTransform TemplateGauge;
 		private List<EntrySlot> _visibleList;
 		private List<RawValuePair> _rawValueList;
 
 		private class EntrySlot
 		{
 			private readonly RectTransform _base;
+			private readonly CanvasGroup _baseCanvasGroup;
 			private readonly Text _name;
 			private readonly Text _value;
 			private readonly RectTransform _gauge;
+			private readonly Image _gaugeImage;
 			internal int refId;
 			protected readonly Vector2 MaxSize;
-			private Vector2 _currentSize;
-			private readonly Color _slotColor = GetTintColor(TextAlpha.ThreeQuarters);
+			internal Vector2 CurrentSize;
+			internal readonly Color SlotColor = GetTintColor(TextAlpha.ThreeQuarters);
 
 			public EntrySlot(RectTransform template)
 			{
 				_base = template;
 				_base.gameObject.SetActive(true);
+				_baseCanvasGroup = _base.GetComponent<CanvasGroup>();
 				_name = _base.Find("Name").GetComponent<Text>();
 				_value = _base.Find("Plate").Find("Value").GetComponent<Text>();
 				_gauge = (RectTransform)_base.Find("GaugeBackground").Find("Gauge");
+				_gaugeImage = _gauge.GetComponent<Image>();
 				MaxSize = _gauge.sizeDelta;
 
 				ChangeColor();
@@ -414,13 +426,13 @@ namespace Streamliner
 
 			private void ChangeColor()
 			{
-				_name.color = _slotColor;
-				_gauge.GetComponent<Image>().color = _slotColor;
+				_name.color = SlotColor;
+				_gaugeImage.color = SlotColor;
 				_value.color = GetTintColor(TextAlpha.NineTenths);
 			}
 
 			public void ChangeOverallAlpha(TextAlpha transparencyIndex) =>
-				_base.GetComponent<CanvasGroup>().alpha = GetTransparency(transparencyIndex);
+				_baseCanvasGroup.alpha = GetTransparency(transparencyIndex);
 
 			public void SetRefId(int id) => refId = id;
 
@@ -453,10 +465,10 @@ namespace Streamliner
 			public void FillByPercentage(float value)
 			{
 				value = value < 0f ? 0f : value > 100f ? 100f : value;
-				_currentSize.x = ( value / 100f ) * MaxSize.x;
-				_currentSize.y = _currentSize.x >= MaxSize.y ?
-					MaxSize.y : _currentSize.x;
-				_gauge.sizeDelta = _currentSize;
+				CurrentSize.x = ( value / 100f ) * MaxSize.x;
+				CurrentSize.y = CurrentSize.x >= MaxSize.y ?
+					MaxSize.y : CurrentSize.x;
+				_gauge.sizeDelta = CurrentSize;
 			}
 		}
 
@@ -479,12 +491,12 @@ namespace Streamliner
 			SetValueType(gamemodeName);
 
 			Base = panelElement;
-			_targetRow = panelElement.Find("TargetRow").GetComponent<RectTransform>();
-			_entrySlotTemplate = panelElement.Find("EntrySlot").GetComponent<RectTransform>();
-			_templateGaugeBackground =
-				_entrySlotTemplate.Find("GaugeBackground").GetComponent<RectTransform>();
-			_templateGauge = (RectTransform) _templateGaugeBackground.Find("Gauge");
-			_entrySlotTemplate.gameObject.SetActive(false);
+			TargetRow = panelElement.Find("TargetRow").GetComponent<RectTransform>();
+			EntrySlotTemplate = panelElement.Find("EntrySlot").GetComponent<RectTransform>();
+			TemplateGaugeBackground =
+				EntrySlotTemplate.Find("GaugeBackground").GetComponent<RectTransform>();
+			TemplateGauge = (RectTransform) TemplateGaugeBackground.Find("Gauge");
+			EntrySlotTemplate.gameObject.SetActive(false);
 		}
 
 		public void InitiateLayout(float targetScore)
@@ -492,11 +504,11 @@ namespace Streamliner
 			// Disable components that are irrelevant to the game mode.
 			if (targetScore == 0f)
 			{
-				_targetRow.gameObject
+				TargetRow.gameObject
 					.SetActive(false);
-				_entrySlotTemplate.localPosition = Vector3.zero;
+				EntrySlotTemplate.localPosition = Vector3.zero;
 			}
-			_templateGaugeBackground.gameObject
+			TemplateGaugeBackground.gameObject
 				.SetActive(_valueType == ValueType.Energy);
 
 			/*
@@ -518,11 +530,11 @@ namespace Streamliner
 			Vector3 widthAdjustmentVector3 =
 				new Vector3(additionalWidth, 0, 0);
 
-			_targetRow.Find("TargetValue").Find("Value").GetComponent<Text>()
+			TargetRow.Find("TargetValue").Find("Value").GetComponent<Text>()
 				.text = IntStrDb.GetNumber((int) targetScore);
-			_targetRow.Find("Target").GetComponent<RectTransform>()
+			TargetRow.Find("Target").GetComponent<RectTransform>()
 				.localPosition -= widthAdjustmentVector3;
-			_targetRow.Find("TargetValue").GetComponent<RectTransform>()
+			TargetRow.Find("TargetValue").GetComponent<RectTransform>()
 				.sizeDelta += widthAdjustmentVector2;
 
 			/*
@@ -534,14 +546,14 @@ namespace Streamliner
 			 * I'll just use the bg scale that's not 1.
 			 */
 			Vector2 gaugeAdjustmentVector =
-				widthAdjustmentVector2 / _templateGaugeBackground.localScale;
-			RectTransform name = _entrySlotTemplate.Find("Name").GetComponent<RectTransform>();
+				widthAdjustmentVector2 / TemplateGaugeBackground.localScale;
+			RectTransform name = EntrySlotTemplate.Find("Name").GetComponent<RectTransform>();
 
-			_templateGaugeBackground.sizeDelta -= gaugeAdjustmentVector;
-			_templateGauge.sizeDelta -= gaugeAdjustmentVector;
+			TemplateGaugeBackground.sizeDelta -= gaugeAdjustmentVector;
+			TemplateGauge.sizeDelta -= gaugeAdjustmentVector;
 			name.localPosition -= widthAdjustmentVector3;
 			name.sizeDelta -= widthAdjustmentVector2 / name.localScale;
-			_entrySlotTemplate.Find("Plate").GetComponent<RectTransform>()
+			EntrySlotTemplate.Find("Plate").GetComponent<RectTransform>()
 					.sizeDelta += widthAdjustmentVector2;
 		}
 
@@ -552,10 +564,10 @@ namespace Streamliner
 			for (int i = 0; i < loadedShips.Count; i++)
 			{
 				RectTransform slot =
-					Instantiate(_entrySlotTemplate.gameObject).GetComponent<RectTransform>();
-				slot.SetParent(_entrySlotTemplate.parent);
-				slot.localScale = _entrySlotTemplate.localScale;
-				slot.anchoredPosition = _entrySlotTemplate.anchoredPosition;
+					Instantiate(EntrySlotTemplate.gameObject).GetComponent<RectTransform>();
+				slot.SetParent(EntrySlotTemplate.parent);
+				slot.localScale = EntrySlotTemplate.localScale;
+				slot.anchoredPosition = EntrySlotTemplate.anchoredPosition;
 
 				slot.localPosition += Vector3.down * slot.sizeDelta.y * i;
 
