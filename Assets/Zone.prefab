@@ -317,7 +317,7 @@ GameObject:
   - component: {fileID: 3312813707080120002}
   - component: {fileID: 6982314718146637054}
   m_Layer: 0
-  m_Name: ShieldGauge
+  m_Name: SecondGauge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -968,7 +968,7 @@ GameObject:
   - component: {fileID: 990230215513799855}
   - component: {fileID: 1671375039848933235}
   m_Layer: 0
-  m_Name: ShieldRightGauge
+  m_Name: SecondRightGauge
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
