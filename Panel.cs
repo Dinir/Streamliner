@@ -362,7 +362,7 @@ namespace Streamliner
 
 		private enum ValueType
 		{
-			Position, Score, Energy
+			Position, Score, IntScore, Energy
 		}
 		private ValueType _valueType;
 		private void SetValueType(string name)
@@ -370,7 +370,7 @@ namespace Streamliner
 			_valueType = name switch
 			{
 				"Eliminator" => ValueType.Score,
-				"Upsurge" => ValueType.Score,
+				"Upsurge" => ValueType.IntScore,
 				"Rush Hour" => ValueType.Energy,
 				_ => ValueType.Position
 			};
@@ -439,6 +439,7 @@ namespace Streamliner
 						float score = (int) (value * 100.0) * 0.01f;
 						_value.text = score.ToString(CultureInfo.InvariantCulture);
 						break;
+					case ValueType.IntScore:
 					case ValueType.Position:
 					default:
 						_value.text = IntStrDb.GetNumber(Mathf.FloorToInt(value));
@@ -594,6 +595,7 @@ namespace Streamliner
 						rawValuePair.Value = ship.ShieldIntegrity;
 						break;
 					case ValueType.Score:
+					case ValueType.IntScore:
 						rawValuePair.Value = ship.Score;
 						break;
 					case ValueType.Position:
@@ -615,6 +617,7 @@ namespace Streamliner
 			{
 				case ValueType.Energy:
 				case ValueType.Score:
+				case ValueType.IntScore:
 					orderedValueList = _rawValueList.OrderByDescending(p => p.Value).ToList();
 					break;
 				case ValueType.Position:
@@ -641,6 +644,7 @@ namespace Streamliner
 					UpdateSlotsEnergy();
 					break;
 				case ValueType.Score:
+				case ValueType.IntScore:
 					UpdateSlotsScore();
 					break;
 				case ValueType.Position:
