@@ -1004,7 +1004,54 @@ namespace Streamliner
 	}
 
 	public class ZoneTracker : ScriptableHud
-	{}
+	{
+		internal DoubleGaugePanel Panel;
+		internal Text ZoneName;
+		internal Text ZoneScore;
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = new DoubleGaugePanel(CustomComponents.GetById("Base"));
+			ZoneName = CustomComponents.GetById<Text>("Name");
+			ZoneName.gameObject.SetActive(true);
+			ZoneScore = CustomComponents.GetById<Text>("Score");
+			ZoneScore.gameObject.SetActive(true);
+
+			ZoneScore.color = GetTintColor(TextAlpha.NineTenths);
+
+			ZoneScore.text = "0";
+			Panel.Value.text = "0";
+			ZoneName.text = "toxic";
+
+			NgUiEvents.OnZoneProgressUpdate += SetProgress;
+			NgUiEvents.OnZoneScoreUpdate += SetScore;
+			NgUiEvents.OnZoneNumberUpdate += SetNumber;
+			NgUiEvents.OnZoneTitleUpdate += SetTitle;
+		}
+
+		private void SetProgress(float progress) =>
+			Panel.FillBoth(progress);
+
+		private void SetScore(string score) =>
+			ZoneScore.text = score;
+
+		private void SetNumber(string number) =>
+			Panel.Value.text = number;
+
+		private void SetTitle(string title) =>
+			ZoneName.text = title;
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+
+			NgUiEvents.OnZoneProgressUpdate -= SetProgress;
+			NgUiEvents.OnZoneScoreUpdate -= SetScore;
+			NgUiEvents.OnZoneNumberUpdate -= SetNumber;
+			NgUiEvents.OnZoneTitleUpdate -= SetTitle;
+		}
+	}
 
 	public class UpsurgeTracker : ScriptableHud
 	{

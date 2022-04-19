@@ -337,7 +337,7 @@ RectTransform:
   - {fileID: 9033071148248502598}
   - {fileID: 5712537447979967832}
   m_Father: {fileID: 5530751804989468486}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
@@ -529,6 +529,85 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+--- !u!1 &3760820968184804586
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 363416081807552753}
+  - component: {fileID: 87148495394037872}
+  - component: {fileID: 1951490994324072211}
+  m_Layer: 0
+  m_Name: Score
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &363416081807552753
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3760820968184804586}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 5530751804989468486}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -891}
+  m_SizeDelta: {x: 2400, y: 300}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!222 &87148495394037872
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3760820968184804586}
+  m_CullTransparentMesh: 0
+--- !u!114 &1951490994324072211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3760820968184804586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.89411765, g: 0.89411765, b: 0.89411765, a: 0.9019608}
+  m_RaycastTarget: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
+      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_FontData:
+    m_Font: {fileID: 12800000, guid: ea4b5f56ad3d9f64cb47572ba99836c2, type: 3}
+    m_FontSize: 300
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 3
+    m_MaxSize: 300
+    m_Alignment: 7
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
+    m_LineSpacing: 1
+  m_Text: 0
 --- !u!1 &3904657578494869928
 GameObject:
   m_ObjectHideFlags: 0
@@ -877,7 +956,7 @@ RectTransform:
   - {fileID: 8435436501486759865}
   - {fileID: 238479292361323620}
   m_Father: {fileID: 5530751804989468486}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -1138,6 +1217,7 @@ RectTransform:
   - {fileID: 8615910115656629642}
   - {fileID: 1181688041707810077}
   - {fileID: 7071117936895521973}
+  - {fileID: 363416081807552753}
   - {fileID: 2120465126491112721}
   - {fileID: 5981498363400441114}
   - {fileID: 2191426745183666809}
@@ -1298,7 +1378,7 @@ RectTransform:
   - {fileID: 5958615324863198624}
   - {fileID: 1818211741688794929}
   m_Father: {fileID: 5530751804989468486}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
@@ -1549,11 +1629,13 @@ MonoBehaviour:
   Ids:
   - Base
   - Name
+  - Score
   - Energy
   - Barrier
   Rects:
   - {fileID: 5530751804989468486}
   - {fileID: 1181688041707810077}
+  - {fileID: 363416081807552753}
   - {fileID: 5981498363400441114}
   - {fileID: 2191426745183666809}
 --- !u!1 &8856297132612314810
