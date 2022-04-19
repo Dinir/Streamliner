@@ -1289,10 +1289,18 @@ namespace Streamliner
 			if (ship != TargetShip || side != -1 && side != 1)
 				return;
 
-			if (side == -1)
-				PanelAnimator.SetBool(PointRight, false);
-			if (side == 1)
-				PanelAnimator.SetBool(PointRight, true);
+			if (Gameplay.MirrorEnabled)
+				side *= -1;
+
+			switch (side)
+			{
+				case -1:
+					PanelAnimator.SetBool(PointRight, false);
+					break;
+				case 1:
+					PanelAnimator.SetBool(PointRight, true);
+					break;
+			}
 
 			PanelAnimator.SetTrigger(Active);
 		}
