@@ -1013,6 +1013,9 @@ namespace Streamliner
 		internal Text ValueZone;
 		internal Text ValueShield;
 		internal Animator BarrierWarning;
+		private static readonly int WarnLeft = Animator.StringToHash("Left");
+		private static readonly int WarnMiddle = Animator.StringToHash("Middle");
+		private static readonly int WarnRight = Animator.StringToHash("Right");
 		internal GmUpsurge Gamemode;
 		internal UpsurgeShip UpsurgeTargetShip;
 		private int _valueShield;
@@ -1045,6 +1048,7 @@ namespace Streamliner
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
 			UpsurgeShip.OnShieldActivated += StartTransition;
+			NgPickups.Physical.Barrier.OnPlayerBarrierWarned += WarnBarrier;
 		}
 
 		private void StartTransition(ShipController ship)
@@ -1054,6 +1058,27 @@ namespace Streamliner
 
 			_transitionTimer = TransitionTimerMax;
 			_valuesAreFinite = false;
+		}
+
+		private void WarnBarrier(
+			ShipController ship, NgPickups.Physical.Barrier barrier, int side
+		)
+		{
+			if (Gameplay.MirrorEnabled)
+				side *= -1;
+
+			switch (side)
+			{
+				case -1:
+					BarrierWarning.SetTrigger(WarnLeft);
+					break;
+				case 0:
+					BarrierWarning.SetTrigger(WarnMiddle);
+					break;
+				case 1:
+					BarrierWarning.SetTrigger(WarnRight);
+					break;
+			}
 		}
 
 		private void UpdateValues()
@@ -1077,14 +1102,6 @@ namespace Streamliner
 			Panel.FillBoth(_currentZoneWidth);
 			Panel.FillSecondGauges(_currentShieldWidth);
 			Panel.FillSmallGauges(_currentZoneTimeWidth);
-		}
-
-		private void SetZoneTime()
-		{
-			if (UpsurgeTargetShip == null)
-				return;
-
-
 		}
 
 		public override void Update()
@@ -1137,6 +1154,10 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
+			UpsurgeShip.OnDeployedBarrier -= StartTransition;
+			UpsurgeShip.OnBuiltBoostStepsIncrease -= StartTransition;
+			UpsurgeShip.OnShieldActivated -= StartTransition;
+			NgPickups.Physical.Barrier.OnPlayerBarrierWarned -= WarnBarrier;
 		}
 	}
 
