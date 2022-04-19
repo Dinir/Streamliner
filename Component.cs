@@ -11,6 +11,7 @@ using NgUi.RaceUi;
 using NgEvents;
 using NgGame;
 using NgLib;
+using NgModes;
 using NgShips;
 using NgSp;
 using NgUi.RaceUi.HUD;
@@ -1006,7 +1007,138 @@ namespace Streamliner
 	{}
 
 	public class UpsurgeTracker : ScriptableHud
-	{}
+	{
+		internal LayeredDoubleGaugePanel Panel;
+		internal RectTransform EnergyInfo;
+		internal Text ValueZone;
+		internal Text ValueShield;
+		internal Animator BarrierWarning;
+		internal GmUpsurge Gamemode;
+		internal UpsurgeShip UpsurgeTargetShip;
+		private int _valueShield;
+		private const float TransitionSpeed = 8f;
+		private const float TransitionTimerMax = 1.5f;
+		private float _transitionTimer;
+		private bool _valuesAreFinite = true;
+		private float _finiteZoneTimeWidth;
+		private float _finiteZoneWidth;
+		private float _finiteShieldWidth;
+		private float _currentZoneTimeWidth;
+		private float _currentZoneWidth;
+		private float _currentShieldWidth;
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = new LayeredDoubleGaugePanel(CustomComponents.GetById("Base"), true);
+			EnergyInfo = CustomComponents.GetById("Energy");
+			EnergyInfo.gameObject.SetActive(true);
+			ValueZone = EnergyInfo.Find("ValueZone").GetComponent<Text>();
+			ValueShield = EnergyInfo.Find("ValueShield").GetComponent<Text>();
+			BarrierWarning = CustomComponents.GetById<Animator>("Barrier");
+			BarrierWarning.gameObject.SetActive(true);
+
+			Gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
+
+			// change to a simple method that just turns on a bool switch.
+			// update should do different things when it's on.
+			UpsurgeShip.OnDeployedBarrier += StartTransition;
+			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
+			UpsurgeShip.OnShieldActivated += StartTransition;
+		}
+
+		private void StartTransition(ShipController ship)
+		{
+			if (UpsurgeTargetShip == null || ship != UpsurgeTargetShip.TargetShip)
+				return;
+
+			_transitionTimer = TransitionTimerMax;
+			_valuesAreFinite = false;
+		}
+
+		private void UpdateValues()
+		{
+			if (UpsurgeTargetShip == null)
+				return;
+
+			_valueShield = UpsurgeTargetShip.BuiltZones * 20;
+			_valueShield = _valueShield < 0 ? 0 : _valueShield > 100 ? 100 : _valueShield;
+			_finiteZoneTimeWidth = UpsurgeTargetShip.ZoneTime / 5;
+			_finiteZoneWidth = (float) UpsurgeTargetShip.BuiltZones / 10;
+			_finiteShieldWidth = (float) _valueShield / 100;
+		}
+
+		private void SetValues()
+		{
+			Panel.Value.text = UpsurgeTargetShip.CurrentZone.ToString();
+			ValueZone.text = "+" + UpsurgeTargetShip.BuiltZones;
+			ValueShield.text = "+" + _valueShield;
+
+			Panel.FillBoth(_currentZoneWidth);
+			Panel.FillSecondGauges(_currentShieldWidth);
+			Panel.FillSmallGauges(_currentZoneTimeWidth);
+		}
+
+		private void SetZoneTime()
+		{
+			if (UpsurgeTargetShip == null)
+				return;
+
+
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			if (UpsurgeTargetShip == null)
+			{
+				UpsurgeTargetShip = Gamemode.Ships.Find(ship => ship.TargetShip == TargetShip);
+				return;
+			}
+
+			if (_transitionTimer > 0f)
+			{
+				UpdateValues();
+
+				if (!Mathf.Approximately(_currentZoneTimeWidth, _finiteZoneTimeWidth))
+				{
+					_currentZoneTimeWidth = Mathf.Lerp(
+						_currentZoneTimeWidth, _finiteZoneTimeWidth, Time.deltaTime * TransitionSpeed
+					);
+				}
+				if (!Mathf.Approximately(_currentZoneWidth, _finiteZoneWidth))
+				{
+					_currentZoneWidth = Mathf.Lerp(
+						_currentZoneWidth, _finiteZoneWidth, Time.deltaTime * TransitionSpeed
+					);
+				}
+				if (!Mathf.Approximately(_currentShieldWidth, _finiteShieldWidth))
+				{
+					_currentShieldWidth = Mathf.Lerp(
+						_currentShieldWidth, _finiteShieldWidth, Time.deltaTime * TransitionSpeed
+					);
+				}
+				SetValues();
+
+				_transitionTimer -= Time.deltaTime;
+			}
+			else if (!_valuesAreFinite)
+			{
+				_currentZoneTimeWidth = _finiteZoneTimeWidth;
+				_currentZoneWidth = _finiteZoneWidth;
+				_currentShieldWidth = _finiteShieldWidth;
+				SetValues();
+
+				_valuesAreFinite = true;
+				_transitionTimer = 0f;
+			}
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+		}
+	}
 
 	public class ZoneEnergyMeter : ScriptableHud
 	{}
