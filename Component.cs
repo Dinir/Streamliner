@@ -1264,9 +1264,6 @@ namespace Streamliner
 		}
 	}
 
-	public class ZoneEnergyMeter : ScriptableHud
-	{}
-
 	public class Placement : ScriptableHud
 	{
 		internal FractionPanel Panel;
