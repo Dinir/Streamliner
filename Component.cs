@@ -1019,10 +1019,16 @@ namespace Streamliner
 		internal GmUpsurge Gamemode;
 		internal UpsurgeShip UpsurgeTargetShip;
 		private int _valueShield;
+		private float _valueZoneTime;
 		private const float TransitionSpeed = 8f;
 		private const float TransitionTimerMax = 1.5f;
 		private float _transitionTimer;
+		private float _smallGaugeAlpha;
+		private readonly Color _overflowZoneTimeColor = GetTintColor(tintIndex: 2, brightness: 4);
+		private Color _currentSmallGaugeColor;
+		private float _overflowTransitionAlpha;
 		private bool _valuesAreFinite = true;
+		private bool _playingOverflowTransition;
 		private float _finiteZoneTimeWidth;
 		private float _finiteZoneWidth;
 		private float _finiteShieldWidth;
@@ -1041,10 +1047,18 @@ namespace Streamliner
 			BarrierWarning = CustomComponents.GetById<Animator>("Barrier");
 			BarrierWarning.gameObject.SetActive(true);
 
+			_currentSmallGaugeColor = Panel.SmallGaugeColor;
+			_smallGaugeAlpha = Panel.SmallGaugeColor.a;
+
+			Color infoLabelColor = GetTintColor(TextAlpha.ThreeEighths);
+			Color infoValueColor = GetTintColor(TextAlpha.ThreeQuarters);
+			EnergyInfo.Find("LabelZone").GetComponent<Text>().color = infoLabelColor;
+			EnergyInfo.Find("LabelShield").GetComponent<Text>().color = infoLabelColor;
+			EnergyInfo.Find("ValueZone").GetComponent<Text>().color = infoValueColor;
+			EnergyInfo.Find("ValueShield").GetComponent<Text>().color = infoValueColor;
+
 			Gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
 
-			// change to a simple method that just turns on a bool switch.
-			// update should do different things when it's on.
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
 			UpsurgeShip.OnShieldActivated += StartTransition;
@@ -1058,6 +1072,7 @@ namespace Streamliner
 
 			_transitionTimer = TransitionTimerMax;
 			_valuesAreFinite = false;
+			StartCoroutine(ResetZoneTime());
 		}
 
 		private void WarnBarrier(
@@ -1088,6 +1103,7 @@ namespace Streamliner
 
 			_valueShield = UpsurgeTargetShip.BuiltZones * 20;
 			_valueShield = _valueShield < 0 ? 0 : _valueShield > 100 ? 100 : _valueShield;
+			_valueZoneTime = UpsurgeTargetShip.ZoneTime;
 			_finiteZoneTimeWidth = UpsurgeTargetShip.ZoneTime / 5;
 			_finiteZoneWidth = (float) UpsurgeTargetShip.BuiltZones / 10;
 			_finiteShieldWidth = (float) _valueShield / 100;
@@ -1102,6 +1118,31 @@ namespace Streamliner
 			Panel.FillBoth(_currentZoneWidth);
 			Panel.FillSecondGauges(_currentShieldWidth);
 			Panel.FillSmallGauges(_currentZoneTimeWidth);
+			Panel.ChangeSmallGaugesColor(_currentSmallGaugeColor);
+		}
+
+		private IEnumerator ResetZoneTime()
+		{
+			_playingOverflowTransition = true;
+			NgSound.PlayOneShot(NgSound.Ui_UpsurgeBoostChargeReset, EAudioChannel.Interface, 1f, 1f);
+			_currentZoneTimeWidth = 1f;
+			_currentSmallGaugeColor = _overflowZoneTimeColor;
+			_overflowTransitionAlpha = _smallGaugeAlpha;
+			float t = 0.5f;
+			while (t > 0f)
+			{
+				_overflowTransitionAlpha = Mathf.Lerp(
+					_overflowTransitionAlpha, 0f,
+					Time.deltaTime * TransitionSpeed * 2.5f
+				);
+				_currentSmallGaugeColor.a = _overflowTransitionAlpha;
+
+				t -= Time.deltaTime;
+				yield return null;
+			}
+			_currentSmallGaugeColor = Panel.SmallGaugeColor;
+			_currentZoneTimeWidth = 0f;
+			_playingOverflowTransition = false;
 		}
 
 		public override void Update()
@@ -1113,30 +1154,44 @@ namespace Streamliner
 				return;
 			}
 
+			if (
+				!Mathf.Approximately(_valueZoneTime, UpsurgeTargetShip.ZoneTime) &&
+				_valuesAreFinite
+			)
+			{
+				_transitionTimer = TransitionTimerMax;
+				_valuesAreFinite = false;
+			}
+
+			UpdateValues();
+
 			if (_transitionTimer > 0f)
 			{
-				UpdateValues();
-
-				if (!Mathf.Approximately(_currentZoneTimeWidth, _finiteZoneTimeWidth))
+				if (
+					!Mathf.Approximately(_currentZoneTimeWidth, _finiteZoneTimeWidth) &&
+					!_playingOverflowTransition
+				)
 				{
+					_overflowTransitionAlpha = _smallGaugeAlpha;
 					_currentZoneTimeWidth = Mathf.Lerp(
-						_currentZoneTimeWidth, _finiteZoneTimeWidth, Time.deltaTime * TransitionSpeed
+						_currentZoneTimeWidth, _finiteZoneTimeWidth,
+						Time.deltaTime * TransitionSpeed
 					);
 				}
 				if (!Mathf.Approximately(_currentZoneWidth, _finiteZoneWidth))
 				{
 					_currentZoneWidth = Mathf.Lerp(
-						_currentZoneWidth, _finiteZoneWidth, Time.deltaTime * TransitionSpeed
+						_currentZoneWidth, _finiteZoneWidth,
+						Time.deltaTime * TransitionSpeed
 					);
 				}
 				if (!Mathf.Approximately(_currentShieldWidth, _finiteShieldWidth))
 				{
 					_currentShieldWidth = Mathf.Lerp(
-						_currentShieldWidth, _finiteShieldWidth, Time.deltaTime * TransitionSpeed
+						_currentShieldWidth, _finiteShieldWidth,
+						Time.deltaTime * TransitionSpeed
 					);
 				}
-				SetValues();
-
 				_transitionTimer -= Time.deltaTime;
 			}
 			else if (!_valuesAreFinite)
@@ -1144,11 +1199,12 @@ namespace Streamliner
 				_currentZoneTimeWidth = _finiteZoneTimeWidth;
 				_currentZoneWidth = _finiteZoneWidth;
 				_currentShieldWidth = _finiteShieldWidth;
-				SetValues();
 
 				_valuesAreFinite = true;
 				_transitionTimer = 0f;
 			}
+
+			SetValues();
 		}
 
 		public override void OnDestroy()

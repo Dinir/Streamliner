@@ -185,7 +185,7 @@ namespace Streamliner
 		protected readonly RectTransform Gauge;
 		protected readonly Image GaugeImage;
 		internal readonly Color GaugeColor = GetTintColor();
-		protected readonly Vector2 MaxSize;
+		internal readonly Vector2 MaxSize;
 		internal Vector2 CurrentSize;
 
 		public BasicPanel(RectTransform panelElement)
@@ -385,13 +385,14 @@ namespace Streamliner
 		internal readonly Color SecondGaugeColor = GetTintColor(TextAlpha.ThreeEighths);
 		internal Vector2 CurrentSecondSize;
 		internal readonly Color SmallGaugeColor = GetTintColor(brightness: 1);
-		protected readonly Vector2 SmallMaxSize;
+		internal readonly Vector2 SmallMaxSize;
 		internal Vector2 CurrentSmallSize;
 
 		public LayeredDoubleGaugePanel
 			(RectTransform panelElement, bool useSmallGauges = false) : base(panelElement)
 		{
 			UsingSmallGauges = useSmallGauges;
+
 			SecondGauge = (RectTransform) GaugeBackground.Find("SecondGauge");
 			SecondGaugeImage = SecondGauge.GetComponent<Image>();
 			SecondRightGauge = (RectTransform) GaugeBackground.Find("SecondRightGauge");
@@ -403,20 +404,19 @@ namespace Streamliner
 			ChangeSecondGaugesColor();
 			FillSecondGauges(0f);
 
-			if (UsingSmallGauges)
-			{
-				SmallGauge = (RectTransform) GaugeBackground.Find("SmallGauge");
-				SmallGaugeImage = SecondGauge.GetComponent<Image>();
-				SmallRightGauge = (RectTransform) GaugeBackground.Find("SmallRightGauge");
-				SmallRightGaugeImage = SecondRightGauge.GetComponent<Image>();
-				SmallGauge.gameObject.SetActive(true);
-				SmallRightGauge.gameObject.SetActive(true);
-				SmallMaxSize = SmallGauge.sizeDelta;
-				CurrentSmallSize.y = SmallMaxSize.y;
+			if (!UsingSmallGauges) return;
 
-				ChangeSmallGaugesColor();
-				FillSmallGauges(0f);
-			}
+			SmallGauge = (RectTransform) GaugeBackground.Find("SmallGauge");
+			SmallGaugeImage = SmallGauge.GetComponent<Image>();
+			SmallRightGauge = (RectTransform) GaugeBackground.Find("SmallRightGauge");
+			SmallRightGaugeImage = SmallRightGauge.GetComponent<Image>();
+			SmallGauge.gameObject.SetActive(true);
+			SmallRightGauge.gameObject.SetActive(true);
+			SmallMaxSize = SmallGauge.sizeDelta;
+			CurrentSmallSize.y = SmallMaxSize.y;
+
+			ChangeSmallGaugesColor();
+			FillSmallGauges(0f);
 		}
 
 		private void ChangeSecondGaugesColor()
@@ -429,6 +429,12 @@ namespace Streamliner
 		{
 			SmallGaugeImage.color = SmallGaugeColor;
 			SmallRightGaugeImage.color = SmallGaugeColor;
+		}
+
+		public void ChangeSmallGaugesColor(Color color)
+		{
+			SmallGaugeImage.color = color;
+			SmallRightGaugeImage.color = color;
 		}
 
 		public override void ChangeColor(Color color)
