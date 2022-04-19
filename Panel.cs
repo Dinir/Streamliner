@@ -377,26 +377,58 @@ namespace Streamliner
 		protected readonly Image SecondGaugeImage;
 		protected readonly RectTransform SecondRightGauge;
 		protected readonly Image SecondRightGaugeImage;
+		protected readonly RectTransform SmallGauge;
+		protected readonly Image SmallGaugeImage;
+		protected readonly RectTransform SmallRightGauge;
+		protected readonly Image SmallRightGaugeImage;
+		protected readonly bool UsingSmallGauges;
+		internal readonly Color SecondGaugeColor = GetTintColor(TextAlpha.ThreeEighths);
 		internal Vector2 CurrentSecondSize;
-		internal readonly Color SecondGaugeColor;
+		internal readonly Color SmallGaugeColor = GetTintColor(brightness: 1);
+		protected readonly Vector2 SmallMaxSize;
+		internal Vector2 CurrentSmallSize;
 
-		public LayeredDoubleGaugePanel(RectTransform panelElement) : base(panelElement)
+		public LayeredDoubleGaugePanel
+			(RectTransform panelElement, bool useSmallGauges = false) : base(panelElement)
 		{
+			UsingSmallGauges = useSmallGauges;
 			SecondGauge = (RectTransform) GaugeBackground.Find("SecondGauge");
 			SecondGaugeImage = SecondGauge.GetComponent<Image>();
 			SecondRightGauge = (RectTransform) GaugeBackground.Find("SecondRightGauge");
 			SecondRightGaugeImage = SecondRightGauge.GetComponent<Image>();
-			SecondGaugeColor = GetTintColor(TextAlpha.ThreeEighths);
+			SecondGauge.gameObject.SetActive(true);
+			SecondRightGauge.gameObject.SetActive(true);
 			CurrentSecondSize.y = MaxSize.y;
 
 			ChangeSecondGaugesColor();
 			FillSecondGauges(0f);
+
+			if (UsingSmallGauges)
+			{
+				SmallGauge = (RectTransform) GaugeBackground.Find("SmallGauge");
+				SmallGaugeImage = SecondGauge.GetComponent<Image>();
+				SmallRightGauge = (RectTransform) GaugeBackground.Find("SmallRightGauge");
+				SmallRightGaugeImage = SecondRightGauge.GetComponent<Image>();
+				SmallGauge.gameObject.SetActive(true);
+				SmallRightGauge.gameObject.SetActive(true);
+				SmallMaxSize = SmallGauge.sizeDelta;
+				CurrentSmallSize.y = SmallMaxSize.y;
+
+				ChangeSmallGaugesColor();
+				FillSmallGauges(0f);
+			}
 		}
 
 		private void ChangeSecondGaugesColor()
 		{
 			SecondGaugeImage.color = SecondGaugeColor;
 			SecondRightGaugeImage.color = SecondGaugeColor;
+		}
+
+		private void ChangeSmallGaugesColor()
+		{
+			SmallGaugeImage.color = SmallGaugeColor;
+			SmallRightGaugeImage.color = SmallGaugeColor;
 		}
 
 		public override void ChangeColor(Color color)
@@ -422,6 +454,15 @@ namespace Streamliner
 			SecondRightGauge.sizeDelta = CurrentSecondSize;
 		}
 
+		public void FillSmallGauges(float amount)
+		{
+			CurrentSmallSize.x = amount * SmallMaxSize.x;
+			CurrentSmallSize.y = CurrentSmallSize.x >= SmallMaxSize.y ?
+				SmallMaxSize.y : CurrentSmallSize.x;
+			SmallGauge.sizeDelta = CurrentSmallSize;
+			SmallRightGauge.sizeDelta = CurrentSmallSize;
+		}
+
 		public override void SetFillStartingSide(StartingPoint sp)
 		{
 			base.SetFillStartingSide(sp);
@@ -432,12 +473,29 @@ namespace Streamliner
 					SecondRightGauge.pivot = new Vector2(1, 1);
 					SecondGauge.localPosition = Vector3.zero;
 					SecondRightGauge.localPosition = Vector3.zero;
+					if (UsingSmallGauges)
+					{
+						SmallGauge.pivot = new Vector2(0, 1);
+						SmallRightGauge.pivot = new Vector2(1, 1);
+						SmallGauge.localPosition = Vector3.zero;
+						SmallRightGauge.localPosition = Vector3.zero;
+					}
 					break;
 				case StartingPoint.Center:
 					SecondGauge.pivot = new Vector2(1, 1);
 					SecondRightGauge.pivot = new Vector2(0, 1);
 					SecondGauge.localPosition = Vector3.right * SecondGauge.sizeDelta.x;
 					SecondRightGauge.localPosition = Vector3.left * SecondRightGauge.sizeDelta.x;
+					if (UsingSmallGauges)
+					{
+						SmallGauge.pivot = new Vector2(1, 1);
+						SmallRightGauge.pivot = new Vector2(0, 1);
+						SmallGauge.localPosition =
+							Vector3.right * SmallGauge.sizeDelta.x * SmallGauge.localScale.x;
+						// localScale.x here is negative, so I am using Vector3.right instead of left.
+						SmallRightGauge.localPosition =
+							Vector3.right * SmallRightGauge.sizeDelta.x * SmallRightGauge.localScale.x;
+					}
 					break;
 			}
 		}
