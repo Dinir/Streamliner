@@ -27,10 +27,14 @@ namespace Streamliner
 			// Cyan, Azure, Blue, Violet, Magenta, Rose
 			0.4944f, 0.5778f, 0.6611f, 0.7444f, 0.8278f, 0.9111f
 		};
-		private const float StandardS = 0.18f; // S2
-		private const float StandardV = 0.86f; // V2
-		private const float DarkerS = 0.32f; // S4
-		private const float DarkerV = 0.40f;
+		private static readonly float[][] StandardSV =
+		{
+			new[] { 0.32f, 0.40f }, // S4 V0.40
+			new[] { 0.32f, 0.73f }, // S4 V4
+			new[] { 0.18f, 0.86f }, // S2 V2
+			new[] { 0.40f, 0.89f }, // S6 V1
+			new[] { 0.60f, 0.95f }  // S.60 V.95
+		};
 		private static readonly float[] TintAlphaList = {
 			1f, 0.9f, 0.750f, 0.500f, 0.375f, 0.250f, 0.000f
 		};
@@ -39,15 +43,18 @@ namespace Streamliner
 			Full, NineTenths, ThreeQuarters, Half, ThreeEighths, Quarter, Zero
 		}
 
-		internal static Color GetTintColor(TextAlpha transparencyIndex = TextAlpha.Full)
+		internal static Color GetTintColor(
+			TextAlpha transparencyIndex = TextAlpha.Full,
+			int tintIndex = -1,
+			int brightness = 2
+		)
 		{
-			_tintColorBuffer = Color.HSVToRGB(StandardH[OptionValueTint], StandardS, StandardV);
-			_tintColorBuffer.a = TintAlphaList[(int) transparencyIndex];
-			return _tintColorBuffer;
-		}
-		internal static Color GetDarkerColor(TextAlpha transparencyIndex = TextAlpha.Full)
-		{
-			_tintColorBuffer = Color.HSVToRGB(StandardH[OptionValueTint], DarkerS, DarkerV);
+			tintIndex = tintIndex < 0 ? OptionValueTint : tintIndex;
+			_tintColorBuffer = Color.HSVToRGB(
+				StandardH[tintIndex],
+				StandardSV[brightness][0],
+				StandardSV[brightness][1]
+			);
 			_tintColorBuffer.a = TintAlphaList[(int) transparencyIndex];
 			return _tintColorBuffer;
 		}
