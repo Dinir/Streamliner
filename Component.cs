@@ -1629,6 +1629,8 @@ namespace Streamliner
 						_finalLap.text = message;
 						break;
 				}
+
+				_timeGroup.alpha = 1f;
 				_timeDisplayTime = DisplayTimeMax;
 				_timeFadeOutTimeRemaining = 0f;
 			}
@@ -1646,6 +1648,7 @@ namespace Streamliner
 				return;
 
 			_nowPlaying.text = songName;
+			_nowPlaying.color = DefaultColor["NowPlaying"];
 			_npDisplayTime = DisplayTimeMax;
 			_npFadeOutTimeRemaining = 0f;
 		}
@@ -1788,12 +1791,7 @@ namespace Streamliner
 				_wrongWay.color = _wrongWayCurrentColor;
 				_wrongWayFadeTimeRemaining = 0f;
 			}
-
-			if (Input.GetKeyDown(KeyCode.R))
-				InsertMessageLine($"Test Message {_testNumber++}", DefaultColor["Line"]);
 		}
-
-		private int _testNumber;
 
 		private IEnumerator RemoveMessage(int i)
 		{
