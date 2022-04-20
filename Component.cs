@@ -32,8 +32,8 @@ namespace Streamliner
 		private float _currentSpeed;
 		private float _previousSpeed;
 
-		private readonly float _animationSpeed = 8f;
-		private readonly float _animationTimerMax = 1.5f;
+		private const float AnimationSpeed = 8f;
+		private const float AnimationTimerMax = 1.5f;
 		private float _speedDecreaseAnimationTimer;
 		private float _speedIncreaseAnimationTimer;
 
@@ -80,12 +80,12 @@ namespace Streamliner
 		{
 			if (_currentSpeed < _previousSpeed)
 			{
-				_speedDecreaseAnimationTimer = _animationTimerMax;
+				_speedDecreaseAnimationTimer = AnimationTimerMax;
 				_speedIncreaseAnimationTimer = 0f;
 			}
 			else
 			{
-				_speedIncreaseAnimationTimer = _animationTimerMax;
+				_speedIncreaseAnimationTimer = AnimationTimerMax;
 				_speedDecreaseAnimationTimer = 0f;
 			}
 
@@ -93,7 +93,7 @@ namespace Streamliner
 
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
-				color = Color.Lerp(color, _highlightColor, Time.deltaTime * _animationSpeed);
+				color = Color.Lerp(color, _highlightColor, Time.deltaTime * AnimationSpeed);
 				_speedDecreaseAnimationTimer -= Time.deltaTime;
 			}
 			else
@@ -101,7 +101,7 @@ namespace Streamliner
 
 			if (_speedIncreaseAnimationTimer > 0f)
 			{
-				color = Color.Lerp(color, Panel.GaugeColor, Time.deltaTime * _animationSpeed);
+				color = Color.Lerp(color, Panel.GaugeColor, Time.deltaTime * AnimationSpeed);
 				_speedIncreaseAnimationTimer -= Time.deltaTime;
 			}
 			else
@@ -114,29 +114,28 @@ namespace Streamliner
 	public class EnergyMeter : ScriptableHud
 	{
 		internal RectTransform Panel;
-		internal Text Value;
-		internal Text Delta;
-		internal Image GaugeBackground;
-		internal RectTransform Gauge;
-		internal Image GaugeImage;
+		private Text _value;
+		private Text _delta;
+		private Image _gaugeBackground;
+		private RectTransform _gauge;
+		private Image _gaugeImage;
 		private Vector2 _maxSize;
 		private Vector2 _currentSize;
 		private float _computedValue;
 		private float _adjustedDamageMult;
 		private int _valueBeforeCharging;
-		internal string ValueBeforeCharging
+		private string ValueBeforeCharging
 		{
-			get => _valueBeforeCharging.ToString();
 			set => _valueBeforeCharging = Convert.ToInt32(value);
 		}
-		internal string ValueCharged()
+		private string ValueCharged()
 		{
-			int value = Convert.ToInt32(Value.text) - _valueBeforeCharging;
+			int value = Convert.ToInt32(_value.text) - _valueBeforeCharging;
 			return IntStrDb.GetNumber(value);
 		}
-		internal string ValueGained()
+		private string ValueGained()
 		{
-			int value = Convert.ToInt32(Value.text) - Convert.ToInt32(_previousValueString);
+			int value = Convert.ToInt32(_value.text) - Convert.ToInt32(_previousValueString);
 			return IntStrDb.GetNumber(value);
 		}
 
@@ -160,8 +159,8 @@ namespace Streamliner
 		private Color _deltaColor;
 		private Color _deltaFinalColor;
 		private Color _deltaInactiveColor;
-		private readonly float _deltaFinalAlpha = 0.9f;
-		private readonly float _deltaInactiveAlpha = 0f;
+		private const float DeltaFinalAlpha = 0.9f;
+		private const float DeltaInactiveAlpha = 0f;
 
 		/*
 		 * When would the progress reach 0.99999 (1 - 10^-5) with the speed?
@@ -172,11 +171,11 @@ namespace Streamliner
 		 * Speed is decided on the 0.75 time, and Timer is decided on 0.99999 time of that speed.
 		 * https://www.desmos.com/calculator/nip7pyehxl
 		 */
-		private readonly float _fastTransitionSpeed = 8f;
-		private readonly float _slowTransitionSpeed = 5f;
-		private readonly float _fastTransitionTimerMax = 1.5f;
-		private readonly float _slowTransitionTimerMax = 2.2f;
-		private readonly float _rechargeDisplayTimerMax = 3.0f;
+		private const float FastTransitionSpeed = 8f;
+		private const float SlowTransitionSpeed = 5f;
+		private const float FastTransitionTimerMax = 1.5f;
+		private const float SlowTransitionTimerMax = 2.2f;
+		private const float RechargeDisplayTimerMax = 3.0f;
 		private float _damageAnimationTimer;
 		private float _transitionAnimationTimer;
 		private float _deltaAnimationTimer;
@@ -189,33 +188,33 @@ namespace Streamliner
 				RaceManager.CurrentGamemode.Name == "Rush Hour";
 
 			Panel = CustomComponents.GetById("Base");
-			Value = Panel.Find("Value").GetComponent<Text>();
-			Delta = Panel.Find("Delta").GetComponent<Text>();
-			GaugeBackground = Panel.Find("GaugeBackground").GetComponent<Image>();
-			Gauge = (RectTransform)GaugeBackground.GetComponent<RectTransform>()
+			_value = Panel.Find("Value").GetComponent<Text>();
+			_delta = Panel.Find("Delta").GetComponent<Text>();
+			_gaugeBackground = Panel.Find("GaugeBackground").GetComponent<Image>();
+			_gauge = (RectTransform)_gaugeBackground.GetComponent<RectTransform>()
 				.Find("Gauge");
-			GaugeImage = Gauge.GetComponent<Image>();
+			_gaugeImage = _gauge.GetComponent<Image>();
 
 			// Gauge is stored in its maximum size, store the max width here.
-			_maxSize = Gauge.sizeDelta;
+			_maxSize = _gauge.sizeDelta;
 
 			// Initiate the gauge size.
 			_currentSize = _maxSize;
-			Gauge.sizeDelta = _currentSize;
+			_gauge.sizeDelta = _currentSize;
 
 			// Coloring
 			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
-			GaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
+			_gaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
 			_currentColor = _defaultColor;
 			_currentDamageColor = _damageColor;
-			Value.color = _defaultColor;
-			GaugeImage.color = _defaultColor;
-			_deltaColor = Delta.color;
-			_deltaFinalColor = Delta.color;
-			_deltaInactiveColor = Delta.color;
-			_deltaFinalColor.a = _deltaFinalAlpha;
-			_deltaInactiveColor.a = _deltaInactiveAlpha;
-			Delta.color = _deltaInactiveColor;
+			_value.color = _defaultColor;
+			_gaugeImage.color = _defaultColor;
+			_deltaColor = _delta.color;
+			_deltaFinalColor = _delta.color;
+			_deltaInactiveColor = _delta.color;
+			_deltaFinalColor.a = DeltaFinalAlpha;
+			_deltaInactiveColor.a = DeltaInactiveAlpha;
+			_delta.color = _deltaInactiveColor;
 		}
 
 		public override void Update()
@@ -231,8 +230,8 @@ namespace Streamliner
 			_currentSize.x = GetHudShieldWidth();
 			_currentSize.y = _currentSize.x >= _maxSize.y ?
 				_maxSize.y : _currentSize.x;
-			Gauge.sizeDelta = _currentSize;
-			Value.text = GetShieldValueString();
+			_gauge.sizeDelta = _currentSize;
+			_value.text = GetShieldValueString();
 
 			if (!OptionEnergyChange && OptionLowEnergy == 0 && !OptionRechargeAmount)
 				return;
@@ -240,16 +239,16 @@ namespace Streamliner
 			if (_isRecharging)
 			{
 				if (_wasRecharging)
-					Delta.text = ValueCharged();
+					_delta.text = ValueCharged();
 				else
 					ValueBeforeCharging = _previousValueString;
 			}
 			else if (_energyRegained)
-				Delta.text = ValueGained();
+				_delta.text = ValueGained();
 			ColorEnergyComponent();
 
 			_previousEnergy = _currentEnergy;
-			_previousValueString = Value.text;
+			_previousValueString = _value.text;
 			_wasRecharging = _isRecharging;
 		}
 
@@ -299,30 +298,30 @@ namespace Streamliner
 				!_energyConstantlyDischarges &&
 				_currentEnergy < _previousEnergy
 			)
-				_damageAnimationTimer = _fastTransitionTimerMax;
+				_damageAnimationTimer = FastTransitionTimerMax;
 			// transition
 			if (
 				OptionLowEnergy != 0 && (
-					(_currentEnergy <= 25f && _previousEnergy > 25f) ||
-					(_currentEnergy <= 10f && _previousEnergy > 10f) ||
-					(_currentEnergy > 25f && _previousEnergy <= 25f) ||
-					(_currentEnergy > 10f && _previousEnergy <= 10f)
+					_currentEnergy <= 25f && _previousEnergy > 25f ||
+					_currentEnergy <= 10f && _previousEnergy > 10f ||
+					_currentEnergy > 25f && _previousEnergy <= 25f ||
+					_currentEnergy > 10f && _previousEnergy <= 10f
 				) ||
 				_isRecharging || _energyRegained
 			)
 			{
-				_transitionAnimationTimer = _slowTransitionTimerMax;
+				_transitionAnimationTimer = SlowTransitionTimerMax;
 				// Charging takes over damage flash and recharge amount display
 				if (_isRecharging || _energyRegained)
 				{
 					if (OptionRechargeAmount)
-						_deltaAnimationTimer = _slowTransitionTimerMax;
+						_deltaAnimationTimer = SlowTransitionTimerMax;
 					_rechargeDisplayTimer = 0f;
 					_damageAnimationTimer = 0f;
 				}
 			}
 
-			Color color = Value.color;
+			Color color = _value.color;
 
 			// Set target color for the transition to take between
 			// transition
@@ -350,21 +349,21 @@ namespace Streamliner
 					_currentColor = _defaultColor;
 
 				color = Color.Lerp(
-					color, _currentColor, Time.deltaTime * _slowTransitionSpeed);
+					color, _currentColor, Time.deltaTime * SlowTransitionSpeed);
 				_transitionAnimationTimer -= Time.deltaTime;
 			}
 			else
 				_transitionAnimationTimer = 0f;
 
 			// recharging amount transition
-			Color deltaColor = Delta.color;
+			Color deltaColor = _delta.color;
 			if (_deltaAnimationTimer > 0f)
 			{
 				if (_isRecharging || _energyRegained)
 				{
 					deltaColor = _wasRecharging ?
 						Color.Lerp(
-							deltaColor, _deltaColor, Time.deltaTime * _slowTransitionSpeed
+							deltaColor, _deltaColor, Time.deltaTime * SlowTransitionSpeed
 						) :
 						_deltaInactiveColor;
 				}
@@ -372,7 +371,7 @@ namespace Streamliner
 				{
 					// Recharging is done here, as the timer is only set when recharging starts.
 					// Stop this block and start the display block.
-					_rechargeDisplayTimer = _rechargeDisplayTimerMax;
+					_rechargeDisplayTimer = RechargeDisplayTimerMax;
 					_deltaAnimationTimer = 0f;
 				}
 
@@ -400,29 +399,29 @@ namespace Streamliner
 				_currentDamageColor =
 					_currentEnergy > 10f ||
 					OptionLowEnergy == 0 ||
-					(OptionLowEnergy == 1 && !Audio.WarnOfCriticalEnergy) ?
+					OptionLowEnergy == 1 && !Audio.WarnOfCriticalEnergy ?
 						_damageColor : _damageLowColor;
 
 				if (_damageAnimationTimer == _fastTransitionTimerMax)
 					color = _currentDamageColor;
 				color = Color.Lerp(
-					color, _currentColor, Time.deltaTime * _fastTransitionSpeed);
+					color, _currentColor, Time.deltaTime * FastTransitionSpeed);
 				_damageAnimationTimer -= Time.deltaTime;
 			}
 			else
 				_damageAnimationTimer = 0f;
 
 			// Apply the final color
-			Value.color = color;
-			GaugeImage.color = color;
-			Delta.color = deltaColor;
+			_value.color = color;
+			_gaugeImage.color = color;
+			_delta.color = deltaColor;
 		}
 	}
 
 	public class Timer : ScriptableHud
 	{
 		internal BasicPanel Panel;
-		internal RectTransform LapSlotTemplate;
+		private RectTransform _lapSlotTemplate;
 
 		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
 
@@ -448,7 +447,7 @@ namespace Streamliner
 				set
 				{
 					_perfectLapStatus = value;
-					_perfectLine.gameObject.SetActive(value: value);
+					_perfectLine.gameObject.SetActive(value);
 				}
 			}
 
@@ -473,10 +472,10 @@ namespace Streamliner
 			for (int i = 0; i < _totalSlots; i++)
 			{
 				RectTransform slot =
-					Instantiate(LapSlotTemplate.gameObject).GetComponent<RectTransform>();
-				slot.SetParent(LapSlotTemplate.parent);
-				slot.localScale = LapSlotTemplate.localScale;
-				slot.anchoredPosition = LapSlotTemplate.anchoredPosition;
+					Instantiate(_lapSlotTemplate.gameObject).GetComponent<RectTransform>();
+				slot.SetParent(_lapSlotTemplate.parent);
+				slot.localScale = _lapSlotTemplate.localScale;
+				slot.anchoredPosition = _lapSlotTemplate.anchoredPosition;
 
 				slot.localPosition += Vector3.up * slot.sizeDelta.y * i;
 
@@ -493,11 +492,11 @@ namespace Streamliner
 			_totalLaps = Race.MaxLaps;
 			_totalSections = GetTotalSectionCount();
 			Panel = new BasicPanel(CustomComponents.GetById("Base"));
-			LapSlotTemplate = CustomComponents.GetById("LapSlot");
+			_lapSlotTemplate = CustomComponents.GetById("LapSlot");
 			// I am hiding the components here, not on Unity,
 			// because I want to keep them visible on Unity.
-			LapSlotTemplate.Find("Time").gameObject.SetActive(false);
-			LapSlotTemplate.Find("PerfectLine").gameObject.SetActive(false);
+			_lapSlotTemplate.Find("Time").gameObject.SetActive(false);
+			_lapSlotTemplate.Find("PerfectLine").gameObject.SetActive(false);
 			InitiateSlots();
 			_currentSlot = _slots[0];
 
@@ -611,8 +610,6 @@ namespace Streamliner
 		private Text _bestTime;
 		private int _totalSections;
 
-		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
-
 		// NgEvents.NgUiEventsOnGamemodeUpdateCurrentLapTime
 		// NgEvents.NgUiEvents.OnGamemodeInvalidatedLap
 		public override void Start()
@@ -647,9 +644,9 @@ namespace Streamliner
 		private const string StringTimeTrial = "Time Trial";
 		private const string StringSpeedLap = "Speed Lap";
 		internal RectTransform Panel;
-		internal RectTransform NormalDisplay;
-		internal Text NormalDisplayValue;
-		internal DoubleGaugePanel BigDisplay;
+		private RectTransform _normalDisplay;
+		private Text _normalDisplayValue;
+		private DoubleGaugePanel _bigDisplay;
 
 		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
 
@@ -722,12 +719,12 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
-			NormalDisplay = CustomComponents.GetById("Normal");
-			NormalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
-			NormalDisplayValue = NormalDisplay.Find("Value").GetComponent<Text>();
-			NormalDisplayValue.color = GetTintColor();
-			BigDisplay = new DoubleGaugePanel(CustomComponents.GetById("Big"));
-			BigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
+			_normalDisplay = CustomComponents.GetById("Normal");
+			_normalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
+			_normalDisplayValue = _normalDisplay.Find("Value").GetComponent<Text>();
+			_normalDisplayValue.color = GetTintColor();
+			_bigDisplay = new DoubleGaugePanel(CustomComponents.GetById("Big"));
+			_bigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
 
 			_gamemodeName = RaceManager.CurrentGamemode.Name;
 			_isCampaign = NgCampaign.Enabled;
@@ -739,12 +736,13 @@ namespace Streamliner
 					Panel.gameObject.SetActive(false);
 					break;
 				case DisplayType.Normal:
-					BigDisplay.Base.gameObject.SetActive(false);
+					_bigDisplay.Base.gameObject.SetActive(false);
 					break;
 				case DisplayType.Big:
-					NormalDisplay.gameObject.SetActive(false);
+					_normalDisplay.gameObject.SetActive(false);
 					break;
 				case DisplayType.Both:
+				default:
 					break;
 			}
 
@@ -818,11 +816,12 @@ namespace Streamliner
 
 			UpdateBestTime();
 			ChangeTargetTime();
-			if (_usingLeftTimeDisplay)
-			{
-				if (_gamemodeName != StringSpeedLap) UpdateCurrentTime();
-				SetLeftTime();
-			}
+
+			if (!_usingLeftTimeDisplay)
+				return;
+
+			if (_gamemodeName != StringSpeedLap) UpdateCurrentTime();
+			SetLeftTime();
 		}
 
 		private void UpdateSpeedLapCurrentTime(float currentTime)
@@ -936,7 +935,7 @@ namespace Streamliner
 			if (ship != TargetShip)
 				return;
 
-			NormalDisplayValue.text = _bestTime >= 0f ?
+			_normalDisplayValue.text = _bestTime >= 0f ?
 				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
 		}
 
@@ -957,21 +956,21 @@ namespace Streamliner
 			if (ship != TargetShip)
 				return;
 
-			BigDisplay.Label.text = _targetTime <= 0f ? "best" : "target";
+			_bigDisplay.Label.text = _targetTime <= 0f ? "best" : "target";
 		}
 
 		private void SetLeftTime()
 		{
 			if (_currentTime < 0f || _lapInvalidated)
 			{
-				BigDisplay.Value.text = _bigTimeTextBuilder.ToString(-1f);
-				BigDisplay.FillBoth(0f);
+				_bigDisplay.Value.text = _bigTimeTextBuilder.ToString(-1f);
+				_bigDisplay.FillBoth(0f);
 				return;
 			}
 			if (_targetTime <= 0f)
 			{
-				BigDisplay.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
-				BigDisplay.FillBoth(1f);
+				_bigDisplay.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
+				_bigDisplay.FillBoth(1f);
 				return;
 			}
 
@@ -980,9 +979,9 @@ namespace Streamliner
 			if (_showingLapTimeAdvantage)
 				timeLeft += _averageLapTimeAdvantage;
 			timeLeft = timeLeft < 0f ? 0f : timeLeft;
-			BigDisplay.Value.text = _bigTimeTextBuilder.ToString(timeLeft);
+			_bigDisplay.Value.text = _bigTimeTextBuilder.ToString(timeLeft);
 			timeLeft = timeLeft > _targetTime ? _targetTime : timeLeft;
-			BigDisplay.FillBoth(timeLeft / timeMax);
+			_bigDisplay.FillBoth(timeLeft / timeMax);
 		}
 
 		public override void OnDestroy()
@@ -1009,23 +1008,23 @@ namespace Streamliner
 	public class ZoneTracker : ScriptableHud
 	{
 		internal DoubleGaugePanel Panel;
-		internal Text ZoneName;
-		internal Text ZoneScore;
+		private Text _zoneName;
+		private Text _zoneScore;
 
 		public override void Start()
 		{
 			base.Start();
 			Panel = new DoubleGaugePanel(CustomComponents.GetById("Base"));
-			ZoneName = CustomComponents.GetById<Text>("Name");
-			ZoneName.gameObject.SetActive(true);
-			ZoneScore = CustomComponents.GetById<Text>("Score");
-			ZoneScore.gameObject.SetActive(true);
+			_zoneName = CustomComponents.GetById<Text>("Name");
+			_zoneName.gameObject.SetActive(true);
+			_zoneScore = CustomComponents.GetById<Text>("Score");
+			_zoneScore.gameObject.SetActive(true);
 
-			ZoneScore.color = GetTintColor(TextAlpha.NineTenths);
+			_zoneScore.color = GetTintColor(TextAlpha.NineTenths);
 
-			ZoneScore.text = "0";
+			_zoneScore.text = "0";
 			Panel.Value.text = "0";
-			ZoneName.text = "toxic";
+			_zoneName.text = "toxic";
 
 			NgUiEvents.OnZoneProgressUpdate += SetProgress;
 			NgUiEvents.OnZoneScoreUpdate += SetScore;
@@ -1037,13 +1036,13 @@ namespace Streamliner
 			Panel.FillBoth(progress);
 
 		private void SetScore(string score) =>
-			ZoneScore.text = score;
+			_zoneScore.text = score;
 
 		private void SetNumber(string number) =>
 			Panel.Value.text = number;
 
 		private void SetTitle(string title) =>
-			ZoneName.text = title;
+			_zoneName.text = title;
 
 		public override void OnDestroy()
 		{
@@ -1059,15 +1058,15 @@ namespace Streamliner
 	public class UpsurgeTracker : ScriptableHud
 	{
 		internal LayeredDoubleGaugePanel Panel;
-		internal RectTransform EnergyInfo;
-		internal Text ValueZone;
-		internal Text ValueShield;
-		internal Animator BarrierWarning;
+		private RectTransform _energyInfo;
+		private Text _valueZoneText;
+		private Text _valueShieldText;
+		private Animator _barrierWarning;
 		private static readonly int WarnLeft = Animator.StringToHash("Left");
 		private static readonly int WarnMiddle = Animator.StringToHash("Middle");
 		private static readonly int WarnRight = Animator.StringToHash("Right");
-		internal GmUpsurge Gamemode;
-		internal UpsurgeShip UpsurgeTargetShip;
+		private GmUpsurge _gamemode;
+		private UpsurgeShip _upsurgeTargetShip;
 		private int _valueShield;
 		private float _valueZoneTime;
 		private const float TransitionSpeed = 8f;
@@ -1090,24 +1089,24 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = new LayeredDoubleGaugePanel(CustomComponents.GetById("Base"), true);
-			EnergyInfo = CustomComponents.GetById("Energy");
-			EnergyInfo.gameObject.SetActive(true);
-			ValueZone = EnergyInfo.Find("ValueZone").GetComponent<Text>();
-			ValueShield = EnergyInfo.Find("ValueShield").GetComponent<Text>();
-			BarrierWarning = CustomComponents.GetById<Animator>("Barrier");
-			BarrierWarning.gameObject.SetActive(true);
+			_energyInfo = CustomComponents.GetById("Energy");
+			_energyInfo.gameObject.SetActive(true);
+			_valueZoneText = _energyInfo.Find("ValueZone").GetComponent<Text>();
+			_valueShieldText = _energyInfo.Find("ValueShield").GetComponent<Text>();
+			_barrierWarning = CustomComponents.GetById<Animator>("Barrier");
+			_barrierWarning.gameObject.SetActive(true);
 
 			_currentSmallGaugeColor = Panel.SmallGaugeColor;
 			_smallGaugeAlpha = Panel.SmallGaugeColor.a;
 
 			Color infoLabelColor = GetTintColor(TextAlpha.ThreeEighths);
 			Color infoValueColor = GetTintColor(TextAlpha.ThreeQuarters);
-			EnergyInfo.Find("LabelZone").GetComponent<Text>().color = infoLabelColor;
-			EnergyInfo.Find("LabelShield").GetComponent<Text>().color = infoLabelColor;
-			EnergyInfo.Find("ValueZone").GetComponent<Text>().color = infoValueColor;
-			EnergyInfo.Find("ValueShield").GetComponent<Text>().color = infoValueColor;
+			_energyInfo.Find("LabelZone").GetComponent<Text>().color = infoLabelColor;
+			_energyInfo.Find("LabelShield").GetComponent<Text>().color = infoLabelColor;
+			_energyInfo.Find("ValueZone").GetComponent<Text>().color = infoValueColor;
+			_energyInfo.Find("ValueShield").GetComponent<Text>().color = infoValueColor;
 
-			Gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
+			_gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
 
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
@@ -1117,7 +1116,7 @@ namespace Streamliner
 
 		private void StartTransition(ShipController ship)
 		{
-			if (UpsurgeTargetShip == null || ship != UpsurgeTargetShip.TargetShip)
+			if (_upsurgeTargetShip == null || ship != _upsurgeTargetShip.TargetShip)
 				return;
 
 			_transitionTimer = TransitionTimerMax;
@@ -1135,35 +1134,35 @@ namespace Streamliner
 			switch (side)
 			{
 				case -1:
-					BarrierWarning.SetTrigger(WarnLeft);
+					_barrierWarning.SetTrigger(WarnLeft);
 					break;
 				case 0:
-					BarrierWarning.SetTrigger(WarnMiddle);
+					_barrierWarning.SetTrigger(WarnMiddle);
 					break;
 				case 1:
-					BarrierWarning.SetTrigger(WarnRight);
+					_barrierWarning.SetTrigger(WarnRight);
 					break;
 			}
 		}
 
 		private void UpdateValues()
 		{
-			if (UpsurgeTargetShip == null)
+			if (_upsurgeTargetShip == null)
 				return;
 
-			_valueShield = UpsurgeTargetShip.BuiltZones * 20;
+			_valueShield = _upsurgeTargetShip.BuiltZones * 20;
 			_valueShield = _valueShield < 0 ? 0 : _valueShield > 100 ? 100 : _valueShield;
-			_valueZoneTime = UpsurgeTargetShip.ZoneTime;
-			_finiteZoneTimeWidth = UpsurgeTargetShip.ZoneTime / 5;
-			_finiteZoneWidth = (float) UpsurgeTargetShip.BuiltZones / 10;
+			_valueZoneTime = _upsurgeTargetShip.ZoneTime;
+			_finiteZoneTimeWidth = _upsurgeTargetShip.ZoneTime / 5;
+			_finiteZoneWidth = (float) _upsurgeTargetShip.BuiltZones / 10;
 			_finiteShieldWidth = (float) _valueShield / 100;
 		}
 
 		private void SetValues()
 		{
-			Panel.Value.text = UpsurgeTargetShip.CurrentZone.ToString();
-			ValueZone.text = "+" + UpsurgeTargetShip.BuiltZones;
-			ValueShield.text = "+" + _valueShield;
+			Panel.Value.text = _upsurgeTargetShip.CurrentZone.ToString();
+			_valueZoneText.text = "+" + _upsurgeTargetShip.BuiltZones;
+			_valueShieldText.text = "+" + _valueShield;
 
 			Panel.FillBoth(_currentZoneWidth);
 			Panel.FillSecondGauges(_currentShieldWidth);
@@ -1198,14 +1197,14 @@ namespace Streamliner
 		public override void Update()
 		{
 			base.Update();
-			if (UpsurgeTargetShip == null)
+			if (_upsurgeTargetShip == null)
 			{
-				UpsurgeTargetShip = Gamemode.Ships.Find(ship => ship.TargetShip == TargetShip);
+				_upsurgeTargetShip = _gamemode.Ships.Find(ship => ship.TargetShip == TargetShip);
 				return;
 			}
 
 			if (
-				!Mathf.Approximately(_valueZoneTime, UpsurgeTargetShip.ZoneTime) &&
+				!Mathf.Approximately(_valueZoneTime, _upsurgeTargetShip.ZoneTime) &&
 				_valuesAreFinite
 			)
 			{
@@ -1295,12 +1294,12 @@ namespace Streamliner
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
 
-		public void Initiate()
+		private void Initiate()
 		{
 			StartCoroutine(UpdateData());
 		}
 
-		public IEnumerator UpdateData()
+		private IEnumerator UpdateData()
 		{
 			while (true)
 			{
@@ -1385,7 +1384,7 @@ namespace Streamliner
 	public class Pitlane : ScriptableHud
 	{
 		internal RectTransform Panel;
-		internal Animator PanelAnimator;
+		private Animator _panelAnimator;
 		private static readonly int Active = Animator.StringToHash("Active");
 		private static readonly int PointRight = Animator.StringToHash("Point Right");
 
@@ -1393,7 +1392,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
-			PanelAnimator = Panel.GetComponent<Animator>();
+			_panelAnimator = Panel.GetComponent<Animator>();
 
 			Panel.Find("Left").Find("Text").GetComponent<Text>().color = GetTintColor();
 			Panel.Find("Right").Find("Text").GetComponent<Text>().color = GetTintColor();
@@ -1419,14 +1418,14 @@ namespace Streamliner
 			switch (side)
 			{
 				case -1:
-					PanelAnimator.SetBool(PointRight, false);
+					_panelAnimator.SetBool(PointRight, false);
 					break;
 				case 1:
-					PanelAnimator.SetBool(PointRight, true);
+					_panelAnimator.SetBool(PointRight, true);
 					break;
 			}
 
-			PanelAnimator.SetTrigger(Active);
+			_panelAnimator.SetTrigger(Active);
 		}
 
 		public override void OnDestroy()
@@ -1439,22 +1438,22 @@ namespace Streamliner
 	public class MessageLogger : ScriptableHud
 	{
 		internal RectTransform Panel;
-		internal CanvasGroup TimeGroup;
-		internal Text TimeDiff;
-		internal Text LapResult;
-		internal Text FinalLap;
-		internal RectTransform LineTemplate;
-		internal Text NowPlaying;
-		internal Text WrongWay;
+		private CanvasGroup _timeGroup;
+		private Text _timeDiff;
+		private Text _lapResult;
+		private Text _finalLap;
+		private RectTransform _lineTemplate;
+		private Text _nowPlaying;
+		private Text _wrongWay;
 
-		internal const int LineMax = 3;
-		internal const float DisplayTimeMax = 3.0f;
-		internal const int FadeOutSpeed = 3;
-		internal const float FadeOutTimeMax = 3.75f;
-		internal const int WrongWayFadeSpeed = 13;
-		internal const float WrongWayFadeTimeMax = 0.8f;
-		internal float WrongWayAlpha;
-		internal float WrongWayCurrentAlpha;
+		private const int LineMax = 3;
+		private const float DisplayTimeMax = 3.0f;
+		private const int FadeOutSpeed = 3;
+		private const float FadeOutTimeMax = 3.75f;
+		private const int WrongWayFadeSpeed = 13;
+		private const float WrongWayFadeTimeMax = 0.8f;
+		private float _wrongWayAlpha;
+		private float _wrongWayCurrentAlpha;
 
 		/*
 		 * First three values of `StringKind` are in the same order
@@ -1471,7 +1470,7 @@ namespace Streamliner
 		};
 		private static readonly Regex TimeFormatRegex = new(
 			@"\d\d?:\d{2}\.\d{2}", RegexOptions.None, TimeSpan.FromMilliseconds(10));
-		private StringKind GetStringKind(string message)
+		private static StringKind GetStringKind(string message)
 		{
 			for (int enumIndex = 0; enumIndex <= DefinedStrings.Length; enumIndex++)
 			{
@@ -1553,31 +1552,31 @@ namespace Streamliner
 		{
 			Panel = CustomComponents.GetById("Base");
 			RectTransform timeGroupRT = CustomComponents.GetById("TimeGroup");
-			TimeGroup = timeGroupRT.GetComponent<CanvasGroup>();
-			TimeDiff = timeGroupRT.Find("Difference").GetComponent<Text>();
-			LapResult = timeGroupRT.Find("LapResult").GetComponent<Text>();
-			FinalLap = timeGroupRT.Find("FinalLap").GetComponent<Text>();
-			LineTemplate = CustomComponents.GetById("MessageLine");
-			Text LineTemplateText = LineTemplate.GetComponent<Text>();
-			NowPlaying = CustomComponents.GetById<Text>("NowPlaying");
-			WrongWay = CustomComponents.GetById<Text>("WrongWay");
+			_timeGroup = timeGroupRT.GetComponent<CanvasGroup>();
+			_timeDiff = timeGroupRT.Find("Difference").GetComponent<Text>();
+			_lapResult = timeGroupRT.Find("LapResult").GetComponent<Text>();
+			_finalLap = timeGroupRT.Find("FinalLap").GetComponent<Text>();
+			_lineTemplate = CustomComponents.GetById("MessageLine");
+			Text lineTemplateText = _lineTemplate.GetComponent<Text>();
+			_nowPlaying = CustomComponents.GetById<Text>("NowPlaying");
+			_wrongWay = CustomComponents.GetById<Text>("WrongWay");
 
-			TimeDiff.color = DefaultColor["TimeDiff"];
-			LapResult.color = DefaultColor["LapResult"];
-			FinalLap.color = DefaultColor["FinalLap"];
-			LineTemplateText.color = DefaultColor["Line"];
-			NowPlaying.color = DefaultColor["NowPlaying"];
+			_timeDiff.color = DefaultColor["TimeDiff"];
+			_lapResult.color = DefaultColor["LapResult"];
+			_finalLap.color = DefaultColor["FinalLap"];
+			lineTemplateText.color = DefaultColor["Line"];
+			_nowPlaying.color = DefaultColor["NowPlaying"];
 			Color wrongWayInitiateColor = DefaultColor["WrongWay"];
-			wrongWayInitiateColor.a = WrongWayCurrentAlpha;
-			WrongWay.color = wrongWayInitiateColor;
+			wrongWayInitiateColor.a = _wrongWayCurrentAlpha;
+			_wrongWay.color = wrongWayInitiateColor;
 
 			if (Audio.Levels.MusicVolume == 0f)
-				NowPlaying.gameObject.SetActive(false);
+				_nowPlaying.gameObject.SetActive(false);
 
-			TimeDiff.text = "";
-			LapResult.text = "";
-			FinalLap.text = "";
-			LineTemplateText.text = "";
+			_timeDiff.text = "";
+			_lapResult.text = "";
+			_finalLap.text = "";
+			lineTemplateText.text = "";
 
 			InitiateLines();
 		}
@@ -1588,14 +1587,14 @@ namespace Streamliner
 			 * sizeDelta.y == 30, but 29.75 moves a line of
 			 * SpireNbp at the font size of 30 by 30 pixels.
 			 */
-			float lineHeight = LineTemplate.sizeDelta.y - 0.25f;
+			float lineHeight = _lineTemplate.sizeDelta.y - 0.25f;
 			for (int i = 0; i < LineMax; i++)
 			{
 				RectTransform line =
-					Instantiate(LineTemplate.gameObject).GetComponent<RectTransform>();
-				line.SetParent(LineTemplate.parent);
-				line.localScale = LineTemplate.localScale;
-				line.anchoredPosition = LineTemplate.anchoredPosition;
+					Instantiate(_lineTemplate.gameObject).GetComponent<RectTransform>();
+				line.SetParent(_lineTemplate.parent);
+				line.localScale = _lineTemplate.localScale;
+				line.anchoredPosition = _lineTemplate.anchoredPosition;
 
 				line.localPosition += Vector3.up * lineHeight * i;
 
@@ -1612,16 +1611,16 @@ namespace Streamliner
 				switch (kind)
 				{
 					case StringKind.NewLapRecord or StringKind.PerfectLap:
-						LapResult.text += Environment.NewLine + message;
+						_lapResult.text += Environment.NewLine + message;
 						break;
 					case StringKind.TimeDiff:
-						TimeDiff.text = message + "<color=#0000>-</color>";
+						_timeDiff.text = message + "<color=#0000>-</color>";
 						break;
 					case StringKind.Time:
-						TimeDiff.text = message;
+						_timeDiff.text = message;
 						break;
 					case StringKind.FinalLap:
-						FinalLap.text = message;
+						_finalLap.text = message;
 						break;
 				}
 				_timeDisplayTime = DisplayTimeMax;
@@ -1636,11 +1635,11 @@ namespace Streamliner
 		private void AddSong(string songName)
 		{
 			bool musicIsOn = Audio.Levels.MusicVolume != 0f;
-			NowPlaying.gameObject.SetActive(musicIsOn);
+			_nowPlaying.gameObject.SetActive(musicIsOn);
 			if (!musicIsOn)
 				return;
 
-			NowPlaying.text = songName;
+			_nowPlaying.text = songName;
 			_npDisplayTime = DisplayTimeMax;
 			_npFadeOutTimeRemaining = 0f;
 		}
@@ -1723,9 +1722,9 @@ namespace Streamliner
 				!_timeFadeOutInProgress
 			)
 			{
-				TimeDiff.text = "";
-				LapResult.text = "";
-				FinalLap.text = "";
+				_timeDiff.text = "";
+				_lapResult.text = "";
+				_finalLap.text = "";
 			}
 
 			// now playing
@@ -1751,7 +1750,7 @@ namespace Streamliner
 					_npFadeOutTimeRemaining == 0f &&
 					!_npFadeOutInProgress
 				)
-					NowPlaying.text = "";
+					_nowPlaying.text = "";
 			}
 
 			// wrong way
@@ -1760,15 +1759,15 @@ namespace Streamliner
 				_wasWrongWay && TargetShip.FacingForward
 			)
 			{
-				WrongWayAlpha = _wasWrongWay ? 0f : 1f;
+				_wrongWayAlpha = _wasWrongWay ? 0f : 1f;
 				_wrongWayFadeTimeRemaining = WrongWayFadeTimeMax;
 				_wasWrongWay = !TargetShip.FacingForward;
 			}
 
 			if (_wrongWayFadeTimeRemaining > 0f)
 			{
-				WrongWayCurrentAlpha =
-					Mathf.Lerp(WrongWayCurrentAlpha, WrongWayAlpha,
+				_wrongWayCurrentAlpha =
+					Mathf.Lerp(_wrongWayCurrentAlpha, _wrongWayAlpha,
 						Time.deltaTime * WrongWayFadeSpeed);
 				_wrongWayFadeTimeRemaining -= Time.deltaTime;
 			}
@@ -1776,10 +1775,10 @@ namespace Streamliner
 				_wrongWayFadeTimeRemaining = 0f;
 
 			if (Input.GetKeyDown(KeyCode.R))
-				InsertMessageLine($"Test Message {testNumber++}", DefaultColor["Line"]);
+				InsertMessageLine($"Test Message {_testNumber++}", DefaultColor["Line"]);
 		}
 
-		private int testNumber;
+		private int _testNumber;
 
 		private IEnumerator RemoveMessage(int i)
 		{
@@ -1804,11 +1803,11 @@ namespace Streamliner
 			{
 				if (_timeDisplayTime == DisplayTimeMax)
 				{
-					TimeGroup.alpha = 1f;
+					_timeGroup.alpha = 1f;
 					break;
 				}
 
-				TimeGroup.alpha = Mathf.Lerp(TimeGroup.alpha, 0f, Time.deltaTime * FadeOutSpeed);
+				_timeGroup.alpha = Mathf.Lerp(_timeGroup.alpha, 0f, Time.deltaTime * FadeOutSpeed);
 
 				_timeFadeOutTimeRemaining -= Time.deltaTime;
 				yield return null;
@@ -1821,18 +1820,18 @@ namespace Streamliner
 		private IEnumerator RemoveSong()
 		{
 			_npFadeOutInProgress = true;
-			Color color = NowPlaying.color;
+			Color color = _nowPlaying.color;
 
 			while (_npFadeOutTimeRemaining > 0f)
 			{
 				if (_npDisplayTime == DisplayTimeMax)
 				{
-					NowPlaying.color = DefaultColor["NowPlaying"];
+					_nowPlaying.color = DefaultColor["NowPlaying"];
 					break;
 				}
 
 				color.a = Mathf.Lerp(color.a, 0f, Time.deltaTime * FadeOutSpeed);
-				NowPlaying.color = color;
+				_nowPlaying.color = color;
 
 				_npFadeOutTimeRemaining -= Time.deltaTime;
 				yield return null;
@@ -1869,7 +1868,7 @@ namespace Streamliner
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
 
-		public void Initiate()
+		private void Initiate()
 		{
 			/*
 			 * CurrentGamemode can be Gamemode or inheritances of it.
