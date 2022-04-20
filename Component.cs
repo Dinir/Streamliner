@@ -1472,7 +1472,7 @@ namespace Streamliner
 			@"\d\d?:\d{2}\.\d{2}", RegexOptions.None, TimeSpan.FromMilliseconds(10));
 		private static StringKind GetStringKind(string message)
 		{
-			for (int enumIndex = 0; enumIndex <= DefinedStrings.Length; enumIndex++)
+			for (int enumIndex = 0; enumIndex < DefinedStrings.Length; enumIndex++)
 			{
 				string definedString = DefinedStrings[enumIndex];
 				// https://forum.unity.com/threads/the-fastest-string-contains-indexof-very-very-fast.126429/#post-852976
