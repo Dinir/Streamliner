@@ -1698,7 +1698,10 @@ namespace Streamliner
 					_lineFadeOutTimeRemaining[i] == 0f &&
 					!_lineFadeOutInProgress[i]
 				)
+				{
 					_lines[i].Value.text = "";
+					_lines[i].Value.color = DefaultColor["Line"];
+				}
 			}
 
 			// time display
@@ -1726,6 +1729,9 @@ namespace Streamliner
 				_timeDiff.text = "";
 				_lapResult.text = "";
 				_finalLap.text = "";
+				_timeDiff.color = DefaultColor["TimeDiff"];
+				_lapResult.color = DefaultColor["LapResult"];
+				_finalLap.color = DefaultColor["FinalLap"];
 			}
 
 			// now playing
@@ -1751,7 +1757,10 @@ namespace Streamliner
 					_npFadeOutTimeRemaining == 0f &&
 					!_npFadeOutInProgress
 				)
+				{
 					_nowPlaying.text = "";
+					_nowPlaying.color = DefaultColor["NowPlaying"];
+				}
 			}
 
 			// wrong way
