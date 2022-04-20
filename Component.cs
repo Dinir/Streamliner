@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using NgAudio;
 using UnityEngine;
 using UnityEngine.UI;
@@ -1438,31 +1439,147 @@ namespace Streamliner
 	public class MessageLogger : ScriptableHud
 	{
 		internal RectTransform Panel;
+		internal CanvasGroup TimeGroup;
 		internal Text TimeDiff;
 		internal Text LapResult;
 		internal Text FinalLap;
 		internal RectTransform LineTemplate;
-		internal const int LineMax = 3;
-		internal const float DisplayTimeMax = 3.0f;
 		internal Text NowPlaying;
 		internal Text WrongWay;
 
-		private readonly Color _tint75 = GetTintColor(TextAlpha.ThreeQuarters);
-		private readonly Color _tint90 = GetTintColor(TextAlpha.NineTenths);
-		private readonly Color _tint100 = GetTintColor();
+		internal const int LineMax = 3;
+		internal const float DisplayTimeMax = 3.0f;
+		internal const int FadeOutSpeed = 3;
+		internal const float FadeOutTimeMax = 3.75f;
+		internal const int WrongWayFadeSpeed = 13;
+		internal const float WrongWayFadeTimeMax = 0.8f;
+		internal float WrongWayAlpha;
+		internal float WrongWayCurrentAlpha;
 
-		private readonly List<Line> _lines = new(3);
+		/*
+		 * First three values of `StringKind` are in the same order
+		 * the three elements of `DefinedStrings` are,
+		 * so the comparison method `GetStringKind` can do the task
+		 * with a for loop and give the corresponding enum value straight from the int.
+		 */
+		private enum StringKind
+		{
+			NewLapRecord, PerfectLap, FinalLap, TimeDiff, Time, General
+		}
+		private static readonly string[] DefinedStrings = {
+			"NEW LAP RECORD", "PERFECT LAP", "FINAL LAP"
+		};
+		private static readonly Regex TimeFormatRegex = new(
+			@"\d\d?:\d{2}\.\d{2}", RegexOptions.None, TimeSpan.FromMilliseconds(10));
+		private StringKind GetStringKind(string message)
+		{
+			for (int enumIndex = 0; enumIndex <= DefinedStrings.Length; enumIndex++)
+			{
+				string definedString = DefinedStrings[enumIndex];
+				// https://forum.unity.com/threads/the-fastest-string-contains-indexof-very-very-fast.126429/#post-852976
+				if (message.Length >= definedString.Length && message.Contains(definedString))
+					return (StringKind) enumIndex;
+			}
 
+			if (TimeFormatRegex.IsMatch(message))
+				return message[0] == '-' || message[0] == '+' ?
+					StringKind.TimeDiff :
+					StringKind.Time;
+
+			return StringKind.General;
+		}
+
+		private static readonly Dictionary<string, Color> TextColor = new()
+		{
+			{ "75", GetTintColor(TextAlpha.ThreeQuarters) },
+			{ "90", GetTintColor(TextAlpha.NineTenths) },
+			{ "100", GetTintColor() },
+			{ "red", GetTintColor(TextAlpha.ThreeQuarters, 1, 1) },
+			{ "green", GetTintColor(TextAlpha.ThreeQuarters, 5, 1) },
+			{ "empty", GetTintColor(TextAlpha.Zero) }
+		};
+		private static readonly Dictionary<string, Color> DefaultColor = new()
+		{
+			{ "TimeDiff", TextColor["90"] },
+			{ "LapResult", TextColor["75"] },
+			{ "FinalLap", TextColor["75"] },
+			{ "Line", TextColor["75"] },
+			{ "NowPlaying", TextColor["75"] },
+			{ "WrongWay", TextColor["100"] }
+		};
+
+		private readonly List<Line> _lines = new(LineMax);
 		private class Line
 		{
 			internal readonly Text Value;
-			internal float DisplayTime;
+			public float Alpha
+			{
+				set
+				{
+					Color color = Value.color;
+					color.a = value;
+					Value.color = color;
+				}
+				get => Value.color.a;
+			}
 
 			public Line(RectTransform template)
 			{
 				Value = template.GetComponent<Text>();
-				DisplayTime = DisplayTimeMax;
 			}
+		}
+		private readonly float[] _lineDisplayTime = new float[LineMax];
+		private readonly float[] _lineFadeOutTimeRemaining = new float[LineMax];
+		private readonly bool[] _lineFadeOutInProgress = new bool[LineMax];
+		private float _timeDisplayTime;
+		private float _timeFadeOutTimeRemaining;
+		private bool _timeFadeOutInProgress;
+		private float _npDisplayTime;
+		private float _npFadeOutTimeRemaining;
+		private bool _npFadeOutInProgress;
+		private float _wrongWayFadeTimeRemaining;
+		private bool _wasWrongWay;
+
+		public override void Start()
+		{
+			base.Start();
+			Initiate();
+
+			NgUiEvents.OnTriggerMessage += AddMessage;
+			NgUiEvents.OnNewSongPlaying += AddSong;
+		}
+
+		private void Initiate()
+		{
+			Panel = CustomComponents.GetById("Base");
+			RectTransform timeGroupRT = CustomComponents.GetById("TimeGroup");
+			TimeGroup = timeGroupRT.GetComponent<CanvasGroup>();
+			TimeDiff = timeGroupRT.Find("Difference").GetComponent<Text>();
+			LapResult = timeGroupRT.Find("LapResult").GetComponent<Text>();
+			FinalLap = timeGroupRT.Find("FinalLap").GetComponent<Text>();
+			LineTemplate = CustomComponents.GetById("MessageLine");
+			Text LineTemplateText = LineTemplate.GetComponent<Text>();
+			NowPlaying = CustomComponents.GetById<Text>("NowPlaying");
+			WrongWay = CustomComponents.GetById<Text>("WrongWay");
+
+			TimeDiff.color = DefaultColor["TimeDiff"];
+			LapResult.color = DefaultColor["LapResult"];
+			FinalLap.color = DefaultColor["FinalLap"];
+			LineTemplateText.color = DefaultColor["Line"];
+			NowPlaying.color = DefaultColor["NowPlaying"];
+			Color wrongWayInitiateColor = DefaultColor["WrongWay"];
+			wrongWayInitiateColor.a = WrongWayCurrentAlpha;
+			WrongWay.color = wrongWayInitiateColor;
+
+			if (Audio.Levels.MusicVolume == 0f)
+				NowPlaying.gameObject.SetActive(false);
+
+			TimeDiff.text = "";
+			LapResult.text = "";
+			FinalLap.text = "";
+			LineTemplateText.text = "";
+
+			InitiateLines();
 		}
 
 		private void InitiateLines()
@@ -1486,50 +1603,250 @@ namespace Streamliner
 			}
 		}
 
-		public override void Start()
+		private void AddMessage(string message, ShipController ship, Color color)
 		{
-			base.Start();
-			Initiate();
+			StringKind kind = GetStringKind(message);
 
-			NgUiEvents.OnTriggerMessage += Test;
+			if (kind != StringKind.General)
+			{
+				switch (kind)
+				{
+					case StringKind.NewLapRecord or StringKind.PerfectLap:
+						LapResult.text += Environment.NewLine + message;
+						break;
+					case StringKind.TimeDiff:
+						TimeDiff.text = message + "<color=#0000>-</color>";
+						break;
+					case StringKind.Time:
+						TimeDiff.text = message;
+						break;
+					case StringKind.FinalLap:
+						FinalLap.text = message;
+						break;
+				}
+				_timeDisplayTime = DisplayTimeMax;
+				_timeFadeOutTimeRemaining = 0f;
+			}
+			else
+			{
+				InsertMessageLine(message, color);
+			}
 		}
 
-		private void Initiate()
+		private void AddSong(string songName)
 		{
-			Panel = CustomComponents.GetById("Base");
-			RectTransform TimeKinds = CustomComponents.GetById("TimeKinds");
-			TimeDiff = TimeKinds.Find("Difference").GetComponent<Text>();
-			LapResult = TimeKinds.Find("LapResult").GetComponent<Text>();
-			FinalLap = TimeKinds.Find("FinalLap").GetComponent<Text>();
-			LineTemplate = CustomComponents.GetById("MessageLine");
-			NowPlaying = CustomComponents.GetById<Text>("NowPlaying");
-			WrongWay = CustomComponents.GetById<Text>("WrongWay");
+			bool musicIsOn = Audio.Levels.MusicVolume != 0f;
+			NowPlaying.gameObject.SetActive(musicIsOn);
+			if (!musicIsOn)
+				return;
 
-			TimeDiff.color = _tint90;
-			LapResult.color = _tint75;
-			FinalLap.color = _tint75;
-			LineTemplate.GetComponent<Text>().color = _tint75;
-			NowPlaying.color = _tint75;
-			WrongWay.color = _tint100;
-
-			TimeDiff.text = "";
-			LapResult.text = "";
-			LineTemplate.GetComponent<Text>().text = "";
-			FinalLap.gameObject.SetActive(false);
-			WrongWay.gameObject.SetActive(false);
-
-			InitiateLines();
+			NowPlaying.text = songName;
+			_npDisplayTime = DisplayTimeMax;
+			_npFadeOutTimeRemaining = 0f;
 		}
 
-		private void Test(string message, ShipController ship, Color color)
+		private void InsertMessageLine(string message, Color color)
 		{
-			Debug.Log($"Message: {message}");
+			color = color == Color.green ?
+				TextColor["green"] :
+				color == Color.red ?
+					TextColor["red"] :
+					DefaultColor["Line"];
+
+			Line line;
+			for (int i = _lines.Count - 1; i > 0; i--)
+			{
+				line = _lines[i];
+				var lineBelow = _lines[i - 1];
+
+				line.Value.text = lineBelow.Value.text;
+				line.Value.color = lineBelow.Value.color;
+				_lineDisplayTime[i] = _lineDisplayTime[i - 1];
+				_lineFadeOutTimeRemaining[i] = _lineFadeOutTimeRemaining[i - 1];
+			}
+
+			line = _lines[0];
+			line.Value.text = message;
+			line.Value.color = color;
+			_lineDisplayTime[0] = DisplayTimeMax;
+			_lineFadeOutTimeRemaining[0] = 0f;
+		}
+
+		public override void Update()
+		{
+			base.Update();
+
+			// general messages
+			for (int i = 0; i < _lines.Count; i++)
+			{
+				if (_lineDisplayTime[i] > 0f)
+				{
+					_lineDisplayTime[i] -= Time.deltaTime;
+					if (_lineDisplayTime[i] <= 0f) _lineFadeOutTimeRemaining[i] = FadeOutTimeMax;
+				}
+				else
+					_lineDisplayTime[i] = 0f;
+
+				if (
+					_lineFadeOutTimeRemaining[i] > 0f &&
+					!_lineFadeOutInProgress[i]
+				)
+					StartCoroutine(RemoveMessage(i));
+
+				if (
+					_lineDisplayTime[i] == 0f &&
+					_lineFadeOutTimeRemaining[i] == 0f &&
+					!_lineFadeOutInProgress[i]
+				)
+					_lines[i].Value.text = "";
+			}
+
+			// time display
+			if (_timeDisplayTime > 0f)
+			{
+				_timeDisplayTime -= Time.deltaTime;
+				if (_timeDisplayTime <= 0f)
+					_timeFadeOutTimeRemaining = FadeOutTimeMax;
+			}
+			else
+				_timeDisplayTime = 0f;
+
+			if (
+				_timeFadeOutTimeRemaining > 0f &&
+				!_timeFadeOutInProgress
+			)
+				StartCoroutine(RemoveTime());
+
+			if (
+				_timeDisplayTime == 0f &&
+				_timeFadeOutTimeRemaining == 0f &&
+				!_timeFadeOutInProgress
+			)
+			{
+				TimeDiff.text = "";
+				LapResult.text = "";
+				FinalLap.text = "";
+			}
+
+			// now playing
+			if (Audio.Levels.MusicVolume != 0f)
+			{
+				if (_npDisplayTime > 0f)
+				{
+					_npDisplayTime -= Time.deltaTime;
+					if (_npDisplayTime <= 0f)
+						_npFadeOutTimeRemaining = FadeOutTimeMax;
+				}
+				else
+					_npDisplayTime = 0f;
+
+				if (
+					_npFadeOutTimeRemaining > 0f &&
+					!_npFadeOutInProgress
+				)
+					StartCoroutine(RemoveSong());
+
+				if (
+					_npDisplayTime == 0f &&
+					_npFadeOutTimeRemaining == 0f &&
+					!_npFadeOutInProgress
+				)
+					NowPlaying.text = "";
+			}
+
+			// wrong way
+			if (
+				!_wasWrongWay && !TargetShip.FacingForward ||
+				_wasWrongWay && TargetShip.FacingForward
+			)
+			{
+				WrongWayAlpha = _wasWrongWay ? 0f : 1f;
+				_wrongWayFadeTimeRemaining = WrongWayFadeTimeMax;
+				_wasWrongWay = !TargetShip.FacingForward;
+			}
+
+			if (_wrongWayFadeTimeRemaining > 0f)
+			{
+				WrongWayCurrentAlpha =
+					Mathf.Lerp(WrongWayCurrentAlpha, WrongWayAlpha,
+						Time.deltaTime * WrongWayFadeSpeed);
+				_wrongWayFadeTimeRemaining -= Time.deltaTime;
+			}
+			else
+				_wrongWayFadeTimeRemaining = 0f;
+
+			if (Input.GetKeyDown(KeyCode.R))
+				InsertMessageLine($"Test Message {testNumber++}", DefaultColor["Line"]);
+		}
+
+		private int testNumber;
+
+		private IEnumerator RemoveMessage(int i)
+		{
+			_lineFadeOutInProgress[i] = true;
+
+			while (_lineFadeOutTimeRemaining[i] > 0f)
+			{
+				_lines[i].Alpha = Mathf.Lerp(_lines[i].Alpha, 0f, Time.deltaTime * FadeOutSpeed);
+				_lineFadeOutTimeRemaining[i] -= Time.deltaTime;
+				yield return null;
+			}
+
+			_lineFadeOutTimeRemaining[i] = 0f;
+			_lineFadeOutInProgress[i] = false;
+		}
+
+		private IEnumerator RemoveTime()
+		{
+			_timeFadeOutInProgress = true;
+
+			while (_timeFadeOutTimeRemaining > 0f)
+			{
+				if (_timeDisplayTime == DisplayTimeMax)
+				{
+					TimeGroup.alpha = 1f;
+					break;
+				}
+
+				TimeGroup.alpha = Mathf.Lerp(TimeGroup.alpha, 0f, Time.deltaTime * FadeOutSpeed);
+
+				_timeFadeOutTimeRemaining -= Time.deltaTime;
+				yield return null;
+			}
+
+			_timeFadeOutTimeRemaining = 0f;
+			_timeFadeOutInProgress = false;
+		}
+
+		private IEnumerator RemoveSong()
+		{
+			_npFadeOutInProgress = true;
+			Color color = NowPlaying.color;
+
+			while (_npFadeOutTimeRemaining > 0f)
+			{
+				if (_npDisplayTime == DisplayTimeMax)
+				{
+					NowPlaying.color = DefaultColor["NowPlaying"];
+					break;
+				}
+
+				color.a = Mathf.Lerp(color.a, 0f, Time.deltaTime * FadeOutSpeed);
+				NowPlaying.color = color;
+
+				_npFadeOutTimeRemaining -= Time.deltaTime;
+				yield return null;
+			}
+
+			_npFadeOutTimeRemaining = 0f;
+			_npFadeOutInProgress = false;
 		}
 
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			NgUiEvents.OnTriggerMessage -= Test;
+			NgUiEvents.OnTriggerMessage -= AddMessage;
+			NgUiEvents.OnNewSongPlaying -= AddSong;
 		}
 	}
 
