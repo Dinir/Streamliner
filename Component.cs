@@ -1448,8 +1448,8 @@ namespace Streamliner
 
 		private const int LineMax = 3;
 		private const float DisplayTimeMax = 3.0f;
-		private const int FadeOutSpeed = 3;
-		private const float FadeOutTimeMax = 3.75f;
+		private const int FadeOutSpeed = 9;
+		private const float FadeOutTimeMax = 1.2f;
 		private const int WrongWayFadeSpeed = 13;
 		private const float WrongWayFadeTimeMax = 0.8f;
 		private float _wrongWayAlpha;
