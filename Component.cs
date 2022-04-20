@@ -1604,6 +1604,12 @@ namespace Streamliner
 
 		private void AddMessage(string message, ShipController ship, Color color)
 		{
+			color = color == Color.green ?
+				TextColor["green"] :
+				color == Color.red ?
+					TextColor["red"] :
+					DefaultColor["Line"];
+
 			StringKind kind = GetStringKind(message);
 
 			if (kind != StringKind.General)
@@ -1615,6 +1621,7 @@ namespace Streamliner
 						break;
 					case StringKind.TimeDiff:
 						_timeDiff.text = message + "<color=#0000>-</color>";
+						_timeDiff.color = color;
 						break;
 					case StringKind.Time:
 						_timeDiff.text = message;
@@ -1646,12 +1653,6 @@ namespace Streamliner
 
 		private void InsertMessageLine(string message, Color color)
 		{
-			color = color == Color.green ?
-				TextColor["green"] :
-				color == Color.red ?
-					TextColor["red"] :
-					DefaultColor["Line"];
-
 			Line line;
 			for (int i = _lines.Count - 1; i > 0; i--)
 			{
