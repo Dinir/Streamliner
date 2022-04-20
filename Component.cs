@@ -1657,7 +1657,7 @@ namespace Streamliner
 			for (int i = _lines.Count - 1; i > 0; i--)
 			{
 				line = _lines[i];
-				var lineBelow = _lines[i - 1];
+				Line lineBelow = _lines[i - 1];
 
 				line.Value.text = lineBelow.Value.text;
 				line.Value.color = lineBelow.Value.color;
