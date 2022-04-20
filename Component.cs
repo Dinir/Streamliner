@@ -1543,7 +1543,7 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Initiate();
+			NgRaceEvents.OnCountdownStart += Initiate;
 
 			NgUiEvents.OnTriggerMessage += AddMessage;
 			NgUiEvents.OnNewSongPlaying += AddSong;
@@ -1570,6 +1570,7 @@ namespace Streamliner
 			_wrongWayCurrentColor = DefaultColor["WrongWay"];
 			_wrongWayCurrentColor.a = _wrongWayCurrentAlpha;
 			_wrongWay.color = _wrongWayCurrentColor;
+			_wrongWay.text = "wrong way";
 
 			if (Audio.Levels.MusicVolume == 0f)
 				_nowPlaying.gameObject.SetActive(false);
@@ -1858,6 +1859,7 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
+			NgRaceEvents.OnCountdownStart -= Initiate;
 			NgUiEvents.OnTriggerMessage -= AddMessage;
 			NgUiEvents.OnNewSongPlaying -= AddSong;
 		}
