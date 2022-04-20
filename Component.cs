@@ -1584,11 +1584,7 @@ namespace Streamliner
 
 		private void InitiateLines()
 		{
-			/*
-			 * sizeDelta.y == 30, but 29.75 moves a line of
-			 * SpireNbp at the font size of 30 by 30 pixels.
-			 */
-			float lineHeight = _lineTemplate.sizeDelta.y * _lineTemplate.localScale.y - 0.25f;
+			float lineHeight = _lineTemplate.sizeDelta.y * _lineTemplate.localScale.y;
 			for (int i = 0; i < LineMax; i++)
 			{
 				RectTransform line =
