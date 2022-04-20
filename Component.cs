@@ -1454,6 +1454,7 @@ namespace Streamliner
 		private const float WrongWayFadeTimeMax = 0.8f;
 		private float _wrongWayAlpha;
 		private float _wrongWayCurrentAlpha;
+		private Color _wrongWayCurrentColor;
 
 		/*
 		 * First three values of `StringKind` are in the same order
@@ -1566,9 +1567,9 @@ namespace Streamliner
 			_finalLap.color = DefaultColor["FinalLap"];
 			lineTemplateText.color = DefaultColor["Line"];
 			_nowPlaying.color = DefaultColor["NowPlaying"];
-			Color wrongWayInitiateColor = DefaultColor["WrongWay"];
-			wrongWayInitiateColor.a = _wrongWayCurrentAlpha;
-			_wrongWay.color = wrongWayInitiateColor;
+			_wrongWayCurrentColor = DefaultColor["WrongWay"];
+			_wrongWayCurrentColor.a = _wrongWayCurrentAlpha;
+			_wrongWay.color = _wrongWayCurrentColor;
 
 			if (Audio.Levels.MusicVolume == 0f)
 				_nowPlaying.gameObject.SetActive(false);
@@ -1776,10 +1777,16 @@ namespace Streamliner
 				_wrongWayCurrentAlpha =
 					Mathf.Lerp(_wrongWayCurrentAlpha, _wrongWayAlpha,
 						Time.deltaTime * WrongWayFadeSpeed);
+				_wrongWayCurrentColor.a = _wrongWayCurrentAlpha;
+				_wrongWay.color = _wrongWayCurrentColor;
 				_wrongWayFadeTimeRemaining -= Time.deltaTime;
 			}
 			else
+			{
+				_wrongWayCurrentColor.a = _wrongWayAlpha;
+				_wrongWay.color = _wrongWayCurrentColor;
 				_wrongWayFadeTimeRemaining = 0f;
+			}
 
 			if (Input.GetKeyDown(KeyCode.R))
 				InsertMessageLine($"Test Message {_testNumber++}", DefaultColor["Line"]);
