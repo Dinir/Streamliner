@@ -619,11 +619,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1.46
-  m_Text: 'mesbsqage
-
-    mesbsqage
-
-    mesbsqage'
+  m_Text: message
 --- !u!1 &2963833798023714281
 GameObject:
   m_ObjectHideFlags: 0
