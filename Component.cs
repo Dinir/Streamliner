@@ -1579,6 +1579,7 @@ namespace Streamliner
 			lineTemplateText.text = "";
 
 			InitiateLines();
+			_lineTemplate.gameObject.SetActive(false);
 		}
 
 		private void InitiateLines()
