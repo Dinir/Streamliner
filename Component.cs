@@ -1494,17 +1494,17 @@ namespace Streamliner
 			{ "75", GetTintColor(TextAlpha.ThreeQuarters) },
 			{ "90", GetTintColor(TextAlpha.NineTenths) },
 			{ "100", GetTintColor() },
-			{ "red", GetTintColor(TextAlpha.ThreeQuarters, 1, 1) },
-			{ "green", GetTintColor(TextAlpha.ThreeQuarters, 5, 1) },
+			{ "red", GetTintColor(TextAlpha.NineTenths, 1, 1) },
+			{ "green", GetTintColor(TextAlpha.NineTenths, 5, 1) },
 			{ "empty", GetTintColor(TextAlpha.Zero) }
 		};
 		private static readonly Dictionary<string, Color> DefaultColor = new()
 		{
 			{ "TimeDiff", TextColor["90"] },
-			{ "LapResult", TextColor["75"] },
-			{ "FinalLap", TextColor["75"] },
-			{ "Line", TextColor["75"] },
-			{ "NowPlaying", TextColor["75"] },
+			{ "LapResult", TextColor["90"] },
+			{ "FinalLap", TextColor["90"] },
+			{ "Line", TextColor["90"] },
+			{ "NowPlaying", TextColor["90"] },
 			{ "WrongWay", TextColor["100"] }
 		};
 
