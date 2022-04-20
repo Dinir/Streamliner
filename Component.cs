@@ -117,6 +117,7 @@ namespace Streamliner
 		internal Text Delta;
 		internal Image GaugeBackground;
 		internal RectTransform Gauge;
+		internal Image GaugeImage;
 		private Vector2 _maxSize;
 		private Vector2 _currentSize;
 		private float _computedValue;
@@ -192,6 +193,7 @@ namespace Streamliner
 			GaugeBackground = Panel.Find("GaugeBackground").GetComponent<Image>();
 			Gauge = (RectTransform)GaugeBackground.GetComponent<RectTransform>()
 				.Find("Gauge");
+			GaugeImage = Gauge.GetComponent<Image>();
 
 			// Gauge is stored in its maximum size, store the max width here.
 			_maxSize = Gauge.sizeDelta;
@@ -206,7 +208,7 @@ namespace Streamliner
 			_currentColor = _defaultColor;
 			_currentDamageColor = _damageColor;
 			Value.color = _defaultColor;
-			Gauge.GetComponent<Image>().color = _defaultColor;
+			GaugeImage.color = _defaultColor;
 			_deltaColor = Delta.color;
 			_deltaFinalColor = Delta.color;
 			_deltaInactiveColor = Delta.color;
@@ -411,7 +413,7 @@ namespace Streamliner
 
 			// Apply the final color
 			Value.color = color;
-			Gauge.GetComponent<Image>().color = color;
+			GaugeImage.color = color;
 			Delta.color = deltaColor;
 		}
 	}
