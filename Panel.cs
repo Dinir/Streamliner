@@ -152,6 +152,18 @@ namespace Streamliner
 			return passingSection;
 		}
 
+		internal static float GetLapCompletionRate(ShipController ship, int totalTrackSections = -1)
+		{
+			if (totalTrackSections == -1)
+				totalTrackSections = GetTotalSectionCount();
+
+			int passingSection = ship.CurrentSection.index - 1;
+			if (passingSection < 0)
+				passingSection += totalTrackSections;
+
+			return (float) passingSection / totalTrackSections;
+		}
+
 		internal static float GetRaceCompletionRate(ShipController ship, int currentLap, int totalTrackSections = -1)
 		{
 			if (currentLap == 0)
