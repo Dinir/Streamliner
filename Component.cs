@@ -611,6 +611,7 @@ namespace Streamliner
 
 		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
 
+		private bool _usingBestTimeDisplay;
 		private bool _initiated;
 		private float _currentTime;
 		private float _bestTime;
@@ -626,16 +627,21 @@ namespace Streamliner
 			_bestTimeText = bestTimeSlot.Find("Time").GetComponent<Text>();
 			bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
 
-			NgRaceEvents.OnCountdownStart += Initiate;
+			_usingBestTimeDisplay = OptionBestTime != 0;
+			_bestTimeText.gameObject.SetActive(_usingBestTimeDisplay);
 
+			NgRaceEvents.OnCountdownStart += Initiate;
 		}
 
 		private void Initiate()
 		{
 			UpdateBestTime();
 			NgRaceEvents.OnShipLapUpdate += UpdateBestTimeOnLapUpdate;
-			SetBestTime(TargetShip);
-			NgRaceEvents.OnShipLapUpdate += SetBestTime;
+			if (_usingBestTimeDisplay)
+			{
+				SetBestTime(TargetShip);
+				NgRaceEvents.OnShipLapUpdate += SetBestTime;
+			}
 			SetCurrentTime();
 			NgUiEvents.OnGamemodeUpdateCurrentLapTime += UpdateCurrentTime;
 			NgUiEvents.OnGamemodeInvalidatedLap += InvalidateLap;
@@ -717,7 +723,8 @@ namespace Streamliner
 		{
 			base.OnDestroy();
 			NgRaceEvents.OnShipLapUpdate -= UpdateBestTimeOnLapUpdate;
-			NgRaceEvents.OnShipLapUpdate -= SetBestTime;
+			if (_usingBestTimeDisplay)
+				NgRaceEvents.OnShipLapUpdate -= SetBestTime;
 			NgUiEvents.OnGamemodeUpdateCurrentLapTime -= UpdateCurrentTime;
 			NgUiEvents.OnGamemodeInvalidatedLap -= InvalidateLap;
 		}
