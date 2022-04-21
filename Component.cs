@@ -1582,6 +1582,8 @@ namespace Streamliner
 
 			InitiateLines();
 			_lineTemplate.gameObject.SetActive(false);
+
+			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
 
 		private void InitiateLines()
@@ -1857,7 +1859,6 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			NgRaceEvents.OnCountdownStart -= Initiate;
 			NgUiEvents.OnTriggerMessage -= AddMessage;
 			NgUiEvents.OnNewSongPlaying -= AddSong;
 		}
