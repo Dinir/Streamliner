@@ -47,6 +47,8 @@ namespace Streamliner
 			ModOptions.OnSaveSettings += OnSaveSettings;
 
 			ModOptions.RegisterMod("Streamliner", GenerateModUi, ModUiToCode);
+
+			RegisterSprites();
 		}
 
 		private void RegisterManagers()
@@ -69,6 +71,49 @@ namespace Streamliner
 				"Upsurge", ID, new UpsurgeHudManager());
 			CustomHudRegistry.RegisterSceneManager(
 				"Rush Hour", ID, new RushHourHudManager());
+		}
+
+		private void RegisterSprites()
+		{
+			CustomHudRegistry.RegisterWeaponSprite(
+				"rockets", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/rockets.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"missile", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/missile.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"mines", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/mines.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"plasma", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/plasma.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"energywall", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/energywall.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"cannon", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/cannon.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"shield", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/shield.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"autopilot", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/autopilot.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"emergencypack", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/epack.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"tremor", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/tremor.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"turbo", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/turbo.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"hunter", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/hunter.png")));
+			CustomHudRegistry.RegisterWeaponSprite(
+				"hellstorm", ID, CustomHudRegistry.LoadSpriteFromDisk(
+					Path.Combine(_modPathOnClassScope, "WeaponSprites/hellstorm.png")));
 		}
 
 		private void GenerateModUi(ModOptionsUiContext ctx)
