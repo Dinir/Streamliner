@@ -10,7 +10,7 @@ namespace Streamliner
 {
 	public class HudRegister : CodeMod
 	{
-		public readonly string Id = "Streamliner";
+		public const string ID = "Streamliner";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
@@ -38,7 +38,7 @@ namespace Streamliner
 				Path.Combine(modPath, "mod assets.nga"));
 
 			// register the mod
-			CustomHudRegistry.RegisterMod(Id);
+			CustomHudRegistry.RegisterMod(ID);
 
 			RegisterManagers();
 
@@ -52,23 +52,23 @@ namespace Streamliner
 		private void RegisterManagers()
 		{
 			CustomHudRegistry.RegisterSceneManager(
-				"Race", Id, new RaceHudManager());
+				"Race", ID, new RaceHudManager());
 			CustomHudRegistry.RegisterSceneManager(
-				"Team Race", Id, new TeamRaceHudManager());
+				"Team Race", ID, new TeamRaceHudManager());
 			CustomHudRegistry.RegisterSceneManager(
-				"Time Trial", Id, new TrialHudManager());
+				"Time Trial", ID, new TrialHudManager());
 			CustomHudRegistry.RegisterSceneManager(
-				"Speed Lap", Id, new SpeedLapHudManager());
+				"Speed Lap", ID, new SpeedLapHudManager());
 			CustomHudRegistry.RegisterSceneManager(
-				"Survival", Id, new ZoneHudManager());
+				"Survival", ID, new ZoneHudManager());
 			CustomHudRegistry.RegisterSceneManager(
-				"Knockout", Id, new KnockoutHudManager());
+				"Knockout", ID, new KnockoutHudManager());
 			CustomHudRegistry.RegisterSceneManager(
-				"Eliminator", Id, new CombatHudManager());
+				"Eliminator", ID, new CombatHudManager());
 			CustomHudRegistry.RegisterSceneManager(
-				"Upsurge", Id, new UpsurgeHudManager());
+				"Upsurge", ID, new UpsurgeHudManager());
 			CustomHudRegistry.RegisterSceneManager(
-				"Rush Hour", Id, new RushHourHudManager());
+				"Rush Hour", ID, new RushHourHudManager());
 		}
 
 		private void GenerateModUi(ModOptionsUiContext ctx)
