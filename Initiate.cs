@@ -51,7 +51,7 @@ namespace Streamliner
 			RegisterSprites();
 		}
 
-		private void RegisterManagers()
+		private static void RegisterManagers()
 		{
 			CustomHudRegistry.RegisterSceneManager(
 				"Race", ID, new RaceHudManager());
@@ -73,7 +73,7 @@ namespace Streamliner
 				"Rush Hour", ID, new RushHourHudManager());
 		}
 
-		private void RegisterSprites()
+		private static void RegisterSprites()
 		{
 			CustomHudRegistry.RegisterWeaponSprite(
 				"rockets", ID, CustomHudRegistry.LoadSpriteFromDisk(
