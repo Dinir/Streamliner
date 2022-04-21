@@ -1701,7 +1701,7 @@ namespace Streamliner
 				switch (kind)
 				{
 					case StringKind.NewLapRecord or StringKind.PerfectLap:
-						_lapResult.text += Environment.NewLine + message;
+						_lapResult.text += message + Environment.NewLine;
 						break;
 					case StringKind.TimeDiff:
 						_timeDiff.text = message + "<color=#0000>-</color>";
