@@ -606,36 +606,120 @@ namespace Streamliner
 	public class LapTimer : ScriptableHud
 	{
 		internal BasicPanel Panel;
-		private RectTransform _bestTimeSlot;
-		private Text _bestTime;
+		private Text _bestTimeText;
 		private int _totalSections;
 
-		// NgEvents.NgUiEventsOnGamemodeUpdateCurrentLapTime
-		// NgEvents.NgUiEvents.OnGamemodeInvalidatedLap
+		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
+
+		private bool _initiated;
+		private float _currentTime;
+		private float _bestTime;
+		private bool _lapInvalidated;
+		private bool _bestTimeIsUpAtLapUpdate;
+
 		public override void Start()
 		{
 			base.Start();
 			_totalSections = GetTotalSectionCount();
 			Panel = new BasicPanel(CustomComponents.GetById("Base"));
-			_bestTimeSlot = CustomComponents.GetById("LapSlot");
-			_bestTime = _bestTimeSlot.Find("Time").GetComponent<Text>();
-			_bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
+			RectTransform bestTimeSlot = CustomComponents.GetById("LapSlot");
+			_bestTimeText = bestTimeSlot.Find("Time").GetComponent<Text>();
+			bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
+
+			NgRaceEvents.OnCountdownStart += Initiate;
+
+		}
+
+		private void Initiate()
+		{
+			UpdateBestTime();
+			NgRaceEvents.OnShipLapUpdate += UpdateBestTimeOnLapUpdate;
+			SetBestTime(TargetShip);
+			NgRaceEvents.OnShipLapUpdate += SetBestTime;
+			SetCurrentTime();
+			NgUiEvents.OnGamemodeUpdateCurrentLapTime += UpdateCurrentTime;
+			NgUiEvents.OnGamemodeInvalidatedLap += InvalidateLap;
+
+			_initiated = true;
+			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
 
 		public override void Update()
 		{
 			base.Update();
-			UpdateTotalTime();
+			if (!_initiated || !TargetShip)
+				return;
+
+			UpdateBestTime();
+			SetCurrentTime();
 		}
 
-		private void UpdateTotalTime()
+		private void UpdateCurrentTime(float currentTime)
 		{
-			// Panel.Value.text = _bigTimeTextBuilder.ToString(TargetShip.TotalRaceTime);
+			_currentTime = currentTime;
+			_lapInvalidated = false;
+		}
+
+		private void InvalidateLap() =>
+			_lapInvalidated = true;
+
+		private void UpdateBestTimeOnLapUpdate(ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+
+			UpdateBestTime();
+			_bestTimeIsUpAtLapUpdate = true;
 		}
 
 		private void UpdateBestTime()
 		{
-			// _bestTime.text = FloatToTime.Convert(TargetShip.CurrentLapTime, TimeFormat);
+			if (_bestTimeIsUpAtLapUpdate)
+			{
+				_bestTimeIsUpAtLapUpdate = false;
+				return;
+			}
+
+			_bestTime = TargetShip.LoadedBestLapTime ?
+				TargetShip.BestLapTime :
+				TargetShip.HasBestLapTime ?
+					TargetShip.BestLapTime :
+					-1f;
+		}
+
+		private void SetBestTime(ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+
+			_bestTimeText.text = _bestTime >= 0f ?
+				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
+		}
+
+		private void SetCurrentTime()
+		{
+			if (_lapInvalidated)
+			{
+				Panel.Value.text = _bigTimeTextBuilder.ToString(-1f);
+				Panel.Fill(0f);
+				return;
+			}
+
+			Panel.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
+
+			if (TargetShip.CurrentSection is null)
+				return;
+
+			Panel.Fill(GetLapCompletionRate(TargetShip, _totalSections));
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			NgRaceEvents.OnShipLapUpdate -= UpdateBestTimeOnLapUpdate;
+			NgRaceEvents.OnShipLapUpdate -= SetBestTime;
+			NgUiEvents.OnGamemodeUpdateCurrentLapTime -= UpdateCurrentTime;
+			NgUiEvents.OnGamemodeInvalidatedLap -= InvalidateLap;
 		}
 	}
 
@@ -795,7 +879,6 @@ namespace Streamliner
 
 				NgRaceEvents.OnShipLapUpdate += SetLeftLabel;
 				if (_showingLapTimeAdvantage)
-					// ei yo are we triggering this at the START of the lap now? wth
 					NgRaceEvents.OnShipLapUpdate += UpdateAverageLapTimeAdvantage;
 				if (_gamemodeName == StringSpeedLap)
 				{
