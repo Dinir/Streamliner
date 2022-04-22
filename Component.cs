@@ -13,6 +13,7 @@ using NgEvents;
 using NgGame;
 using NgLib;
 using NgModes;
+using NgMp;
 using NgShips;
 using NgSp;
 using NgUi.RaceUi.HUD;
@@ -1638,6 +1639,7 @@ namespace Streamliner
 			NgRaceEvents.OnCountdownStart += Initiate;
 
 			NgUiEvents.OnTriggerMessage += AddMessage;
+			NgRaceEvents.OnShipExploded += AddEliminationMessage;
 			NgUiEvents.OnNewSongPlaying += AddSong;
 		}
 
@@ -1753,6 +1755,21 @@ namespace Streamliner
 			_nowPlaying.color = DefaultColor["NowPlaying"];
 			_npDisplayTime = DisplayTimeMax;
 			_npFadeOutTimeRemaining = 0f;
+		}
+
+		private void AddEliminationMessage(ShipController ship)
+		{
+			if (
+				!RaceManager.CurrentGamemode.Configuration.KillFeedEnabled ||
+				NgNetworkBase.CurrentNetwork is not null
+			)
+				return;
+
+			string message =
+				ship.LastAttacker is not null ?
+					ship.LastAttacker.ShipName + " eliminated " + ship.ShipName :
+					ship.ShipName + " eliminated";
+			AddMessage(message, ship, Color.red);
 		}
 
 		private void InsertMessageLine(string message, Color color)
@@ -1960,6 +1977,7 @@ namespace Streamliner
 		{
 			base.OnDestroy();
 			NgUiEvents.OnTriggerMessage -= AddMessage;
+			NgRaceEvents.OnShipExploded -= AddEliminationMessage;
 			NgUiEvents.OnNewSongPlaying -= AddSong;
 		}
 	}
