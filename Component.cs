@@ -1720,8 +1720,11 @@ namespace Streamliner
 
 				switch (kind)
 				{
-					case StringKind.NewLapRecord or StringKind.PerfectLap:
-						_lapResult.text += message + Environment.NewLine;
+					case StringKind.NewLapRecord:
+						_lapResult.text = message;
+						break;
+					case StringKind.PerfectLap:
+						_lapResult.text += Environment.NewLine + message;
 						break;
 					case StringKind.TimeDiff:
 						_timeDiff.text = message + "<color=#0000>-</color>";
