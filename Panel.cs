@@ -704,7 +704,7 @@ namespace Streamliner
 
 		public void UpdateText(string text)
 		{
-			if (_info is null)
+			if (_info is null || text is null)
 				return;
 
 			_info.text = _weaponId switch
