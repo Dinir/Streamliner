@@ -1697,16 +1697,24 @@ namespace Streamliner
 
 		private void AddMessage(string message, ShipController ship, Color color)
 		{
-			color = color == Color.green ?
-				OptionTimeDiffColour != 2 ? TextColor["green"] : TextColor["cyan"] :
+			color =
+				color == Color.green ?
+				TextColor["green"] :
 				color == Color.red ?
-					OptionTimeDiffColour != 1 ? TextColor["red"] : TextColor["magenta"] :
+					TextColor["red"] :
 					DefaultColor["Line"];
 
 			StringKind kind = GetStringKind(message);
 
 			if (kind != StringKind.General)
 			{
+				color = OptionTimeDiffColour switch
+				{
+					2 when color == TextColor["green"] => TextColor["cyan"],
+					1 when color == TextColor["red"] => TextColor["magenta"],
+					_ => color
+				};
+
 				switch (kind)
 				{
 					case StringKind.NewLapRecord or StringKind.PerfectLap:
