@@ -667,7 +667,13 @@ namespace Streamliner
 			while (t <= 0.2f)
 			{
 				t += Time.deltaTime;
-				transitionColor = Color.Lerp(_iconImage.color, endColor, (t - 0.1f) * 10);
+				float secondFadeProgress = (t - 0.1f) * 10;
+				transitionColor = Color.Lerp(_iconImage.color, endColor, secondFadeProgress);
+				if (!enableIcon)
+				{
+					panelColor.a = 1f - secondFadeProgress;
+					_panelImage.color = panelColor;
+				}
 				_bracketsImage.color = transitionColor;
 				_iconImage.color = transitionColor;
 				yield return null;
