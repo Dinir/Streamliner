@@ -1537,6 +1537,7 @@ namespace Streamliner
 		private RectTransform _lineTemplate;
 		private Text _nowPlaying;
 		private Text _wrongWay;
+		private bool _initiated;
 
 		private const int LineMax = 3;
 		private const float DisplayTimeMax = 3.0f;
@@ -1678,6 +1679,7 @@ namespace Streamliner
 			InitiateLines();
 			_lineTemplate.gameObject.SetActive(false);
 
+			_initiated = true;
 			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
 
@@ -1800,6 +1802,8 @@ namespace Streamliner
 		public override void Update()
 		{
 			base.Update();
+			if (!_initiated)
+				return;
 
 			// general messages
 			for (int i = 0; i < _lines.Count; i++)
