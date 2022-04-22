@@ -174,7 +174,7 @@ namespace Streamliner
 
 	internal static class PickupIcon
 	{
-		internal static Dictionary<string, Sprite> Get = new()
+		internal static readonly Dictionary<string, Sprite> Get = new()
 		{
 			{ "rockets", CustomHudRegistry.GetWeaponSprite("rockets", false) },
 			{ "missile", CustomHudRegistry.GetWeaponSprite("missile", false) },
