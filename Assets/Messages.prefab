@@ -316,9 +316,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1.1
-  m_Text: 'new lap record
-
-    perfect lap'
+  m_Text: 
 --- !u!1 &2963833797088565114
 GameObject:
   m_ObjectHideFlags: 0
@@ -540,7 +538,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1.1
-  m_Text: final lap
+  m_Text: 
 --- !u!1 &2963833798005078896
 GameObject:
   m_ObjectHideFlags: 0
@@ -619,7 +617,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1.46
-  m_Text: message
+  m_Text: 
 --- !u!1 &2963833798023714281
 GameObject:
   m_ObjectHideFlags: 0
@@ -698,7 +696,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: -0:00.00<color=#0000>-</color>
+  m_Text: 
 --- !u!1 &2963833798160412778
 GameObject:
   m_ObjectHideFlags: 0
