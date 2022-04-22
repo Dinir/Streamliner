@@ -148,11 +148,11 @@ namespace Streamliner
 		private bool _energyRegained;
 		private bool _energyConstantlyDischarges;
 
-		private readonly Color _rechargeColor = GetTintColor(TextAlpha.ThreeQuarters, 7, 3);
-		private readonly Color _lowColor = GetTintColor(TextAlpha.ThreeQuarters, 2, 3);
-		private readonly Color _criticalColor = GetTintColor(TextAlpha.ThreeQuarters, 1, 3);
-		private readonly Color _damageColor = GetTintColor(tintIndex: 1, clarity: 4);
-		private readonly Color _damageLowColor = GetTintColor(tintIndex: 3, clarity: 4);
+		private readonly Color _rechargeColor = GetTintColor(TextAlpha.ThreeQuarters, 7, 4);
+		private readonly Color _lowColor = GetTintColor(TextAlpha.ThreeQuarters, 2, 4);
+		private readonly Color _criticalColor = GetTintColor(TextAlpha.ThreeQuarters, 1, 4);
+		private readonly Color _damageColor = GetTintColor(tintIndex: 1, clarity: 5);
+		private readonly Color _damageLowColor = GetTintColor(tintIndex: 3, clarity: 5);
 
 		private Color _defaultColor;
 		private Color _currentColor;
@@ -1164,7 +1164,7 @@ namespace Streamliner
 		private const float TransitionTimerMax = 1.5f;
 		private float _transitionTimer;
 		private float _smallGaugeAlpha;
-		private readonly Color _overflowZoneTimeColor = GetTintColor(tintIndex: 2, clarity: 4);
+		private readonly Color _overflowZoneTimeColor = GetTintColor(tintIndex: 2, clarity: 5);
 		private Color _currentSmallGaugeColor;
 		private float _overflowTransitionAlpha;
 		private bool _valuesAreFinite = true;
@@ -1362,7 +1362,7 @@ namespace Streamliner
 		internal FractionPanel Panel;
 		private bool _warnOnLastPlace;
 		private bool _onWarning;
-		private readonly Color _highlightColor = GetTintColor(tintIndex: 1, clarity: 3);
+		private readonly Color _highlightColor = GetTintColor(tintIndex: 1, clarity: 4);
 		private float _warningTimer;
 		private float _warningSin;
 		private bool _playedWarningSound;

@@ -31,6 +31,7 @@ namespace Streamliner
 		{
 			new[] { 0.32f, 0.40f }, // S4 V0.40
 			new[] { 0.32f, 0.73f }, // S4 V4
+			new[] { 0.26f, 0.81f }, // S3 V3
 			new[] { 0.18f, 0.86f }, // S2 V2
 			new[] { 0.40f, 0.89f }, // S6 V1
 			new[] { 0.60f, 0.95f }  // S.60 V.95
@@ -46,7 +47,7 @@ namespace Streamliner
 		internal static Color GetTintColor(
 			TextAlpha transparencyIndex = TextAlpha.Full,
 			int tintIndex = -1,
-			int clarity = 2
+			int clarity = 3
 		)
 		{
 			tintIndex = tintIndex < 0 ? OptionValueTint : tintIndex;
