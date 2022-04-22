@@ -732,6 +732,7 @@ namespace Streamliner
 			_bracketsImage = basePanel.Find("Brackets").GetComponent<Image>();
 			_iconImage = basePanel.Find("Icon").GetComponent<Image>();
 			_info = infoText;
+			_info.color = GetTintColor();
 
 			_panelImage.enabled = false;
 			_bracketsImage.enabled = false;
