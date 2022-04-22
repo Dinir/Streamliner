@@ -637,6 +637,7 @@ namespace Streamliner
 			Color endColor = enableIcon ?
 				offensive ? _offensiveColor : _defensiveColor :
 				Color.clear;
+			Color panelColor = Color.white;
 			Color transitionColor;
 			float t = enableIcon ? 0 : 0.1f;
 
@@ -651,6 +652,7 @@ namespace Streamliner
 
 			if (enableIcon)
 			{
+				_panelImage.color = panelColor;
 				_bracketsImage.color = startColor;
 				_iconImage.color = startColor;
 				while (t <= 0.1f)
@@ -709,6 +711,7 @@ namespace Streamliner
 		public void ShowWarning()
 		{
 			_panelImage.enabled = true;
+			_panelImage.color = Color.white;
 			_bracketsImage.enabled = true;
 			_iconImage.enabled = true;
 			_bracketsImage.color = _offensiveColor;
