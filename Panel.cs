@@ -69,14 +69,14 @@ namespace Streamliner
 		private readonly StringBuilder _sb;
 		// 0:00.<size=20> </size><size=150>00</size>
 		// Default font size in the component is 300.
-		private const char CharAfterMinute =
-			':';
+		private const string StringAfterMinute =
+			":";
 		private const string StringAfterSecond =
 			".<size=20> </size><size=150>";
 		private const string StringAfterHundredth =
 			"</size>";
 		private static readonly string EmptyTime =
-			'-' + CharAfterMinute +
+			"-" + StringAfterMinute +
 			"--" + StringAfterSecond +
 			"--" + StringAfterHundredth;
 
@@ -94,7 +94,7 @@ namespace Streamliner
 				Mathf.FloorToInt(value * 100f % 100f));
 
 			_sb.Append(minutes);
-			_sb.Append(CharAfterMinute);
+			_sb.Append(StringAfterMinute);
 			_sb.Append(seconds);
 			_sb.Append(StringAfterSecond);
 			_sb.Append(hundredths);
