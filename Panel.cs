@@ -46,14 +46,14 @@ namespace Streamliner
 		internal static Color GetTintColor(
 			TextAlpha transparencyIndex = TextAlpha.Full,
 			int tintIndex = -1,
-			int brightness = 2
+			int clarity = 2
 		)
 		{
 			tintIndex = tintIndex < 0 ? OptionValueTint : tintIndex;
 			_tintColorBuffer = Color.HSVToRGB(
 				StandardH[tintIndex],
-				StandardSV[brightness][0],
-				StandardSV[brightness][1]
+				StandardSV[clarity][0],
+				StandardSV[clarity][1]
 			);
 			_tintColorBuffer.a = TintAlphaList[(int) transparencyIndex];
 			return _tintColorBuffer;
@@ -468,7 +468,7 @@ namespace Streamliner
 		protected readonly bool UsingSmallGauges;
 		internal readonly Color SecondGaugeColor = GetTintColor(TextAlpha.ThreeEighths);
 		internal Vector2 CurrentSecondSize;
-		internal readonly Color SmallGaugeColor = GetTintColor(brightness: 1);
+		internal readonly Color SmallGaugeColor = GetTintColor(clarity: 1);
 		internal readonly Vector2 SmallMaxSize;
 		internal Vector2 CurrentSmallSize;
 
