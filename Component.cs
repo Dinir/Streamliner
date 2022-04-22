@@ -14,6 +14,7 @@ using NgGame;
 using NgLib;
 using NgModes;
 using NgMp;
+using NgPickups;
 using NgShips;
 using NgSp;
 using NgUi.RaceUi.HUD;
@@ -1983,7 +1984,88 @@ namespace Streamliner
 	}
 
 	public class PickupDisplay : ScriptableHud
-	{}
+	{
+		internal RectTransform Panel;
+		private PickupPanel _playerPanel;
+		private PickupPanel _warningPanel;
+		private float _warningTimer;
+		private const float WarningTimeMax = 2.5f;
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = CustomComponents.GetById("Base");
+			_playerPanel = new PickupPanel(
+				Panel.Find("IconBackground").GetComponent<RectTransform>(),
+				Panel.Find("Info").GetComponent<Text>());
+			_warningPanel = new PickupPanel(
+				Panel.Find("WarningBackground").GetComponent<RectTransform>());
+
+			PickupBase.OnPickupInit += ShowPickup;
+			PickupBase.OnPickupDeinit += HidePickup;
+			NgUiEvents.OnWeaponWarning += Warn;
+		}
+
+		public void ShowPickup(PickupBase pickup, ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+			_playerPanel.UpdateSprite(ship.CurrentPickupRegister.Name);
+			if(_playerPanel.CurrentTransition is not null)
+				StopCoroutine(_playerPanel.CurrentTransition);
+			_playerPanel.CurrentTransition =
+				StartCoroutine(_playerPanel.ColorFade(
+					true,
+					ship.CurrentPickupRegister.HudColor == Pickup.EHudColor.Offensive
+				));
+		}
+
+		public void HidePickup(PickupBase pickup, ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+			if(_playerPanel.CurrentTransition is not null)
+				StopCoroutine(_playerPanel.CurrentTransition);
+			_playerPanel.CurrentTransition =
+				StartCoroutine(_playerPanel.ColorFade(false));
+		}
+
+		public void Warn(Pickup pickup)
+		{
+			if(_warningPanel.CurrentTransition is not null)
+				StopCoroutine(_warningPanel.CurrentTransition);
+			_warningPanel.UpdateSprite(pickup.Name);
+			_warningPanel.ShowWarning();
+			_warningTimer = WarningTimeMax;
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			if (!TargetShip)
+				return;
+			_playerPanel.UpdateText(TargetShip.PickupDisplayText);
+
+			if (_warningTimer > 0f)
+				_warningTimer -= Time.deltaTime;
+			else
+			{
+				if (!_warningPanel.IconEnabled)
+					return;
+				_warningPanel.CurrentTransition =
+					StartCoroutine(_warningPanel.ColorFade(false));
+				_warningTimer = 0f;
+			}
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			PickupBase.OnPickupInit -= ShowPickup;
+			PickupBase.OnPickupDeinit -= HidePickup;
+			NgUiEvents.OnWeaponWarning -= Warn;
+		}
+	}
 
 	public class TurboDisplay : ScriptableHud
 	{}

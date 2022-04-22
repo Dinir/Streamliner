@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using NgLib;
 using NgData;
+using NgModding.Huds;
 using NgTrackData;
 using NgShips;
 using NgUi.RaceUi.HUD;
@@ -166,6 +167,26 @@ namespace Streamliner
 		}
 
 		public PickupTextBuilder(StringBuilder sb) => _sb = sb;
+	}
+
+	internal static class PickupIcon
+	{
+		internal static Dictionary<string, Sprite> Get = new()
+		{
+			{ "rockets", CustomHudRegistry.GetWeaponSprite("rockets", false) },
+			{ "missile", CustomHudRegistry.GetWeaponSprite("missile", false) },
+			{ "mines", CustomHudRegistry.GetWeaponSprite("mines", false) },
+			{ "plasma", CustomHudRegistry.GetWeaponSprite("plasma", false) },
+			{ "energywall", CustomHudRegistry.GetWeaponSprite("energywall", false) },
+			{ "cannon", CustomHudRegistry.GetWeaponSprite("cannon", false) },
+			{ "shield", CustomHudRegistry.GetWeaponSprite("shield", false) },
+			{ "autopilot", CustomHudRegistry.GetWeaponSprite("autopilot", false) },
+			{ "emergencypack", CustomHudRegistry.GetWeaponSprite("emergencypack", false) },
+			{ "tremor", CustomHudRegistry.GetWeaponSprite("tremor", false) },
+			{ "turbo", CustomHudRegistry.GetWeaponSprite("turbo", false) },
+			{ "hunter", CustomHudRegistry.GetWeaponSprite("hunter", false) },
+			{ "hellstorm", CustomHudRegistry.GetWeaponSprite("hellstorm", false) }
+		};
 	}
 
 	internal static class SectionManager
@@ -589,6 +610,133 @@ namespace Streamliner
 					}
 					break;
 			}
+		}
+	}
+
+	internal class PickupPanel
+	{
+		private readonly Image _panelImage;
+		private readonly Image _bracketsImage;
+		private readonly Image _iconImage;
+		private readonly Text _info;
+		private string _weaponId;
+		private readonly PickupTextBuilder _pickupTextBuilder = new(new StringBuilder());
+
+		public Coroutine CurrentTransition;
+
+		private static readonly Color _offensiveColor =
+			GetTintColor(tintIndex: 2, clarity: 2);
+		private static readonly Color _defensiveColor =
+			GetTintColor(tintIndex: 8, clarity: 2);
+		private static readonly Color _hudDefaultColor = GetTintColor();
+
+		public IEnumerator ColorFade(bool enableIcon, bool offensive = false)
+		{
+			Color startColor = enableIcon ?
+				Color.clear : _iconImage.color;
+			Color endColor = enableIcon ?
+				offensive ? _offensiveColor : _defensiveColor :
+				Color.clear;
+			Color transitionColor;
+			float t = enableIcon ? 0 : 0.1f;
+
+			if (enableIcon && !_iconImage.enabled)
+			{
+				_panelImage.enabled = true;
+				_bracketsImage.enabled = true;
+				_iconImage.enabled = true;
+				if (_info is not null)
+					_info.enabled = true;
+			}
+
+			if (enableIcon)
+			{
+				_bracketsImage.color = startColor;
+				_iconImage.color = startColor;
+				while (t <= 0.1f)
+				{
+					t += Time.deltaTime;
+					transitionColor = Color.Lerp(startColor, _hudDefaultColor, t * 10);
+					_bracketsImage.color = transitionColor;
+					_iconImage.color = transitionColor;
+					yield return null;
+				}
+			}
+			while (t <= 0.2f)
+			{
+				t += Time.deltaTime;
+				transitionColor = Color.Lerp(_iconImage.color, endColor, (t - 0.1f) * 10);
+				_bracketsImage.color = transitionColor;
+				_iconImage.color = transitionColor;
+				yield return null;
+			}
+			_bracketsImage.color = endColor;
+			_iconImage.color = endColor;
+
+			if (!enableIcon && _iconImage.enabled)
+			{
+				_panelImage.enabled = false;
+				_bracketsImage.enabled = false;
+				_iconImage.enabled = false;
+				if (_info is not null)
+					_info.enabled = false;
+			}
+
+			CurrentTransition = null;
+		}
+
+		public void UpdateSprite(string weaponId)
+		{
+			_iconImage.sprite = PickupIcon.Get[weaponId];
+			_weaponId = weaponId;
+		}
+
+		public void UpdateText(string text)
+		{
+			if (_info is null)
+				return;
+
+			_info.text = _weaponId switch
+			{
+				"autopilot" => _pickupTextBuilder.ToAutoPilotText(text),
+				"hellstorm" => _pickupTextBuilder.ToHellstormText(text),
+				_ => text
+			};
+		}
+
+		public bool IconEnabled => _iconImage.enabled;
+
+		public void ShowWarning()
+		{
+			_panelImage.enabled = true;
+			_bracketsImage.enabled = true;
+			_iconImage.enabled = true;
+			_bracketsImage.color = _offensiveColor;
+			_iconImage.color = _offensiveColor;
+		}
+
+		public PickupPanel(RectTransform basePanel)
+		{
+			_panelImage = basePanel.GetComponent<Image>();
+			_bracketsImage = basePanel.Find("Brackets").GetComponent<Image>();
+			_iconImage = basePanel.Find("Icon").GetComponent<Image>();
+
+			_panelImage.enabled = false;
+			_bracketsImage.enabled = false;
+			_iconImage.enabled = false;
+		}
+
+		public PickupPanel(RectTransform basePanel, Text infoText)
+		{
+			_panelImage = basePanel.GetComponent<Image>();
+			_bracketsImage = basePanel.Find("Brackets").GetComponent<Image>();
+			_iconImage = basePanel.Find("Icon").GetComponent<Image>();
+			_info = infoText;
+
+			_panelImage.enabled = false;
+			_bracketsImage.enabled = false;
+			_iconImage.enabled = false;
+			_info.enabled = false;
 		}
 	}
 
