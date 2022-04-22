@@ -2068,7 +2068,48 @@ namespace Streamliner
 	}
 
 	public class TurboDisplay : ScriptableHud
-	{}
+	{
+		internal RectTransform Panel;
+		private PickupPanel _playerPanel;
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = CustomComponents.GetById("Base");
+			_playerPanel = new PickupPanel(Panel);
+
+			PickupBase.OnPickupInit += ShowPickup;
+			PickupBase.OnPickupDeinit += HidePickup;
+		}
+
+		public void ShowPickup(PickupBase pickup, ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+			_playerPanel.UpdateSprite(ship.CurrentPickupRegister.Name);
+			if(_playerPanel.CurrentTransition is not null)
+				StopCoroutine(_playerPanel.CurrentTransition);
+			_playerPanel.CurrentTransition =
+				StartCoroutine(_playerPanel.ColorFade(true));
+		}
+
+		public void HidePickup(PickupBase pickup, ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+			if(_playerPanel.CurrentTransition is not null)
+				StopCoroutine(_playerPanel.CurrentTransition);
+			_playerPanel.CurrentTransition =
+				StartCoroutine(_playerPanel.ColorFade(false));
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			PickupBase.OnPickupInit -= ShowPickup;
+			PickupBase.OnPickupDeinit -= HidePickup;
+		}
+	}
 
 	public class Leaderboard : ScriptableHud
 	{
