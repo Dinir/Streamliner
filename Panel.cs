@@ -104,6 +104,69 @@ namespace Streamliner
 		public BigTimeTextBuilder(StringBuilder sb) => _sb = sb;
 	}
 
+	internal class PickupTextBuilder
+	{
+		private readonly StringBuilder _sb;
+		private const string FormatAutopilotDisengaging =
+			"Disengaging in x";
+		private const string FormatHellstorm =
+			"x rear locks";
+		private static readonly int AutopilotDisengagingStringLength =
+			FormatAutopilotDisengaging.Length;
+		private static readonly int HellstormStringLength =
+			FormatHellstorm.Length;
+
+		private const string StringAutopilot3 =  ">  3  <" ;
+		private const string StringAutopilot2 =  ">> 2 <<" ;
+		private const string StringAutopilot1 = ">>> 1 <<<";
+		// <size=150><color=#0000>a</color>rear </size>0<size=150> locks</size>
+		// Default font size in the component is 300.
+		private const string StringHellstormPrefix =
+			"<size=150><color=#0000>a</color>rear </size>";
+		private const string StringHellstormSuffix =
+			"<size=150> locks</size>";
+
+		internal string ToAutoPilotText(string text)
+		{
+			if (
+				text.Length < AutopilotDisengagingStringLength ||
+				!char.IsDigit(text[text.Length - 1])
+			)
+				return text;
+
+			return text[text.Length - 1] switch
+			{
+				'3' => StringAutopilot3,
+				'2' => StringAutopilot2,
+				'1' => StringAutopilot1,
+				_ => text
+			};
+		}
+
+		internal string ToHellstormText(string text)
+		{
+			/*
+			 * There is also a method called `IsDigit` which only returns
+			 * true for radix-10 digits. I don't know if I want to use
+			 * that instead.
+			 */
+			if (
+				text.Length < HellstormStringLength ||
+				!char.IsNumber(text[0])
+			)
+				return text;
+
+			_sb.Clear();
+			_sb.Append(StringHellstormPrefix);
+			_sb.Append(text[0]);
+			_sb.Append(StringHellstormSuffix);
+
+			return _sb.ToString();
+		}
+
+		public PickupTextBuilder(StringBuilder sb) => _sb = sb;
+	}
+
 	internal static class SectionManager
 	{
 		internal static int GetTotalSectionCount()
