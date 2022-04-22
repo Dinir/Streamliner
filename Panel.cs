@@ -65,12 +65,23 @@ namespace Streamliner
 	internal class BigTimeTextBuilder
 	{
 		private readonly StringBuilder _sb;
-		private const string _emptyTime =
-			"-:--.<size=20> </size><size=150>--</size>";
+		// 0:00.<size=20> </size><size=150>00</size>
+		// Default font size in the component is 300.
+		private const char CharAfterMinute =
+			':';
+		private const string StringAfterSecond =
+			".<size=20> </size><size=150>";
+		private const string StringAfterHundredth =
+			"</size>";
+		private static readonly string EmptyTime =
+			'-' + CharAfterMinute +
+			"--" + StringAfterSecond +
+			"--" + StringAfterHundredth;
+
 		internal string ToString(float value)
 		{
 			if (value < 0f)
-				return _emptyTime;
+				return EmptyTime;
 
 			_sb.Clear();
 			string minutes = IntStrDb.GetNumber(
@@ -80,14 +91,12 @@ namespace Streamliner
 			string hundredths = IntStrDb.GetNoSingleCharNumber(
 				Mathf.FloorToInt(value * 100f % 100f));
 
-			// 0:00.<size=20> </size><size=150>00</size>
-			// Default font size in the component is 300.
 			_sb.Append(minutes);
-			_sb.Append(":");
+			_sb.Append(CharAfterMinute);
 			_sb.Append(seconds);
-			_sb.Append(".<size=20> </size><size=150>");
+			_sb.Append(StringAfterSecond);
 			_sb.Append(hundredths);
-			_sb.Append("</size>");
+			_sb.Append(StringAfterHundredth);
 
 			return _sb.ToString();
 		}
@@ -229,7 +238,7 @@ namespace Streamliner
 		// Identical to the method with no parameters,
 		// but you don't want to make that one virtual since
 		// it will be used in the constructor.
-		public virtual void ChangeColor(Color color)
+		protected virtual void ChangeColor(Color color)
 		{
 			Color gaugeBackgroundColor = color;
 			gaugeBackgroundColor.a = GetTransparency(TextAlpha.ThreeEighths);
@@ -344,7 +353,7 @@ namespace Streamliner
 		private void ChangeRightGaugeColor() =>
 			RightGaugeImage.color = GaugeColor;
 
-		public override void ChangeColor(Color color)
+		protected override void ChangeColor(Color color)
 		{
 			base.ChangeColor(color);
 			RightGaugeImage.color = color;
@@ -449,7 +458,7 @@ namespace Streamliner
 			SmallRightGaugeImage.color = color;
 		}
 
-		public override void ChangeColor(Color color)
+		protected override void ChangeColor(Color color)
 		{
 			base.ChangeColor(color);
 			color.a = GetTransparency(TextAlpha.ThreeEighths);
@@ -549,27 +558,25 @@ namespace Streamliner
 
 		private class EntrySlot
 		{
-			private readonly RectTransform _base;
 			private readonly CanvasGroup _baseCanvasGroup;
 			private readonly Text _name;
 			private readonly Text _value;
 			private readonly RectTransform _gauge;
 			private readonly Image _gaugeImage;
-			internal int refId;
-			protected readonly Vector2 MaxSize;
-			internal Vector2 CurrentSize;
-			internal readonly Color SlotColor = GetTintColor(TextAlpha.ThreeQuarters);
+			internal int RefId;
+			private readonly Vector2 _maxSize;
+			private Vector2 _currentSize;
+			private readonly Color _slotColor = GetTintColor(TextAlpha.ThreeQuarters);
 
 			public EntrySlot(RectTransform template)
 			{
-				_base = template;
-				_base.gameObject.SetActive(true);
-				_baseCanvasGroup = _base.GetComponent<CanvasGroup>();
-				_name = _base.Find("Name").GetComponent<Text>();
-				_value = _base.Find("Plate").Find("Value").GetComponent<Text>();
-				_gauge = (RectTransform)_base.Find("GaugeBackground").Find("Gauge");
+				template.gameObject.SetActive(true);
+				_baseCanvasGroup = template.GetComponent<CanvasGroup>();
+				_name = template.Find("Name").GetComponent<Text>();
+				_value = template.Find("Plate").Find("Value").GetComponent<Text>();
+				_gauge = (RectTransform)template.Find("GaugeBackground").Find("Gauge");
 				_gaugeImage = _gauge.GetComponent<Image>();
-				MaxSize = _gauge.sizeDelta;
+				_maxSize = _gauge.sizeDelta;
 
 				ChangeColor();
 				SetName("");
@@ -579,15 +586,15 @@ namespace Streamliner
 
 			private void ChangeColor()
 			{
-				_name.color = SlotColor;
-				_gaugeImage.color = SlotColor;
+				_name.color = _slotColor;
+				_gaugeImage.color = _slotColor;
 				_value.color = GetTintColor(TextAlpha.NineTenths);
 			}
 
 			public void ChangeOverallAlpha(TextAlpha transparencyIndex) =>
 				_baseCanvasGroup.alpha = GetTransparency(transparencyIndex);
 
-			public void SetRefId(int id) => refId = id;
+			public void SetRefId(int id) => RefId = id;
 
 			public void SetName(string name) => _name.text = name;
 
@@ -618,10 +625,10 @@ namespace Streamliner
 			public void FillByPercentage(float value)
 			{
 				value = value < 0f ? 0f : value > 100f ? 100f : value;
-				CurrentSize.x = ( value / 100f ) * MaxSize.x;
-				CurrentSize.y = CurrentSize.x >= MaxSize.y ?
-					MaxSize.y : CurrentSize.x;
-				_gauge.sizeDelta = CurrentSize;
+				_currentSize.x = ( value / 100f ) * _maxSize.x;
+				_currentSize.y = _currentSize.x >= _maxSize.y ?
+					_maxSize.y : _currentSize.x;
+				_gauge.sizeDelta = _currentSize;
 			}
 		}
 
@@ -823,7 +830,7 @@ namespace Streamliner
 		{
 			foreach (EntrySlot slot in _visibleList)
 			{
-				int refId = slot.refId;
+				int refId = slot.RefId;
 				RawValuePair rawValuePair = _rawValueList[refId];
 				slot.SetName(rawValuePair.Name);
 				slot.SetDisplayValue(_valueType, rawValuePair.Value);
@@ -834,7 +841,7 @@ namespace Streamliner
 		{
 			foreach (EntrySlot slot in _visibleList)
 			{
-				int refId = slot.refId;
+				int refId = slot.RefId;
 				RawValuePair rawValuePair = _rawValueList[refId];
 				slot.SetName(rawValuePair.Name);
 				slot.SetDisplayValue(_valueType, rawValuePair.Value);
@@ -850,7 +857,7 @@ namespace Streamliner
 		{
 			foreach (EntrySlot slot in _visibleList)
 			{
-				int refId = slot.refId;
+				int refId = slot.RefId;
 				RawValuePair rawValuePair = _rawValueList[refId];
 				slot.SetName(rawValuePair.Name);
 				if (rawValuePair.Value <= _rawValueList.Count)
