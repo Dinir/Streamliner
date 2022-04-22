@@ -127,6 +127,8 @@ namespace Streamliner
 			"<size=150><color=#0000>a</color>rear </size>";
 		private const string StringHellstormSuffix =
 			"<size=150> locks</size>";
+		private const string StringHellstormSuffixSingle =
+			"<size=150> lock<color=#0000>s</color></size>";
 
 		internal string ToAutoPilotText(string text)
 		{
@@ -161,7 +163,8 @@ namespace Streamliner
 			_sb.Clear();
 			_sb.Append(StringHellstormPrefix);
 			_sb.Append(text[0]);
-			_sb.Append(StringHellstormSuffix);
+			_sb.Append(text[0] != '1' ?
+				StringHellstormSuffix : StringHellstormSuffixSingle);
 
 			return _sb.ToString();
 		}
