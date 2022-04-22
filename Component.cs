@@ -1586,6 +1586,8 @@ namespace Streamliner
 			{ "100", GetTintColor() },
 			{ "red", GetTintColor(TextAlpha.NineTenths, 1, 1) },
 			{ "green", GetTintColor(TextAlpha.NineTenths, 5, 1) },
+			{ "magenta", GetTintColor(TextAlpha.NineTenths, 11, 1) },
+			{ "cyan", GetTintColor(TextAlpha.NineTenths, 7, 1) },
 			{ "empty", GetTintColor(TextAlpha.Zero) }
 		};
 		private static readonly Dictionary<string, Color> DefaultColor = new()
@@ -1696,9 +1698,9 @@ namespace Streamliner
 		private void AddMessage(string message, ShipController ship, Color color)
 		{
 			color = color == Color.green ?
-				TextColor["green"] :
+				OptionTimeDiffColour != 2 ? TextColor["green"] : TextColor["cyan"] :
 				color == Color.red ?
-					TextColor["red"] :
+					OptionTimeDiffColour != 1 ? TextColor["red"] : TextColor["magenta"] :
 					DefaultColor["Line"];
 
 			StringKind kind = GetStringKind(message);

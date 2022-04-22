@@ -20,6 +20,7 @@ namespace Streamliner
 		public static readonly string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint;
 		public static bool OptionMotion = true;
+		public static int OptionTimeDiffColour;
 		public static bool OptionCountdownTimer = true;
 		public static bool OptionSpeedHighlight = true;
 		public static bool OptionEnergyChange = true;
@@ -128,6 +129,13 @@ namespace Streamliner
 			);
 
 			ctx.GenerateSelector(
+				"TimeDiffColour", "time text color",
+				"Set the colour pair to use for the time difference text.",
+				OptionTimeDiffColour,
+				"red & green", "magenta & green", "red & cyan"
+			);
+
+			ctx.GenerateSelector(
 				"Motion", "motion effect",
 				"Loosen the hud a bit.",
 				OptionMotion ? 1 : 0,
@@ -186,6 +194,7 @@ namespace Streamliner
 		private void ModUiToCode(ModOptionsUiContext ctx)
 		{
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
+			OptionTimeDiffColour = ctx.GetSelectorValue("TimeDiffColour");
 			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
 			OptionCountdownTimer = ctx.GetSelectorValue("CountDownTimer") == 1;
 			OptionSpeedHighlight = ctx.GetSelectorValue("SpeedHighlight") == 1;
@@ -201,6 +210,7 @@ namespace Streamliner
 			ini.Open(_settingsPath);
 
 			OptionValueTint = ini.ReadValue(OptionSectionDisplay, "TextTint", OptionValueTint);
+			OptionTimeDiffColour = ini.ReadValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
 			OptionMotion = ini.ReadValue(OptionSectionDisplay, "Motion", OptionMotion);
 			OptionCountdownTimer = ini.ReadValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
 			OptionSpeedHighlight = ini.ReadValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
@@ -218,6 +228,7 @@ namespace Streamliner
 			ini.Open(_settingsPath);
 
 			ini.WriteValue(OptionSectionDisplay, "TextTint", OptionValueTint);
+			ini.WriteValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
 			ini.WriteValue(OptionSectionDisplay, "Motion", OptionMotion);
 			ini.WriteValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
 			ini.WriteValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
