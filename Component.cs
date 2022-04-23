@@ -1640,9 +1640,26 @@ namespace Streamliner
 			base.Start();
 			NgRaceEvents.OnCountdownStart += Initiate;
 
+			/*
+			 * `OnMidLineTriggered` happens when any ship hits the checkpoint laser,
+			 *  prior to the base game call for time difference calculation.
+			 * `ShipController.PassedValidationGate` is not
+			 * set to true at this point.
+			 */
+			NgRaceEvents.OnMidLineTriggered += FlushTimeGroupTexts;
 			NgUiEvents.OnTriggerMessage += AddMessage;
 			NgRaceEvents.OnShipExploded += AddEliminationMessage;
 			NgUiEvents.OnNewSongPlaying += AddSong;
+		}
+
+		private void FlushTimeGroupTexts(ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+
+			_timeDiff.text = "";
+			_lapResult.text = "";
+			_finalLap.text = "";
 		}
 
 		private void Initiate()
@@ -1984,6 +2001,7 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
+			NgRaceEvents.OnMidLineTriggered -= FlushTimeGroupTexts;
 			NgUiEvents.OnTriggerMessage -= AddMessage;
 			NgRaceEvents.OnShipExploded -= AddEliminationMessage;
 			NgUiEvents.OnNewSongPlaying -= AddSong;
