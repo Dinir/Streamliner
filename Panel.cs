@@ -647,7 +647,6 @@ namespace Streamliner
 
 			if (enableIcon && !_iconImage.enabled)
 			{
-				_panelGroup.alpha = 1f;
 				_bracketsImage.enabled = true;
 				_iconImage.enabled = true;
 				if (_info is not null)
@@ -656,6 +655,7 @@ namespace Streamliner
 
 			if (enableIcon)
 			{
+				_panelGroup.alpha = 1f;
 				_bracketsImage.color = startColor;
 				_iconImage.color = startColor;
 				while (t <= AnimationLength)
