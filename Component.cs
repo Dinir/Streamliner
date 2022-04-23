@@ -2035,6 +2035,7 @@ namespace Streamliner
 		{
 			if (ship != TargetShip)
 				return;
+			_playerPanel.UpdateText("");
 			_playerPanel.UpdateSprite(ship.CurrentPickupRegister.Name);
 			if(_playerPanel.CurrentTransition is not null)
 				StopCoroutine(_playerPanel.CurrentTransition);
