@@ -1632,12 +1632,19 @@ namespace Streamliner
 		private float _npDisplayTime;
 		private float _npFadeOutTimeRemaining;
 		private bool _npFadeOutInProgress;
+		private bool _facingBackwardExpected;
 		private float _wrongWayFadeTimeRemaining;
 		private bool _wasWrongWay;
 
 		public override void Start()
 		{
 			base.Start();
+			_facingBackwardExpected = RaceManager.CurrentGamemode.Name switch
+			{
+				"Eliminator" => true,
+				_ => false
+			};
+
 			NgRaceEvents.OnCountdownStart += Initiate;
 
 			/*
@@ -1908,6 +1915,9 @@ namespace Streamliner
 					_nowPlaying.color = DefaultColor["NowPlaying"];
 				}
 			}
+
+			if (_facingBackwardExpected)
+				return;
 
 			// wrong way
 			if (
