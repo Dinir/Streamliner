@@ -618,7 +618,7 @@ namespace Streamliner
 
 	internal class PickupPanel
 	{
-		private readonly Image _panelImage;
+		private readonly CanvasGroup _panelGroup;
 		private readonly Image _bracketsImage;
 		private readonly Image _iconImage;
 		private readonly Text _info;
@@ -642,13 +642,12 @@ namespace Streamliner
 			Color endColor = enableIcon ?
 				offensive ? _offensiveColor : _defensiveColor :
 				Color.clear;
-			Color panelColor = Color.white;
 			Color transitionColor;
 			float t = enableIcon ? 0 : AnimationLength;
 
 			if (enableIcon && !_iconImage.enabled)
 			{
-				_panelImage.enabled = true;
+				_panelGroup.alpha = 1f;
 				_bracketsImage.enabled = true;
 				_iconImage.enabled = true;
 				if (_info is not null)
@@ -657,7 +656,6 @@ namespace Streamliner
 
 			if (enableIcon)
 			{
-				_panelImage.color = panelColor;
 				_bracketsImage.color = startColor;
 				_iconImage.color = startColor;
 				while (t <= AnimationLength)
@@ -673,14 +671,16 @@ namespace Streamliner
 			{
 				t += Time.deltaTime;
 				float secondFadeProgress = (t - AnimationLength) * AnimationSpeed;
-				transitionColor = Color.Lerp(_iconImage.color, endColor, secondFadeProgress);
 				if (!enableIcon)
 				{
-					panelColor.a = 1f - secondFadeProgress;
-					_panelImage.color = panelColor;
+					_panelGroup.alpha = 1f - secondFadeProgress;
 				}
-				_bracketsImage.color = transitionColor;
-				_iconImage.color = transitionColor;
+				else
+				{
+					transitionColor = Color.Lerp(_iconImage.color, endColor, secondFadeProgress);
+					_bracketsImage.color = transitionColor;
+					_iconImage.color = transitionColor;
+				}
 				yield return null;
 			}
 			_bracketsImage.color = endColor;
@@ -688,7 +688,7 @@ namespace Streamliner
 
 			if (!enableIcon && _iconImage.enabled)
 			{
-				_panelImage.enabled = false;
+				_panelGroup.alpha = 0f;
 				_bracketsImage.enabled = false;
 				_iconImage.enabled = false;
 				if (_info is not null)
@@ -721,8 +721,7 @@ namespace Streamliner
 
 		public void ShowWarning()
 		{
-			_panelImage.enabled = true;
-			_panelImage.color = Color.white;
+			_panelGroup.alpha = 1f;
 			_bracketsImage.enabled = true;
 			_iconImage.enabled = true;
 			_bracketsImage.color = _offensiveColor;
@@ -731,24 +730,24 @@ namespace Streamliner
 
 		public PickupPanel(RectTransform basePanel)
 		{
-			_panelImage = basePanel.GetComponent<Image>();
+			_panelGroup = basePanel.GetComponent<CanvasGroup>();
 			_bracketsImage = basePanel.Find("Brackets").GetComponent<Image>();
 			_iconImage = basePanel.Find("Icon").GetComponent<Image>();
 
-			_panelImage.enabled = false;
+			_panelGroup.alpha = 0f;
 			_bracketsImage.enabled = false;
 			_iconImage.enabled = false;
 		}
 
 		public PickupPanel(RectTransform basePanel, Text infoText)
 		{
-			_panelImage = basePanel.GetComponent<Image>();
+			_panelGroup = basePanel.GetComponent<CanvasGroup>();
 			_bracketsImage = basePanel.Find("Brackets").GetComponent<Image>();
 			_iconImage = basePanel.Find("Icon").GetComponent<Image>();
 			_info = infoText;
 			_info.color = GetTintColor();
 
-			_panelImage.enabled = false;
+			_panelGroup.alpha = 0f;
 			_bracketsImage.enabled = false;
 			_iconImage.enabled = false;
 			_info.enabled = false;
