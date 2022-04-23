@@ -622,8 +622,10 @@ namespace Streamliner
 		private readonly Image _bracketsImage;
 		private readonly Image _iconImage;
 		private readonly Text _info;
-		private string _weaponId;
 		private readonly PickupTextBuilder _pickupTextBuilder = new(new StringBuilder());
+		private string _weaponId;
+		private const float AnimationLength = 0.1f;
+		private const float AnimationSpeed = 1 / AnimationLength;
 
 		public Coroutine CurrentTransition;
 
@@ -642,7 +644,7 @@ namespace Streamliner
 				Color.clear;
 			Color panelColor = Color.white;
 			Color transitionColor;
-			float t = enableIcon ? 0 : 0.1f;
+			float t = enableIcon ? 0 : AnimationLength;
 
 			if (enableIcon && !_iconImage.enabled)
 			{
@@ -658,19 +660,19 @@ namespace Streamliner
 				_panelImage.color = panelColor;
 				_bracketsImage.color = startColor;
 				_iconImage.color = startColor;
-				while (t <= 0.1f)
+				while (t <= AnimationLength)
 				{
 					t += Time.deltaTime;
-					transitionColor = Color.Lerp(startColor, _hudDefaultColor, t * 10);
+					transitionColor = Color.Lerp(startColor, _hudDefaultColor, t * AnimationSpeed);
 					_bracketsImage.color = transitionColor;
 					_iconImage.color = transitionColor;
 					yield return null;
 				}
 			}
-			while (t <= 0.2f)
+			while (t <= AnimationLength * 2)
 			{
 				t += Time.deltaTime;
-				float secondFadeProgress = (t - 0.1f) * 10;
+				float secondFadeProgress = (t - AnimationLength) * AnimationSpeed;
 				transitionColor = Color.Lerp(_iconImage.color, endColor, secondFadeProgress);
 				if (!enableIcon)
 				{
