@@ -12,7 +12,7 @@ TrueTypeFontImporter:
   fontNames:
   - LOF Sector Gamma
   fallbackFontReferences: []
-  customCharacters: 
+  customCharacters: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\u0391\u0392\u0393\u0394\u0395\u0396\u0397\u0398\u0399\u039A\u039B\u039C\u039D\u039E\u039F\u03A0\u03A1\u03A3\u03A4\u03A5\u03A6\u03A7\u03A8\u03A90123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
   fontRenderingMode: 2
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0
