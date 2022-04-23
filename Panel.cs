@@ -750,6 +750,7 @@ namespace Streamliner
 			_bracketsImage.enabled = false;
 			_iconImage.enabled = false;
 			_info.enabled = false;
+			_info.text = "";
 		}
 	}
 
