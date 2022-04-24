@@ -1475,8 +1475,8 @@ namespace Streamliner
 
 	public class PositionTracker : ScriptableHud
 	{
-		private int _totalSections;
 		private const float AlphaEliminated = 0.5f;
+		private int _totalSections;
 		private EPosHudMode _previousMode;
 		private bool _initiated;
 		private bool _modeChanged;
@@ -1491,9 +1491,12 @@ namespace Streamliner
 		{
 			internal static RectTransform Template;
 			internal static float MaxSize;
+			// speed of 4 makes it nearly in sync with the placement component
+			private const int TransitionSpeed = 4;
 			internal int Id;
 			private readonly RectTransform _node;
 			private readonly Image _nodeImage;
+			private float _currentPositionRate;
 			private Vector2 _position;
 
 			public int SiblingIndex
@@ -1501,10 +1504,16 @@ namespace Streamliner
 				set => _node.SetSiblingIndex(value);
 			}
 
-			public void SetPosition(float rate)
+			public void SetPosition(float rate, bool forceUpdate = false)
 			{
 				rate = rate < 0f ? 0f : rate > 1f ? 1f : rate;
-				_position.x = rate * MaxSize;
+
+				if (!Mathf.Approximately(_currentPositionRate, rate))
+					_currentPositionRate = forceUpdate ?
+						rate :
+						Mathf.Lerp(_currentPositionRate, rate, Time.deltaTime * TransitionSpeed);
+
+				_position.x = _currentPositionRate * MaxSize;
 				_node.anchoredPosition = _position;
 			}
 
@@ -1533,6 +1542,7 @@ namespace Streamliner
 				_node.anchoredPosition = Template.anchoredPosition;
 				_nodeImage = _node.GetComponent<Image>();
 				_nodeImage.color = color;
+				SetPosition(0.5f, true);
 			}
 		}
 
@@ -1609,6 +1619,8 @@ namespace Streamliner
 			_singleNode.SiblingIndex = totalShips - 1;
 			_totalSections = GetTotalSectionCount();
 
+			StartCoroutine(UpdateSectionsTraversed());
+
 			_initiated = true;
 			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
@@ -1627,7 +1639,6 @@ namespace Streamliner
 				_modeChanged = true;
 			}
 
-			UpdateSectionsTraversed();
 			SetNodes();
 		}
 
@@ -1650,26 +1661,31 @@ namespace Streamliner
 			}
 		}
 
-		private void UpdateSectionsTraversed()
+		private IEnumerator UpdateSectionsTraversed()
 		{
-			for (int id = 0; id < _racerSectionsTraversed.Length; id++)
+			while (true)
 			{
-				ShipController ship = Ships.Loaded[id];
-				if (
-					!ship.CurrentSection ||
-					ship.CurrentSection.index - 1 == 0
-				)
-					continue;
+				for (int id = 0; id < _racerSectionsTraversed.Length; id++)
+				{
+					ShipController ship = Ships.Loaded[id];
+					if (
+						!ship.CurrentSection ||
+						ship.CurrentSection.index - 1 == 0
+					)
+						continue;
 
-				_racerSectionsTraversed[id] =
-					GetPassingSectionIndex(ship, ship.CurrentLap, _totalSections);
-			}
+					_racerSectionsTraversed[id] =
+						GetPassingSectionIndex(ship, ship.CurrentLap, _totalSections);
+				}
 
-			int playerSection = _racerSectionsTraversed[TargetShip.ShipId];
-			for (int id = 0; id < _racerSectionsTraversed.Length; id++)
-			{
-				_racerRelativeSections[id].Value =
-					_racerSectionsTraversed[id] - playerSection;
+				int playerSection = _racerSectionsTraversed[TargetShip.ShipId];
+				for (int id = 0; id < _racerSectionsTraversed.Length; id++)
+				{
+					_racerRelativeSections[id].Value =
+						_racerSectionsTraversed[id] - playerSection;
+				}
+
+				yield return new WaitForSeconds(Position.UpdateTime);
 			}
 		}
 
@@ -1761,6 +1777,12 @@ namespace Streamliner
 
 		private static float ConvertDistanceRate(float distanceRate) =>
 			(float) ( ( Math.Sin(distanceRate*Math.PI/2) + 1 ) / 2 );
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			StopCoroutine(UpdateSectionsTraversed());
+		}
 	}
 
 	public class Pitlane : ScriptableHud
