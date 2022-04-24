@@ -54,7 +54,7 @@ namespace Streamliner
 			tintIndex = tintIndex < 0 ? OptionValueTint : tintIndex;
 			_tintColorBuffer = Color.HSVToRGB(
 				StandardH[tintIndex],
-				StandardSV[clarity][0],
+				tintIndex == 0 ? 0 : StandardSV[clarity][0],
 				StandardSV[clarity][1]
 			);
 			_tintColorBuffer.a = TintAlphaList[(int) transparencyIndex];
