@@ -1474,7 +1474,282 @@ namespace Streamliner
 	}
 
 	public class PositionTracker : ScriptableHud
-	{}
+	{
+		private int _totalSections;
+		private const float AlphaEliminated = 0.5f;
+		private EPosHudMode _previousMode;
+		private bool _modeChanged;
+
+		internal RectTransform Panel;
+		private ShipNode _singleNode;
+		private List<ShipNode> _nodes;
+		private int[] _racerSectionsTraversed;
+		private List<RawValuePair> _racerRelativeSections;
+
+		private class ShipNode
+		{
+			internal static RectTransform Template;
+			internal static float MaxSize;
+			internal int Id;
+			private readonly RectTransform _node;
+			private readonly Image _nodeImage;
+			private Vector3 _position;
+
+			public int SiblingIndex
+			{
+				set => _node.SetSiblingIndex(value);
+			}
+
+			public void SetPosition(float rate)
+			{
+				rate = rate < 0f ? 0f : rate > 1f ? 1f : rate;
+				_position.x = rate * MaxSize;
+				_node.localPosition = _position;
+			}
+
+			public float Alpha
+			{
+				set
+				{
+					Color color = _nodeImage.color with
+					{
+						a = value
+					};
+					_nodeImage.color = color;
+				}
+			}
+
+			public bool Enabled
+			{
+				set => _nodeImage.enabled = value;
+			}
+
+			public ShipNode(Color color, int id = -1)
+			{
+				Id = id;
+				_node = Instantiate(Template, Template.parent);
+				_node.localScale = Template.localScale;
+				_node.anchoredPosition = Template.anchoredPosition;
+				_position = _node.localPosition;
+				_nodeImage = _node.GetComponent<Image>();
+				_nodeImage.color = color;
+			}
+		}
+
+		// is this really the best way for a list of int pairs updating frequently?
+		private class RawValuePair
+		{
+			public readonly int Id;
+			public int Value;
+
+			public RawValuePair(int id, int value)
+			{
+				Id = id;
+				Value = value;
+			}
+		}
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = CustomComponents.GetById("Base");
+			ShipNode.Template = Panel.Find("Square").GetComponent<RectTransform>();
+			ShipNode.MaxSize = Panel.sizeDelta.x - ShipNode.Template.sizeDelta.x;
+
+			_singleNode = new ShipNode(GetTintColor(tintIndex: 2, clarity: 1));
+
+			int totalShips = Ships.Loaded.Count;
+			_nodes = new List<ShipNode>(totalShips);
+			_racerSectionsTraversed = new int[totalShips];
+			_racerRelativeSections = new List<RawValuePair>(totalShips);
+
+			foreach (ShipController ship in Ships.Loaded)
+			{
+				if (ship == TargetShip)
+				{
+					_nodes.Add(new ShipNode(GetTintColor(clarity: 1), ship.ShipId));
+				}
+				else
+				{
+					Color.RGBToHSV(
+						Color.Lerp(
+								ship.Settings.REF_ENGINECOL_BRIGHT, ship.Settings.REF_ENGINECOL, 0.5f
+							) with
+							{
+								a = 1f
+							},
+						out float h, out float s, out float v
+					);
+					s *= 1.3f;
+
+					_nodes.Add(new ShipNode(Color.HSVToRGB(h, s, v), ship.ShipId));
+				}
+				_racerSectionsTraversed[ship.ShipId] = 0;
+				_racerRelativeSections.Add(new RawValuePair(ship.ShipId, 0));
+			}
+
+			/*
+			 * after nodes for every ship is instantiated,
+			 * move the player node to the last THEN
+			 * move the single node before the player node.
+			 *
+			 * Total node count is Ships.Loaded.Count + 1 because
+			 * every ship from the race plus the single node are instantiated.
+			 */
+			_nodes[TargetShip.ShipId].SiblingIndex = totalShips;
+			_singleNode.SiblingIndex = totalShips - 1;
+			_totalSections = GetTotalSectionCount();
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			if (!TargetShip)
+				return;
+
+			if (_modeChanged)
+				UpdateMode();
+			if (_previousMode != Hud.PositionTrackerHudMode)
+			{
+				_previousMode = Hud.PositionTrackerHudMode;
+				_modeChanged = true;
+			}
+
+			UpdateSectionsTraversed();
+			SetNodes();
+		}
+
+		private void UpdateMode()
+		{
+			_modeChanged = false;
+			switch (Hud.PositionTrackerHudMode)
+			{
+				case EPosHudMode.Multiple:
+					_singleNode.Enabled = false;
+					foreach (ShipNode node in _nodes)
+						node.Enabled = true;
+					break;
+				case EPosHudMode.Single:
+				default:
+					_singleNode.Enabled = true;
+					foreach (ShipNode node in _nodes)
+						node.Enabled = false;
+					break;
+			}
+		}
+
+		private void UpdateSectionsTraversed()
+		{
+			for (int id = 0; id < _racerSectionsTraversed.Length; id++)
+			{
+				ShipController ship = Ships.Loaded[id];
+				if (
+					!ship.CurrentSection ||
+					ship.CurrentSection.index - 1 == 0
+				)
+					continue;
+
+				_racerSectionsTraversed[id] =
+					GetPassingSectionIndex(ship, ship.CurrentLap, _totalSections);
+			}
+
+			int playerSection = _racerSectionsTraversed[TargetShip.ShipId];
+			for (int id = 0; id < _racerSectionsTraversed.Length; id++)
+			{
+				_racerRelativeSections[id].Value =
+					_racerSectionsTraversed[id] - playerSection;
+			}
+		}
+
+		private void SetNodes()
+		{
+			List<RawValuePair> orderedList =
+				_racerRelativeSections.OrderByDescending(p => p.Value).ToList();
+			int endDistance = Math.Max(
+				orderedList[0].Value, // >=0
+				Math.Abs(orderedList[orderedList.Count - 1].Value) // <= 0
+			);
+
+			switch (Hud.PositionTrackerHudMode)
+			{
+				case EPosHudMode.Multiple:
+					SetMultipleNodes(orderedList, endDistance);
+					break;
+				case EPosHudMode.Single:
+				default:
+					SetSingleNode(endDistance);
+					break;
+			}
+	}
+
+		private void SetSingleNode(int endDistance)
+		{
+			_singleNode.Id =
+				Ships.FindShipInPlace(TargetShip.CurrentPlace == 1 ? 2 : 1).ShipId;
+			if (!Ships.Loaded[_singleNode.Id])
+				return;
+
+			_singleNode.SetPosition(ConvertDistanceRate(
+				(float) _racerRelativeSections[_singleNode.Id].Value / endDistance
+			));
+		}
+
+		private void SetMultipleNodes(List<RawValuePair> orderedList, int endDistance)
+		{
+			int siblingIndex = 0;
+			bool siblingIndexUpdateFromTop = true;
+			foreach (RawValuePair p in orderedList)
+			{
+				/*
+				 * Assign from the top position, starting from top index,
+				 * then if the loop hits the player, skip the player index,
+				 * then continue assigning on next position, but
+				 * starting from the bottom index.
+				 *
+				 * This makes it so the closer other racers are to the player,
+				 * the later their position is drawn overlapping any early ones,
+				 * regardless if they're ahead or behind of you.
+				 *
+				 * For example, in an 8-player race where the player is at 5th,
+				 * siblingIndex from the first positioned player to the last
+				 * would be this: 0, 1, 2, 3, 8, 6, 5, 4.
+				 * 7 is the index of the single node.
+				 */
+				if (p.Id == TargetShip.ShipId)
+				{
+					siblingIndexUpdateFromTop = false;
+					siblingIndex = orderedList.Count - 1;
+					continue;
+				}
+
+				_nodes[p.Id].Alpha = Ships.Loaded[p.Id].Eliminated ?
+					AlphaEliminated : 1f;
+				/*
+				 * When SetSiblingIndex is used for a child in the middle,
+				 * children after the old index to and including the new index
+				 * will be pushed away to make the new index empty, then
+				 * the one child will occupy the index.
+				 *
+				 * It's probably safe to order them from the end.
+				 *
+				 * example:
+				 * node:         0 1 2 3 4 5 6 7
+				 * siblingIndex: 0 1 2 3 4 5 6 7
+				 * > node[0].SetSiblingIndex(5)
+				 * siblingIndex: 5 0 1 2 3 4 6 7
+				 * node ordered by sI: 1 2 3 4 5 0 6 7
+				 */
+				_nodes[p.Id].SiblingIndex = siblingIndexUpdateFromTop ?
+					siblingIndex++ : --siblingIndex;
+				_nodes[p.Id].SetPosition(
+					ConvertDistanceRate((float) p.Value / endDistance)
+				);
+			}
+		}
+
+		private static float ConvertDistanceRate(float distanceRate) =>
+			(float) ( ( Math.Sin(distanceRate*Math.PI/2) + 1 ) / 2 );
+	}
 
 	public class Pitlane : ScriptableHud
 	{
