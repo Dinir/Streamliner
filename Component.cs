@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using NgAudio;
-using UnityEngine;
-using UnityEngine.UI;
 using NgData;
-using NgSettings;
-using NgUi.RaceUi;
 using NgEvents;
 using NgGame;
 using NgLib;
 using NgModes;
 using NgMp;
 using NgPickups;
+using NgPickups.Physical;
+using NgSettings;
 using NgShips;
 using NgSp;
+using NgTrackData.Triggers;
+using NgUi.RaceUi;
 using NgUi.RaceUi.HUD;
+using UnityEngine;
+using UnityEngine.UI;
 using static Streamliner.HudRegister;
 using static Streamliner.PresetColorPicker;
 using static Streamliner.SectionManager;
@@ -1203,7 +1206,7 @@ namespace Streamliner
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
 			UpsurgeShip.OnShieldActivated += StartTransition;
-			NgPickups.Physical.Barrier.OnPlayerBarrierWarned += WarnBarrier;
+			Barrier.OnPlayerBarrierWarned += WarnBarrier;
 		}
 
 		private void StartTransition(ShipController ship)
@@ -1217,7 +1220,7 @@ namespace Streamliner
 		}
 
 		private void WarnBarrier(
-			ShipController ship, NgPickups.Physical.Barrier barrier, int side
+			ShipController ship, Barrier barrier, int side
 		)
 		{
 			if (Gameplay.MirrorEnabled)
@@ -1354,7 +1357,7 @@ namespace Streamliner
 			UpsurgeShip.OnDeployedBarrier -= StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease -= StartTransition;
 			UpsurgeShip.OnShieldActivated -= StartTransition;
-			NgPickups.Physical.Barrier.OnPlayerBarrierWarned -= WarnBarrier;
+			Barrier.OnPlayerBarrierWarned -= WarnBarrier;
 		}
 	}
 
@@ -1496,7 +1499,7 @@ namespace Streamliner
 			 * even if I use `SetActive(true)`.
 			 */
 
-			NgTrackData.Triggers.PitlaneIndicator.OnPitlaneIndicatorTriggered += Play;
+			PitlaneIndicator.OnPitlaneIndicatorTriggered += Play;
 		}
 
 		private void Play(ShipController ship, int side)
@@ -1523,7 +1526,7 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			NgTrackData.Triggers.PitlaneIndicator.OnPitlaneIndicatorTriggered -= Play;
+			PitlaneIndicator.OnPitlaneIndicatorTriggered -= Play;
 		}
 	}
 
