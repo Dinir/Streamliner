@@ -1478,6 +1478,7 @@ namespace Streamliner
 		private int _totalSections;
 		private const float AlphaEliminated = 0.5f;
 		private EPosHudMode _previousMode;
+		private bool _initiated;
 		private bool _modeChanged;
 
 		internal RectTransform Panel;
@@ -1493,7 +1494,7 @@ namespace Streamliner
 			internal int Id;
 			private readonly RectTransform _node;
 			private readonly Image _nodeImage;
-			private Vector3 _position;
+			private Vector2 _position;
 
 			public int SiblingIndex
 			{
@@ -1504,7 +1505,7 @@ namespace Streamliner
 			{
 				rate = rate < 0f ? 0f : rate > 1f ? 1f : rate;
 				_position.x = rate * MaxSize;
-				_node.localPosition = _position;
+				_node.anchoredPosition = _position;
 			}
 
 			public float Alpha
@@ -1530,7 +1531,6 @@ namespace Streamliner
 				_node = Instantiate(Template, Template.parent);
 				_node.localScale = Template.localScale;
 				_node.anchoredPosition = Template.anchoredPosition;
-				_position = _node.localPosition;
 				_nodeImage = _node.GetComponent<Image>();
 				_nodeImage.color = color;
 			}
@@ -1556,6 +1556,11 @@ namespace Streamliner
 			ShipNode.Template = Panel.Find("Square").GetComponent<RectTransform>();
 			ShipNode.MaxSize = Panel.sizeDelta.x - ShipNode.Template.sizeDelta.x;
 
+			NgRaceEvents.OnCountdownStart += Initiate;
+		}
+
+		private void Initiate()
+		{
 			_singleNode = new ShipNode(GetTintColor(tintIndex: 2, clarity: 1));
 
 			int totalShips = Ships.Loaded.Count;
@@ -1590,21 +1595,28 @@ namespace Streamliner
 
 			/*
 			 * after nodes for every ship is instantiated,
-			 * move the player node to the last THEN
+			 * move the template to the last, THEN
+			 * move the player node to last before template, THEN
 			 * move the single node before the player node.
 			 *
-			 * Total node count is Ships.Loaded.Count + 1 because
-			 * every ship from the race plus the single node are instantiated.
+			 * Total node count is Ships.Loaded.Count + 2 because
+			 * every ship from the race plus the single node
+			 * and the template exist.
 			 */
+			ShipNode.Template.SetSiblingIndex(totalShips + 1);
+			ShipNode.Template.gameObject.SetActive(false);
 			_nodes[TargetShip.ShipId].SiblingIndex = totalShips;
 			_singleNode.SiblingIndex = totalShips - 1;
 			_totalSections = GetTotalSectionCount();
+
+			_initiated = true;
+			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
 
 		public override void Update()
 		{
 			base.Update();
-			if (!TargetShip)
+			if (!TargetShip || !_initiated)
 				return;
 
 			if (_modeChanged)
