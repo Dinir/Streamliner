@@ -1595,7 +1595,7 @@ namespace Streamliner
 							},
 						out float h, out float s, out float v
 					);
-					s *= 1.3f;
+					s *= 1.1f;
 
 					_nodes.Add(new ShipNode(Color.HSVToRGB(h, s, v), ship.ShipId));
 				}
