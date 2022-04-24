@@ -2497,5 +2497,193 @@ namespace Streamliner
 	{}
 
 	public class Awards : ScriptableHud
-	{}
+	{
+		private const float InitialPanelAlpha = 0.9f;
+		private const float ActivePanelAlpha = 1f;
+		private const float InactivePanelAlpha = 0.25f;
+
+		internal RectTransform Panel;
+		internal CanvasGroup PanelPlatinum;
+		internal Image PanelPlatinumImage;
+		internal Text TextPlatinum;
+		internal CanvasGroup PanelGold;
+		internal Image PanelGoldImage;
+		internal Text TextGold;
+		internal CanvasGroup PanelSilver;
+		internal Image PanelSilverImage;
+		internal Text TextSilver;
+		internal CanvasGroup PanelBronze;
+		internal Image PanelBronzeImage;
+		internal Text TextBronze;
+
+		private readonly Color _activePlatinumColor =
+			GetTintColor(TextAlpha.ThreeQuarters, 7, 0);
+		private readonly Color _activeGoldColor =
+			GetTintColor(TextAlpha.ThreeQuarters, 3, 0);
+		private readonly Color _activeSilverColor =
+			GetTintColor(TextAlpha.ThreeQuarters, 0, 0);
+		private readonly Color _activeBronzeColor =
+			GetTintColor(TextAlpha.ThreeQuarters, 2, 0);
+		private readonly Color _activeTextColor =
+			new Color32(0x28, 0x28, 0x28, 0xff);
+
+		private string _gamemodeName;
+		private float _missedPanelAlpha = InactivePanelAlpha;
+
+		private float _platinumTarget;
+		private float _goldTarget;
+		private float _silverTarget;
+		private float _bronzeTarget;
+		private bool _targetIsTime;
+		private bool _isSpeedLap;
+
+		private float _progressTime;
+		private int _progressZone;
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = CustomComponents.GetById("Base");
+			PanelPlatinum = Panel.Find("Platinum").GetComponent<CanvasGroup>();
+			PanelPlatinumImage = PanelPlatinum.GetComponent<Image>();
+			TextPlatinum = Panel.Find("Platinum").Find("Value").GetComponent<Text>();
+			PanelGold = Panel.Find("Gold").GetComponent<CanvasGroup>();
+			PanelGoldImage = PanelGold.GetComponent<Image>();
+			TextGold = Panel.Find("Gold").Find("Value").GetComponent<Text>();
+			PanelSilver = Panel.Find("Silver").GetComponent<CanvasGroup>();
+			PanelSilverImage = PanelSilver.GetComponent<Image>();
+			TextSilver = Panel.Find("Silver").Find("Value").GetComponent<Text>();
+			PanelBronze = Panel.Find("Bronze").GetComponent<CanvasGroup>();
+			PanelBronzeImage = PanelBronze.GetComponent<Image>();
+			TextBronze = Panel.Find("Bronze").Find("Value").GetComponent<Text>();
+
+			_platinumTarget = NgCampaign.CurrentEvent.EventProgress.PlatinumValue;
+			_goldTarget = NgCampaign.CurrentEvent.EventProgress.GoldValue;
+			_silverTarget = NgCampaign.CurrentEvent.EventProgress.SilverValue;
+			_bronzeTarget = NgCampaign.CurrentEvent.EventProgress.BronzeValue;
+
+			_gamemodeName = RaceManager.CurrentGamemode.Name;
+
+			_targetIsTime = _gamemodeName switch
+			{
+				"Time Trial" => true,
+				"Speed Lap" => true,
+				"Survival" => false,
+				_ => true
+			};
+			_isSpeedLap = _gamemodeName == "Speed Lap";
+
+			if (_isSpeedLap)
+			{
+				const float shiftAmount = 75f;
+				PanelPlatinum.GetComponent<RectTransform>().anchoredPosition += Vector2.left * shiftAmount;
+				PanelGold.GetComponent<RectTransform>().anchoredPosition += Vector2.left * shiftAmount;
+				PanelSilver.GetComponent<RectTransform>().anchoredPosition += Vector2.right * shiftAmount;
+				PanelBronze.GetComponent<RectTransform>().anchoredPosition += Vector2.right * shiftAmount;
+				_missedPanelAlpha = InitialPanelAlpha;
+				NgUiEvents.OnGamemodeUpdateCurrentLapTime += UpdateTime;
+				NgUiEvents.OnGamemodeInvalidatedLap += InvalidateLap;
+			}
+
+			if (_targetIsTime)
+			{
+				TextPlatinum.text = FloatToTime.Convert(_platinumTarget, TimeFormat);
+				TextGold.text = FloatToTime.Convert(_goldTarget, TimeFormat);
+				TextSilver.text = FloatToTime.Convert(_silverTarget, TimeFormat);
+				TextBronze.text = FloatToTime.Convert(_bronzeTarget, TimeFormat);
+			}
+			else
+			{
+				TextPlatinum.text = "Zone " + _platinumTarget;
+				TextGold.text = "Zone " + _goldTarget;
+				TextSilver.text = "Zone " + _silverTarget;
+				TextBronze.text = "Zone " + _bronzeTarget;
+				NgUiEvents.OnZoneNumberUpdate += UpdateZone;
+			}
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			if (_targetIsTime && !_isSpeedLap) UpdateTime(TargetShip.TotalRaceTime);
+		}
+
+		private void UpdateTime(float currentTime = -1f)
+		{
+			_progressTime = currentTime == -1f ?
+				TargetShip.TotalRaceTime : currentTime;
+
+			if (_progressTime <= _platinumTarget)
+			{
+				PanelPlatinum.alpha = ActivePanelAlpha;
+			}
+			else if (_progressTime <= _goldTarget)
+			{
+				PanelPlatinum.alpha = _missedPanelAlpha;
+				PanelGold.alpha = ActivePanelAlpha;
+			}
+			else if (_progressTime <= _silverTarget)
+			{
+				PanelGold.alpha = _missedPanelAlpha;
+				PanelSilver.alpha = ActivePanelAlpha;
+			}
+			else if (_progressTime <= _bronzeTarget)
+			{
+				PanelSilver.alpha = _missedPanelAlpha;
+				PanelBronze.alpha = ActivePanelAlpha;
+			}
+			else
+			{
+				PanelBronze.alpha = _missedPanelAlpha;
+			}
+		}
+
+		private void InvalidateLap()
+		{
+			PanelPlatinum.alpha = _missedPanelAlpha;
+			PanelGold.alpha = _missedPanelAlpha;
+			PanelSilver.alpha = _missedPanelAlpha;
+			PanelBronze.alpha = _missedPanelAlpha;
+		}
+
+		private void UpdateZone(string number)
+		{
+			_progressZone = Convert.ToInt32(number);
+
+			if (_progressZone >= _bronzeTarget)
+			{
+				PanelBronzeImage.color = _activeBronzeColor;
+				TextBronze.color = _activeTextColor;
+			}
+			if (_progressZone >= _silverTarget)
+			{
+				PanelSilverImage.color = _activeSilverColor;
+				TextSilver.color = _activeTextColor;
+			}
+			if (_progressZone >= _goldTarget)
+			{
+				PanelGoldImage.color = _activeGoldColor;
+				TextGold.color = _activeTextColor;
+			}
+			if (_progressZone >= _platinumTarget)
+			{
+				PanelPlatinumImage.color = _activePlatinumColor;
+				TextPlatinum.color = _activeTextColor;
+			}
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			if (_isSpeedLap)
+			{
+				NgUiEvents.OnGamemodeUpdateCurrentLapTime -= UpdateTime;
+				NgUiEvents.OnGamemodeInvalidatedLap -= InvalidateLap;
+			}
+			if (!_targetIsTime)
+			{
+				NgUiEvents.OnZoneNumberUpdate -= UpdateZone;
+			}
+		}
+	}
 }
