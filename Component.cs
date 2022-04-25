@@ -2540,7 +2540,7 @@ namespace Streamliner
 		private readonly Color _activeBronzeColor =
 			GetTintColor(TextAlpha.ThreeQuarters, 2, 0);
 		private readonly Color _activeTextColor =
-			new Color32(0x28, 0x28, 0x28, 0xff);
+			GetPanelColor() with {a = GetTransparency(TextAlpha.Full)};
 
 		private string _gamemodeName;
 		private float _missedPanelAlpha = InactivePanelAlpha;

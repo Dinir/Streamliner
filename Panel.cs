@@ -19,7 +19,6 @@ namespace Streamliner
 {
 	internal static class PresetColorPicker
 	{
-		private static Color _tintColorBuffer;
 		private static readonly float[] StandardH = {
 			// for Grey
 			0f,
@@ -49,17 +48,26 @@ namespace Streamliner
 			TextAlpha transparencyIndex = TextAlpha.Full,
 			int tintIndex = -1,
 			int clarity = 3
-		)
-		{
-			tintIndex = tintIndex < 0 ? OptionValueTint : tintIndex;
-			_tintColorBuffer = Color.HSVToRGB(
-				StandardH[tintIndex],
-				tintIndex == 0 ? 0 : StandardSV[clarity][0],
-				StandardSV[clarity][1]
-			);
-			_tintColorBuffer.a = TintAlphaList[(int) transparencyIndex];
-			return _tintColorBuffer;
-		}
+		) =>
+			Color.HSVToRGB(
+					StandardH[tintIndex < 0 ? OptionValueTint : tintIndex],
+					tintIndex == 0 ? 0 : StandardSV[clarity][0],
+					StandardSV[clarity][1]
+				) with
+				{
+					a = TintAlphaList[(int) transparencyIndex]
+				};
+
+		internal static Color GetPanelColor(int tintIndex = 0) =>
+			Color.HSVToRGB(
+					StandardH[tintIndex],
+					tintIndex == 0 ? 0 : StandardSV[0][0],
+					tintIndex == 0 ? 0.16f : 0.30f
+				) with
+				{
+					a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
+				};
+
 		internal static float GetTransparency(TextAlpha transparencyIndex) =>
 			TintAlphaList[(int) transparencyIndex];
 	}
