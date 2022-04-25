@@ -928,7 +928,9 @@ namespace Streamliner
 				new Vector3(additionalWidth, 0, 0);
 
 			TargetRow.Find("TargetValue").Find("Value").GetComponent<Text>()
-				.text = IntStrDb.GetNumber((int) targetScore);
+				.text = _valueType == ValueType.Score ?
+				IntStrDb.GetNumber((int) targetScore) + ".00" :
+				IntStrDb.GetNumber((int) targetScore);
 			TargetRow.Find("Target").GetComponent<RectTransform>()
 				.localPosition -= widthAdjustmentVector3;
 			TargetRow.Find("TargetValue").GetComponent<RectTransform>()
