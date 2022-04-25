@@ -1115,6 +1115,7 @@ namespace Streamliner
 			_zoneScore = CustomComponents.GetById<Text>("Score");
 			_zoneScore.gameObject.SetActive(true);
 
+			_zoneName.color = GetTintColor(TextAlpha.ThreeEighths);
 			_zoneScore.color = GetTintColor(TextAlpha.NineTenths);
 
 			_zoneScore.text = "0";
