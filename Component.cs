@@ -2497,12 +2497,13 @@ namespace Streamliner
 			Panel.InitiateLayout(RaceManager.CurrentGamemode.TargetScore);
 			Panel.InitiateSlots(Ships.Loaded);
 			StartCoroutine(Panel.Update(Ships.Loaded));
+
+			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
 
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			NgRaceEvents.OnCountdownStart -= Initiate;
 			StopCoroutine(Panel.Update(Ships.Loaded));
 		}
 	}
