@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -843,8 +842,11 @@ namespace Streamliner
 							valueInt < 0 ? 0 : valueInt > 100 ? 100 : valueInt);
 						break;
 					case ValueType.Score:
-						float score = (int) (value * 100.0) * 0.01f;
-						_value.text = score.ToString(CultureInfo.InvariantCulture);
+						int inflatedValue = Mathf.RoundToInt(value * 100f);
+						string intPart = (inflatedValue / 100).ToString();
+						string hundredths =
+							IntStrDb.GetNoSingleCharNumber(inflatedValue % 100);
+						_value.text = intPart + "." + hundredths;
 						break;
 					case ValueType.IntScore:
 					case ValueType.Position:
