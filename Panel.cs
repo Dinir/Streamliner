@@ -781,8 +781,8 @@ namespace Streamliner
 			};
 		}
 
-		private readonly float _oneLetterWidth = 20f;
-		private readonly float _oneDotWidth = 4f;
+		private const float OneLetterWidth = 20f;
+		private const float OneDotWidth = 4f;
 		internal readonly RectTransform Base;
 		protected readonly RectTransform TargetRow;
 		protected readonly RectTransform EntrySlotTemplate;
@@ -914,8 +914,8 @@ namespace Streamliner
 			float additionalWidth =
 				(_valueType == ValueType.Energy ? 1f :
 					targetScore < 20f ? 0f : targetScore < 200f ? 1f : 2f
-				) * _oneLetterWidth
-				+ (_valueType == ValueType.Score ? _oneDotWidth + _oneLetterWidth * 2f : 0f);
+				) * OneLetterWidth
+				+ (_valueType == ValueType.Score ? OneDotWidth + OneLetterWidth * 2f : 0f);
 
 			if (additionalWidth == 0f)
 				return;
