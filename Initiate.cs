@@ -258,7 +258,7 @@ namespace Streamliner
 	 * Position   V  V  .  .  .  V  V  .  V
 	 * Pitlane    V  V  V  .  .  V  .  .  .
 	 * Message    V  V  V  V  V  V  V  ?  V
-	 * Pickup     V  V  .  V  .  .  V  .  V
+	 * Pickup     V  V  .  V  .  V  V  .  V
 	 * Board      V1 V2 .  .  .  V1 V  V2 V
 	 * Awards     .  .  V3 .  V3 .  .  .  .
 	 * 1: when `Hud.GetPositionBoardEnabled()` is `true`
@@ -358,9 +358,9 @@ namespace Streamliner
 			RegisterHud<PositionTracker>(HudRegister.Assets.GetComponent<HudComponents>("Position", false));
 			RegisterHud<Pitlane>(HudRegister.Assets.GetComponent<HudComponents>("Pitlane", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
+			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			if (Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
-			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
