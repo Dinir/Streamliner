@@ -2500,6 +2500,7 @@ namespace Streamliner
 	{
 		private const float InitialPanelAlpha = 0.9f;
 		private const float ActivePanelAlpha = 1f;
+		private const float TemporarilyInactivePanelAlpha = 0.5f;
 		private const float InactivePanelAlpha = 0.25f;
 
 		internal RectTransform Panel;
@@ -2580,9 +2581,10 @@ namespace Streamliner
 				PanelGold.GetComponent<RectTransform>().anchoredPosition += Vector2.left * shiftAmount;
 				PanelSilver.GetComponent<RectTransform>().anchoredPosition += Vector2.right * shiftAmount;
 				PanelBronze.GetComponent<RectTransform>().anchoredPosition += Vector2.right * shiftAmount;
-				_missedPanelAlpha = InitialPanelAlpha;
+				_missedPanelAlpha = TemporarilyInactivePanelAlpha;
 				NgUiEvents.OnGamemodeUpdateCurrentLapTime += UpdateTime;
 				NgUiEvents.OnGamemodeInvalidatedLap += InvalidateLap;
+				NgRaceEvents.OnShipLapUpdate += ResetPanelAlpha;
 			}
 
 			if (_targetIsTime)
@@ -2646,6 +2648,14 @@ namespace Streamliner
 			PanelBronze.alpha = _missedPanelAlpha;
 		}
 
+		private void ResetPanelAlpha(ShipController ship)
+		{
+			PanelPlatinum.alpha = InitialPanelAlpha;
+			PanelGold.alpha = InitialPanelAlpha;
+			PanelSilver.alpha = InitialPanelAlpha;
+			PanelBronze.alpha = InitialPanelAlpha;
+		}
+
 		private void UpdateZone(string number)
 		{
 			_progressZone = Convert.ToInt32(number);
@@ -2679,6 +2689,7 @@ namespace Streamliner
 			{
 				NgUiEvents.OnGamemodeUpdateCurrentLapTime -= UpdateTime;
 				NgUiEvents.OnGamemodeInvalidatedLap -= InvalidateLap;
+				NgRaceEvents.OnShipLapUpdate -= ResetPanelAlpha;
 			}
 			if (!_targetIsTime)
 			{

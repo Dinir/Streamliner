@@ -328,6 +328,8 @@ namespace Streamliner
 			RegisterHud<TargetTime>(HudRegister.Assets.GetComponent<HudComponents>("TargetTime", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<TurboDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Turbo", false));
+			if (NgCampaign.Enabled)
+				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}
