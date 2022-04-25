@@ -1853,6 +1853,7 @@ namespace Streamliner
 		private bool _initiated;
 
 		private const int LineMax = 3;
+		private const float LapResultLineHeight = 22f; // at hud font size 15
 		private const float DisplayTimeMax = 3.0f;
 		private const int FadeOutSpeed = 9;
 		private const float FadeOutTimeMax = 1.2f;
@@ -1945,17 +1946,25 @@ namespace Streamliner
 		private float _npDisplayTime;
 		private float _npFadeOutTimeRemaining;
 		private bool _npFadeOutInProgress;
-		private bool _facingBackwardExpected;
 		private float _wrongWayFadeTimeRemaining;
 		private bool _wasWrongWay;
+
+		private bool _facingBackwardExpected;
+		private bool _noNewLapRecord;
 
 		public override void Start()
 		{
 			base.Start();
-			_facingBackwardExpected = RaceManager.CurrentGamemode.Name switch
+			string _gamemodeName = RaceManager.CurrentGamemode.Name;
+			_facingBackwardExpected = _gamemodeName switch
 			{
 				"Eliminator" => true,
 				_ => false
+			};
+			_noNewLapRecord = _gamemodeName switch
+			{
+				"Speed Lap" => false,
+				_ => true
 			};
 
 			NgRaceEvents.OnCountdownStart += Initiate;
@@ -2012,6 +2021,10 @@ namespace Streamliner
 			_lapResult.text = "";
 			_finalLap.text = "";
 			lineTemplateText.text = "";
+
+			if (_noNewLapRecord)
+				_lineTemplate.parent.GetComponent<RectTransform>().anchoredPosition +=
+					Vector2.down * LapResultLineHeight;
 
 			InitiateLines();
 			_lineTemplate.gameObject.SetActive(false);
