@@ -10,14 +10,14 @@ namespace Streamliner
 {
 	public class HudRegister : CodeMod
 	{
-		public const string ID = "Streamliner";
+		private const string ID = "Streamliner";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
 		// options
 		private string _settingsPath;
-		public static readonly string OptionSectionDisplay = "Display";
-		public static readonly string OptionSectionAddition = "Additional Information";
+		private const string OptionSectionDisplay = "Display";
+		private const string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint;
 		public static bool OptionMotion = true;
 		public static int OptionTimeDiffColour;
@@ -32,24 +32,20 @@ namespace Streamliner
 		{
 			_modPathOnClassScope = modPath;
 
-			// load from files
 			_settingsPath = Path.Combine(modPath, "settings.ini");
 
 			Assets = ModAssets.Load(
 				Path.Combine(modPath, "mod assets.nga"));
 
-			// register the mod
 			CustomHudRegistry.RegisterMod(ID);
 
 			RegisterManagers();
+			RegisterSprites();
 
-			// options
 			ModOptions.OnLoadSettings += OnLoadSettings;
 			ModOptions.OnSaveSettings += OnSaveSettings;
 
 			ModOptions.RegisterMod("Streamliner", GenerateModUi, ModUiToCode);
-
-			RegisterSprites();
 		}
 
 		private static void RegisterManagers()
@@ -129,7 +125,7 @@ namespace Streamliner
 			);
 
 			ctx.GenerateSelector(
-				"TimeDiffColour", "time text color",
+				"TimeDiffColour", "time text colour",
 				"Set the colour pair to use for the time difference text.",
 				OptionTimeDiffColour,
 				"red & green", "magenta & green", "red & cyan"
@@ -169,7 +165,7 @@ namespace Streamliner
 
 			ctx.GenerateSelector(
 				"LowEnergyTransition", "low energy",
-				"Change the color of energy meter when the ship's energy is low.",
+				"Change the colour of energy meter when the ship's energy is low.",
 				OptionLowEnergy,
 				"off", "follow audio setting", "on"
 			);
