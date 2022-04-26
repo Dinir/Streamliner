@@ -2606,7 +2606,288 @@ namespace Streamliner
 	}
 
 	public class TeamScoreboard : ScriptableHud
-	{}
+	{
+		internal RectTransform Panel;
+		internal PickupPanel TeammatePickupPanel;
+		internal GameObject LabelFirst;
+		internal RectTransform SlotLeft;
+		internal RectTransform SlotRight;
+		internal RectTransform SlotMiddle;
+		internal TeamPanel[] TeamPanels;
+		private const float SlotShiftAmount = 105f;
+
+		internal class TeamPanel
+		{
+			private static readonly Color ValueColor = GetTintColor();
+			private static readonly Color ValueAdditionColor = GetTintColor(TextAlpha.Half);
+			private static readonly Color MemberColor =
+				GetTintColor(TextAlpha.ThreeEighths);
+			private static readonly Color PlacementColor =
+				GetTintColor(clarity: 1);
+			private static readonly Color PanelColor =
+				GetPanelColor();
+			private static readonly Color PlayerPanelColor =
+				GetPanelColor(OptionValueTint);
+
+			private RaceTeam _team;
+			private bool _isPlayerTeam;
+
+			internal readonly Image PanelImage;
+			internal readonly Text Value;
+			internal readonly Text ValueAddition;
+			internal readonly Text MemberFirst;
+			internal readonly Text MemberSecond;
+			internal readonly Text PlacementFirst;
+			internal readonly Text PlacementSecond;
+
+			internal int? Id => _team?.Id;
+			internal bool IsPlayerTeam
+			{
+				get => _isPlayerTeam;
+				set
+				{
+					_isPlayerTeam = value;
+					if (value)
+					{
+						PanelImage.color = PlayerPanelColor;
+						MemberFirst.color = MemberColor;
+						MemberSecond.color = MemberColor;
+						PlacementFirst.color = PlacementColor;
+						PlacementSecond.color = PlacementColor;
+					}
+					else
+					{
+						PanelImage.color = PanelColor;
+						MemberFirst.color = PlacementColor;
+						MemberSecond.color = PlacementColor;
+						PlacementFirst.color = Color.clear;
+						PlacementSecond.color = Color.clear;
+					}
+
+				}
+			}
+			internal float? Score
+			{
+				get => _team?.Score;
+				set => Value.text =
+					(Math.Round(value * 100f ?? 0) / 100.0).ToString(CultureInfo.InvariantCulture);
+			}
+			internal float? ScoreAddition
+			{
+				get => _team?.PlaceScore;
+				set => ValueAddition.text =
+					"+" + Math.Round(value * 100f ?? 0) / 100.0;
+			}
+
+			internal void UpdateTeam(RaceTeam team, ShipController playerShip)
+			{
+
+				if (team == _team)
+					Score = team.Score;
+				else
+				{
+					IsPlayerTeam = team.Ships[0] == playerShip || team.Ships[1] == playerShip;
+					_team = team;
+					Score = team.Score;
+					ScoreAddition = team.PlaceScore;
+					MemberFirst.text = team.Ships[0].ShipName;
+					MemberSecond.text = team.Ships[1].ShipName;
+					/*
+					 * Default hud just clears the text instead when changing the panels,
+					 * leaving the text empty for few frames after they are changed.
+					 * I wonder if keeping that way is safer,
+					 * whatever "safe" would mean here.
+					 */
+					UpdatePlacement();
+				}
+			}
+
+			internal void UpdatePlacement()
+			{
+				if (!_isPlayerTeam)
+					return;
+
+				PlacementFirst.text =
+					IntStrDb.GetNoSingleCharNumber(_team.Ships[0].CurrentPlace);
+				PlacementSecond.text =
+					IntStrDb.GetNoSingleCharNumber(_team.Ships[1].CurrentPlace);
+				ScoreAddition = _team.PlaceScore;
+			}
+
+			public TeamPanel(RectTransform panel)
+			{
+				PanelImage = panel.GetComponent<Image>();
+				Value = panel.Find("Value").GetComponent<Text>();
+				ValueAddition = panel.Find("ValueAddition").GetComponent<Text>();
+				MemberFirst = panel.Find("MemberFirst").GetComponent<Text>();
+				MemberSecond = panel.Find("MemberSecond").GetComponent<Text>();
+				PlacementFirst = panel.Find("PlacementFirst").GetComponent<Text>();
+				PlacementSecond = panel.Find("PlacementSecond").GetComponent<Text>();
+
+				Value.color = ValueColor;
+				ValueAddition.color = ValueAdditionColor;
+			}
+		}
+
+		public override void Start()
+		{
+			base.Start();
+			Panel = CustomComponents.GetById("Base");
+			TeammatePickupPanel =
+				new PickupPanel(Panel.Find("TeammatePickup").GetComponent<RectTransform>());
+			LabelFirst = Panel.Find("LabelFirst").gameObject;
+			SlotLeft = Panel.Find("SlotLeft").GetComponent<RectTransform>();
+			SlotRight = Panel.Find("SlotRight").GetComponent<RectTransform>();
+			SlotMiddle = Panel.Find("SlotMiddle").GetComponent<RectTransform>();
+
+			LabelFirst.GetComponent<Text>().color = GetTintColor();
+
+			NgRaceEvents.OnCountdownStart += Initiate;
+		}
+
+		private void InitiateLayout()
+		{
+			int teamCount = Ships.Teams.Count;
+			TeamPanels = new TeamPanel[Math.Min(teamCount, 6)];
+
+			SlotMiddle.gameObject.SetActive(teamCount % 2 != 0 && teamCount <= 5);
+			SlotLeft.gameObject.SetActive(teamCount >= 2);
+			SlotRight.gameObject.SetActive(teamCount >= 2);
+			if (teamCount is 3 or 5)
+			{
+				SlotLeft.anchoredPosition += Vector2.left * SlotShiftAmount;
+				SlotRight.anchoredPosition += Vector2.right * SlotShiftAmount;
+			}
+
+			int teamPanelIndex = 0;
+			switch (teamCount)
+			{
+				case 1:
+					TeamPanels[teamPanelIndex] = new TeamPanel(SlotMiddle);
+					break;
+				case 2 or 3:
+					TeamPanels[teamPanelIndex++] = new TeamPanel(SlotRight);
+					if (teamCount == 3)
+						TeamPanels[teamPanelIndex++] = new TeamPanel(SlotMiddle);
+					TeamPanels[teamPanelIndex] = new TeamPanel(SlotLeft);
+					break;
+				case >= 4:
+					RectTransform slotLefter = Instantiate(SlotLeft, SlotLeft.parent);
+					slotLefter.anchoredPosition += Vector2.left * SlotShiftAmount * 2;
+					RectTransform slotRighter = Instantiate(SlotRight, SlotRight.parent);
+					slotRighter.anchoredPosition += Vector2.right * SlotShiftAmount * 2;
+					RectTransform slotLeftest = null;
+					RectTransform slotRightest = null;
+
+					if (teamCount >= 6)
+					{
+						slotLeftest = Instantiate(SlotLeft, SlotLeft.parent);
+						slotLeftest.anchoredPosition += Vector2.left * SlotShiftAmount * 4;
+						slotRightest = Instantiate(SlotRight, SlotRight.parent);
+						slotRightest.anchoredPosition += Vector2.right * SlotShiftAmount * 4;
+					}
+
+					if (teamCount >= 6)
+						TeamPanels[teamPanelIndex++] = new TeamPanel(slotRightest);
+					TeamPanels[teamPanelIndex++] = new TeamPanel(slotRighter);
+					TeamPanels[teamPanelIndex++] = new TeamPanel(SlotRight);
+					if (teamCount == 5)
+						TeamPanels[teamPanelIndex++] = new TeamPanel(SlotMiddle);
+					TeamPanels[teamPanelIndex++] = new TeamPanel(SlotLeft);
+					TeamPanels[teamPanelIndex++] = new TeamPanel(slotLefter);
+					if (teamCount >= 6)
+						TeamPanels[teamPanelIndex] = new TeamPanel(slotLeftest);
+
+					LabelFirst.SetActive(teamCount > 6);
+					break;
+			}
+		}
+
+		private void Initiate()
+		{
+			InitiateLayout();
+
+			for (int i = 0; i < TeamPanels.Length; i++)
+				TeamPanels[i].UpdateTeam(Ships.Teams[i], TargetShip);
+
+			StartCoroutine(SetPlacement());
+			RaceTeam.OnScoreUpdated += UpdatePanels;
+			PickupBase.OnPickupInit += ShowPickup;
+			PickupBase.OnPickupDeinit += HidePickup;
+
+			NgRaceEvents.OnCountdownStart -= Initiate;
+		}
+
+		private void UpdatePanels(RaceTeam team, float oldScore, float newScore)
+		{
+			RaceTeam[] teams = Ships.Teams.OrderByDescending(t => t.Score).ToArray();
+			int otherTeamIndex = 1;
+			if (teams.Length > 6)
+			{
+				otherTeamIndex =
+					Array.FindIndex(teams, t => t == Ships.GetTeamForShip(TargetShip)) - 2;
+				otherTeamIndex = otherTeamIndex < 1 ?
+					1 : otherTeamIndex > teams.Length - 5 ?
+						teams.Length - 5 : otherTeamIndex;
+			}
+
+			TeamPanels[0].UpdateTeam(teams[0], TargetShip);
+			for (int i = 1; i < TeamPanels.Length; i++)
+				TeamPanels[i].UpdateTeam(teams[otherTeamIndex++], TargetShip);
+		}
+
+		private bool IsTeammateShip(ShipController ship)
+		{
+			RaceTeam playerTeam = Ships.GetTeamForShip(TargetShip);
+			return ship == playerTeam.Ships[
+				playerTeam.Ships[0] == TargetShip ? 1 : 0
+			];
+		}
+
+		private void ShowPickup(PickupBase pickup, ShipController ship)
+		{
+			if (!IsTeammateShip(ship))
+				return;
+
+			TeammatePickupPanel.UpdateSprite(ship.CurrentPickupRegister.Name);
+			if (TeammatePickupPanel.CurrentTransition is not null)
+				StopCoroutine(TeammatePickupPanel.CurrentTransition);
+			TeammatePickupPanel.ShowInstant(
+				ship.CurrentPickupRegister.HudColor == Pickup.EHudColor.Offensive
+			);
+		}
+
+		private void HidePickup(PickupBase pickup, ShipController ship)
+		{
+			if (!IsTeammateShip(ship))
+				return;
+
+			if (TeammatePickupPanel.CurrentTransition is not null)
+				StopCoroutine(TeammatePickupPanel.CurrentTransition);
+			TeammatePickupPanel.CurrentTransition =
+				StartCoroutine(TeammatePickupPanel.ColorFade(false));
+		}
+
+		private IEnumerator SetPlacement()
+		{
+			while (true)
+			{
+				foreach (TeamPanel panel in TeamPanels)
+					panel.UpdatePlacement();
+
+				yield return new WaitForSeconds(Position.UpdateTime);
+			}
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			StopCoroutine(SetPlacement());
+			RaceTeam.OnScoreUpdated -= UpdatePanels;
+			PickupBase.OnPickupInit -= ShowPickup;
+			PickupBase.OnPickupDeinit -= HidePickup;
+		}
+	}
 
 	public class Awards : ScriptableHud
 	{
