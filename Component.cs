@@ -1480,6 +1480,7 @@ namespace Streamliner
 		private int _totalSections;
 		private int _halfTotalSections;
 		private EPosHudMode _previousMode;
+		private bool _canShipRespawn;
 		private bool _initiated;
 		private bool _modeChanged;
 
@@ -1573,6 +1574,7 @@ namespace Streamliner
 
 		private void Initiate()
 		{
+			_canShipRespawn = RaceManager.CurrentGamemode.CanShipsRespawn();
 			_singleNode = new ShipNode(GetTintColor(tintIndex: 2, clarity: 1));
 
 			int totalShips = Ships.Loaded.Count;
@@ -1763,7 +1765,7 @@ namespace Streamliner
 				}
 
 				_nodes[p.Id].Alpha = Ships.Loaded[p.Id].Eliminated ?
-					AlphaEliminated : 1f;
+					_canShipRespawn ? AlphaEliminated : 0f : 1f;
 				/*
 				 * When SetSiblingIndex is used for a child in the middle,
 				 * children after the old index to and including the new index
