@@ -1792,9 +1792,10 @@ namespace Streamliner
 				 */
 				_nodes[p.Id].SiblingIndex = siblingIndexUpdateFromTop ?
 					siblingIndex++ : --siblingIndex;
-				_nodes[p.Id].SetPosition(
-					ConvertDistanceRate((float) p.Value / endDistance)
-				);
+
+				_nodes[p.Id].SetPosition(ConvertDistanceRate(
+					(float) p.Value / endDistance
+				));
 			}
 		}
 
