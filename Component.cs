@@ -1478,6 +1478,7 @@ namespace Streamliner
 	{
 		private const float AlphaEliminated = 0.5f;
 		private int _totalSections;
+		private int _halfTotalSections;
 		private EPosHudMode _previousMode;
 		private bool _initiated;
 		private bool _modeChanged;
@@ -1619,6 +1620,7 @@ namespace Streamliner
 			_nodes[TargetShip.ShipId].SiblingIndex = totalShips;
 			_singleNode.SiblingIndex = totalShips - 1;
 			_totalSections = GetTotalSectionCount();
+			_halfTotalSections = _totalSections / 2;
 
 			StartCoroutine(UpdateSectionsTraversed());
 
@@ -1692,26 +1694,19 @@ namespace Streamliner
 
 		private void SetNodes()
 		{
-			List<RawValuePair> orderedList =
-				_racerRelativeSections.OrderByDescending(p => p.Value).ToList();
-			int endDistance = Math.Max(
-				orderedList[0].Value, // >=0
-				Math.Abs(orderedList[orderedList.Count - 1].Value) // <= 0
-			);
-
 			switch (Hud.PositionTrackerHudMode)
 			{
 				case EPosHudMode.Multiple:
-					SetMultipleNodes(orderedList, endDistance);
+					SetMultipleNodes();
 					break;
 				case EPosHudMode.Single:
 				default:
-					SetSingleNode(endDistance);
+					SetSingleNode();
 					break;
 			}
 	}
 
-		private void SetSingleNode(int endDistance)
+		private void SetSingleNode()
 		{
 			_singleNode.Id =
 				Ships.FindShipInPlace(TargetShip.CurrentPlace == 1 ? 2 : 1).ShipId;
@@ -1719,12 +1714,28 @@ namespace Streamliner
 				return;
 
 			_singleNode.SetPosition(ConvertDistanceRate(
-				(float) _racerRelativeSections[_singleNode.Id].Value / endDistance
+				(float) _racerRelativeSections[_singleNode.Id].Value / _halfTotalSections
 			));
 		}
 
-		private void SetMultipleNodes(List<RawValuePair> orderedList, int endDistance)
+		private void SetMultipleNodes()
 		{
+			List<RawValuePair> orderedList =
+				_racerRelativeSections.OrderByDescending(p => p.Value).ToList();
+			int indexLastShipAlive = orderedList.Count - 1;
+
+			while (Ships.Loaded[orderedList[indexLastShipAlive].Id].Eliminated)
+				if (--indexLastShipAlive < 0)
+				{
+					indexLastShipAlive = 0;
+					break;
+				}
+
+			int endDistance = Math.Max(
+				orderedList[0].Value, // >=0
+				Math.Abs(orderedList[indexLastShipAlive].Value) // <= 0
+			);
+
 			int siblingIndex = 0;
 			bool siblingIndexUpdateFromTop = true;
 			foreach (RawValuePair p in orderedList)
