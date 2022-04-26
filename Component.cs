@@ -1484,6 +1484,9 @@ namespace Streamliner
 		private bool _initiated;
 		private bool _modeChanged;
 
+		// for game modes that don't count laps.
+		private bool _manuallyCountLaps;
+
 		internal RectTransform Panel;
 		private ShipNode _singleNode;
 		private List<ShipNode> _nodes;
@@ -1501,6 +1504,11 @@ namespace Streamliner
 			private readonly Image _nodeImage;
 			private float _currentPositionRate;
 			private Vector2 _position;
+
+			// for game modes that don't count laps.
+			internal int ManuallyCountedCurrentLap;
+			internal bool ManuallySetLapValidated;
+			internal int? ManuallySetMiddleSection;
 
 			public int SiblingIndex
 			{
@@ -1575,6 +1583,12 @@ namespace Streamliner
 		private void Initiate()
 		{
 			_canShipRespawn = RaceManager.CurrentGamemode.CanShipsRespawn();
+			_manuallyCountLaps = RaceManager.CurrentGamemode.Name switch
+			{
+				"Eliminator" => true,
+				_ => false
+			};
+
 			_singleNode = new ShipNode(GetTintColor(tintIndex: 2, clarity: 1));
 
 			int totalShips = Ships.Loaded.Count;
@@ -1628,6 +1642,19 @@ namespace Streamliner
 
 			_initiated = true;
 			NgRaceEvents.OnCountdownStart -= Initiate;
+
+			if (_manuallyCountLaps)
+			{
+				/*
+				 * When passing the validation gate,
+				 * MidLineReset and then MidLine is triggered.
+				 * When trying to pass it in the reverse direction,
+				 * both are called in the reversed order as well.
+				 */
+				NgRaceEvents.OnStartLineTriggered += LimitNodeToFirstHalf;
+				NgRaceEvents.OnMidLineResetTriggered += ResetValidationState;
+				NgRaceEvents.OnMidLineTriggered += ReleaseNodeBeyondFirstHalf;
+			}
 		}
 
 		public override void Update()
@@ -1680,7 +1707,21 @@ namespace Streamliner
 						continue;
 
 					_racerSectionsTraversed[id] =
-						GetPassingSectionIndex(ship, ship.CurrentLap, _totalSections);
+						GetPassingSectionIndex(
+							ship,
+							_manuallyCountLaps ?
+								_nodes[id].ManuallyCountedCurrentLap : ship.CurrentLap,
+							_totalSections
+						);
+					if (
+						_manuallyCountLaps &&
+						_nodes[id].ManuallySetMiddleSection is not null &&
+						ship.CurrentSection.index >= _nodes[id].ManuallySetMiddleSection &&
+						!_nodes[id].ManuallySetLapValidated
+					)
+					{
+						_racerSectionsTraversed[id] -= _totalSections;
+					}
 				}
 
 				int playerSection = _racerSectionsTraversed[TargetShip.ShipId];
@@ -1692,6 +1733,29 @@ namespace Streamliner
 
 				yield return new WaitForSeconds(Position.UpdateTime);
 			}
+		}
+
+		private void LimitNodeToFirstHalf(ShipController ship)
+		{
+			if (
+				!_nodes[ship.ShipId].ManuallySetLapValidated &&
+				_nodes[ship.ShipId].ManuallyCountedCurrentLap > 0
+			)
+				return;
+
+			_nodes[ship.ShipId].ManuallyCountedCurrentLap++;
+			_nodes[ship.ShipId].ManuallySetLapValidated = false;
+		}
+
+		private void ResetValidationState(ShipController ship)
+		{
+			_nodes[ship.ShipId].ManuallySetLapValidated = false;
+		}
+
+		private void ReleaseNodeBeyondFirstHalf(ShipController ship)
+		{
+			_nodes[ship.ShipId].ManuallySetLapValidated = true;
+			_nodes[ship.ShipId].ManuallySetMiddleSection = ship.CurrentSection.index;
 		}
 
 		private void SetNodes()
@@ -1712,8 +1776,6 @@ namespace Streamliner
 		{
 			_singleNode.Id =
 				Ships.FindShipInPlace(TargetShip.CurrentPlace == 1 ? 2 : 1).ShipId;
-			if (!Ships.Loaded[_singleNode.Id])
-				return;
 
 			_singleNode.SetPosition(ConvertDistanceRate(
 				(float) _racerRelativeSections[_singleNode.Id].Value / _halfTotalSections
@@ -1806,6 +1868,12 @@ namespace Streamliner
 		{
 			base.OnDestroy();
 			StopCoroutine(UpdateSectionsTraversed());
+			if (_manuallyCountLaps)
+			{
+				NgRaceEvents.OnStartLineTriggered -= LimitNodeToFirstHalf;
+				NgRaceEvents.OnMidLineResetTriggered -= ResetValidationState;
+				NgRaceEvents.OnMidLineTriggered -= ReleaseNodeBeyondFirstHalf;
+			}
 		}
 	}
 
