@@ -2063,6 +2063,10 @@ namespace Streamliner
 
 		private void AddMessage(string message, ShipController ship, Color color)
 		{
+			// this will ignore messages that have an other ship as "a receiver"
+			if (ship != TargetShip)
+				return;
+
 			color =
 				color == Color.green ?
 				TextColor["green"] :
@@ -2136,7 +2140,9 @@ namespace Streamliner
 				ship.LastAttacker is not null ?
 					ship.LastAttacker.ShipName + " eliminated " + ship.ShipName :
 					ship.ShipName + " eliminated";
-			AddMessage(message, ship, Color.red);
+			// gonna show this message to the player ship,
+			// so change this "receiver" parameter value to TargetShip.
+			AddMessage(message, TargetShip, Color.red);
 		}
 
 		private void InsertMessageLine(string message, Color color)
