@@ -1724,18 +1724,27 @@ namespace Streamliner
 		{
 			List<RawValuePair> orderedList =
 				_racerRelativeSections.OrderByDescending(p => p.Value).ToList();
+			int indexFirstShipAlive = 0;
 			int indexLastShipAlive = orderedList.Count - 1;
 
+			while (Ships.Loaded[orderedList[indexFirstShipAlive].Id].Eliminated)
+				if (++indexFirstShipAlive >= orderedList.Count)
+				{
+					indexFirstShipAlive = -1;
+					break;
+				}
 			while (Ships.Loaded[orderedList[indexLastShipAlive].Id].Eliminated)
 				if (--indexLastShipAlive < 0)
 				{
-					indexLastShipAlive = 0;
+					indexLastShipAlive = -1;
 					break;
 				}
 
 			int endDistance = Math.Max(
-				orderedList[0].Value, // >=0
-				Math.Abs(orderedList[indexLastShipAlive].Value) // <= 0
+				indexFirstShipAlive >= 0 ?
+					orderedList[indexFirstShipAlive].Value : 1, // >=0
+				indexLastShipAlive >= 0 ?
+					Math.Abs(orderedList[indexLastShipAlive].Value) : 1 // <= 0
 			);
 
 			int siblingIndex = 0;
