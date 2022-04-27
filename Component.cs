@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -388,7 +389,7 @@ namespace Streamliner
 			// recharged amount display
 			if (_rechargeDisplayTimer > 0f)
 			{
-				if (_rechargeDisplayTimer == _rechargeDisplayTimerMax)
+				if (_rechargeDisplayTimer == RechargeDisplayTimerMax)
 					deltaColor = _deltaFinalColor;
 
 				_rechargeDisplayTimer -= Time.deltaTime;
@@ -407,7 +408,7 @@ namespace Streamliner
 					OptionLowEnergy == 1 && !Audio.WarnOfCriticalEnergy ?
 						_damageColor : _damageLowColor;
 
-				if (_damageAnimationTimer == _fastTransitionTimerMax)
+				if (_damageAnimationTimer == FastTransitionTimerMax)
 					color = _currentDamageColor;
 				color = Color.Lerp(
 					color, _currentColor, Time.deltaTime * FastTransitionSpeed);
@@ -2391,12 +2392,6 @@ namespace Streamliner
 
 			while (_timeFadeOutTimeRemaining > 0f)
 			{
-				if (_timeDisplayTime == DisplayTimeMax)
-				{
-					_timeGroup.alpha = 1f;
-					break;
-				}
-
 				_timeGroup.alpha = Mathf.Lerp(_timeGroup.alpha, 0f, Time.deltaTime * FadeOutSpeed);
 
 				_timeFadeOutTimeRemaining -= Time.deltaTime;
