@@ -1576,7 +1576,9 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
-			ShipNode.Template = Panel.Find("Square").GetComponent<RectTransform>();
+			Panel.Find("BackgroundFill").GetComponent<Image>().color =
+				GetTintColor(TextAlpha.ThreeEighths);
+			ShipNode.Template = CustomComponents.GetById("Node");
 			ShipNode.MaxSize = Panel.sizeDelta.x - ShipNode.Template.sizeDelta.x;
 
 			NgRaceEvents.OnCountdownStart += Initiate;
