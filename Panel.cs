@@ -726,6 +726,17 @@ namespace Streamliner
 
 		public bool IconEnabled => _iconImage.enabled;
 
+		public void ShowInstant(bool offensive = false)
+		{
+			_panelGroup.alpha = 1f;
+			_bracketsImage.enabled = true;
+			_iconImage.enabled = true;
+			_bracketsImage.color = offensive ?
+				_offensiveColor : _defensiveColor;
+			_iconImage.color = offensive ?
+				_offensiveColor : _defensiveColor;
+		}
+
 		public void ShowWarning()
 		{
 			_panelGroup.alpha = 1f;
