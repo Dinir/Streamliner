@@ -524,6 +524,7 @@ namespace Streamliner
 		{
 			if (ship != TargetShip)
 				return;
+			// TODO: use ShipController's CurrentLap to access just finished lap as a past lap properly
 			ShiftSlotData();
 			_currentLap++;
 		}
