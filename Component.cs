@@ -2625,15 +2625,16 @@ namespace Streamliner
 	public class TeamScoreboard : ScriptableHud
 	{
 		internal RectTransform Panel;
-		internal PickupPanel TeammatePickupPanel;
-		internal GameObject LabelFirst;
-		internal RectTransform SlotLeft;
-		internal RectTransform SlotRight;
-		internal RectTransform SlotMiddle;
-		internal TeamPanel[] TeamPanels;
+		private PickupPanel _teammatePickupPanel;
+		private GameObject _labelFirst;
+		private RectTransform _slotLeft;
+		private RectTransform _slotRight;
+		private RectTransform _slotMiddle;
+		private TeamPanel[] _teamPanels;
+
 		private const float SlotShiftAmount = 105f;
 
-		internal class TeamPanel
+		private class TeamPanel
 		{
 			private static readonly Color ValueColor = GetTintColor();
 			private static readonly Color ValueAdditionColor = GetTintColor(TextAlpha.Half);
@@ -2649,50 +2650,48 @@ namespace Streamliner
 			private RaceTeam _team;
 			private bool _isPlayerTeam;
 
-			internal readonly Image PanelImage;
-			internal readonly Text Value;
-			internal readonly Text ValueAddition;
-			internal readonly Text MemberFirst;
-			internal readonly Text MemberSecond;
-			internal readonly Text PlacementFirst;
-			internal readonly Text PlacementSecond;
+			private readonly Image _panelImage;
+			private readonly Text _value;
+			private readonly Text _valueAddition;
+			private readonly Text _memberFirst;
+			private readonly Text _memberSecond;
+			private readonly Text _placementFirst;
+			private readonly Text _placementSecond;
 
-			internal int? Id => _team?.Id;
-			internal bool IsPlayerTeam
+			private bool IsPlayerTeam
 			{
-				get => _isPlayerTeam;
 				set
 				{
 					_isPlayerTeam = value;
 					if (value)
 					{
-						PanelImage.color = PlayerPanelColor;
-						MemberFirst.color = MemberColor;
-						MemberSecond.color = MemberColor;
-						PlacementFirst.color = PlacementColor;
-						PlacementSecond.color = PlacementColor;
+						_panelImage.color = PlayerPanelColor;
+						_memberFirst.color = MemberColor;
+						_memberSecond.color = MemberColor;
+						_placementFirst.color = PlacementColor;
+						_placementSecond.color = PlacementColor;
 					}
 					else
 					{
-						PanelImage.color = PanelColor;
-						MemberFirst.color = PlacementColor;
-						MemberSecond.color = PlacementColor;
-						PlacementFirst.color = Color.clear;
-						PlacementSecond.color = Color.clear;
+						_panelImage.color = PanelColor;
+						_memberFirst.color = PlacementColor;
+						_memberSecond.color = PlacementColor;
+						_placementFirst.color = Color.clear;
+						_placementSecond.color = Color.clear;
 					}
 
 				}
 			}
-			internal float? Score
+
+			private float? Score
 			{
-				get => _team?.Score;
-				set => Value.text =
+				set => _value.text =
 					(Math.Round(value * 100f ?? 0) / 100.0).ToString(CultureInfo.InvariantCulture);
 			}
-			internal float? ScoreAddition
+
+			private float? ScoreAddition
 			{
-				get => _team?.PlaceScore;
-				set => ValueAddition.text =
+				set => _valueAddition.text =
 					"+" + Math.Round(value * 100f ?? 0) / 100.0;
 			}
 
@@ -2707,8 +2706,8 @@ namespace Streamliner
 					_team = team;
 					Score = team.Score;
 					ScoreAddition = team.PlaceScore;
-					MemberFirst.text = team.Ships[0].ShipName;
-					MemberSecond.text = team.Ships[1].ShipName;
+					_memberFirst.text = team.Ships[0].ShipName;
+					_memberSecond.text = team.Ships[1].ShipName;
 					/*
 					 * Default hud just clears the text instead when changing the panels,
 					 * leaving the text empty for few frames after they are changed.
@@ -2724,25 +2723,25 @@ namespace Streamliner
 				if (!_isPlayerTeam)
 					return;
 
-				PlacementFirst.text =
+				_placementFirst.text =
 					IntStrDb.GetNoSingleCharNumber(_team.Ships[0].CurrentPlace);
-				PlacementSecond.text =
+				_placementSecond.text =
 					IntStrDb.GetNoSingleCharNumber(_team.Ships[1].CurrentPlace);
 				ScoreAddition = _team.PlaceScore;
 			}
 
 			public TeamPanel(RectTransform panel)
 			{
-				PanelImage = panel.GetComponent<Image>();
-				Value = panel.Find("Value").GetComponent<Text>();
-				ValueAddition = panel.Find("ValueAddition").GetComponent<Text>();
-				MemberFirst = panel.Find("MemberFirst").GetComponent<Text>();
-				MemberSecond = panel.Find("MemberSecond").GetComponent<Text>();
-				PlacementFirst = panel.Find("PlacementFirst").GetComponent<Text>();
-				PlacementSecond = panel.Find("PlacementSecond").GetComponent<Text>();
+				_panelImage = panel.GetComponent<Image>();
+				_value = panel.Find("Value").GetComponent<Text>();
+				_valueAddition = panel.Find("ValueAddition").GetComponent<Text>();
+				_memberFirst = panel.Find("MemberFirst").GetComponent<Text>();
+				_memberSecond = panel.Find("MemberSecond").GetComponent<Text>();
+				_placementFirst = panel.Find("PlacementFirst").GetComponent<Text>();
+				_placementSecond = panel.Find("PlacementSecond").GetComponent<Text>();
 
-				Value.color = ValueColor;
-				ValueAddition.color = ValueAdditionColor;
+				_value.color = ValueColor;
+				_valueAddition.color = ValueAdditionColor;
 			}
 		}
 
@@ -2750,14 +2749,14 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
-			TeammatePickupPanel =
+			_teammatePickupPanel =
 				new PickupPanel(Panel.Find("TeammatePickup").GetComponent<RectTransform>());
-			LabelFirst = Panel.Find("LabelFirst").gameObject;
-			SlotLeft = Panel.Find("SlotLeft").GetComponent<RectTransform>();
-			SlotRight = Panel.Find("SlotRight").GetComponent<RectTransform>();
-			SlotMiddle = Panel.Find("SlotMiddle").GetComponent<RectTransform>();
+			_labelFirst = Panel.Find("LabelFirst").gameObject;
+			_slotLeft = Panel.Find("SlotLeft").GetComponent<RectTransform>();
+			_slotRight = Panel.Find("SlotRight").GetComponent<RectTransform>();
+			_slotMiddle = Panel.Find("SlotMiddle").GetComponent<RectTransform>();
 
-			LabelFirst.GetComponent<Text>().color = GetTintColor();
+			_labelFirst.GetComponent<Text>().color = GetTintColor();
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
@@ -2765,57 +2764,57 @@ namespace Streamliner
 		private void InitiateLayout()
 		{
 			int teamCount = Ships.Teams.Count;
-			TeamPanels = new TeamPanel[Math.Min(teamCount, 6)];
+			_teamPanels = new TeamPanel[Math.Min(teamCount, 6)];
 
-			SlotMiddle.gameObject.SetActive(teamCount % 2 != 0 && teamCount <= 5);
-			SlotLeft.gameObject.SetActive(teamCount >= 2);
-			SlotRight.gameObject.SetActive(teamCount >= 2);
+			_slotMiddle.gameObject.SetActive(teamCount % 2 != 0 && teamCount <= 5);
+			_slotLeft.gameObject.SetActive(teamCount >= 2);
+			_slotRight.gameObject.SetActive(teamCount >= 2);
 			if (teamCount is 3 or 5)
 			{
-				SlotLeft.anchoredPosition += Vector2.left * SlotShiftAmount;
-				SlotRight.anchoredPosition += Vector2.right * SlotShiftAmount;
+				_slotLeft.anchoredPosition += Vector2.left * SlotShiftAmount;
+				_slotRight.anchoredPosition += Vector2.right * SlotShiftAmount;
 			}
 
 			int teamPanelIndex = 0;
 			switch (teamCount)
 			{
 				case 1:
-					TeamPanels[teamPanelIndex] = new TeamPanel(SlotMiddle);
+					_teamPanels[teamPanelIndex] = new TeamPanel(_slotMiddle);
 					break;
 				case 2 or 3:
-					TeamPanels[teamPanelIndex++] = new TeamPanel(SlotRight);
+					_teamPanels[teamPanelIndex++] = new TeamPanel(_slotRight);
 					if (teamCount == 3)
-						TeamPanels[teamPanelIndex++] = new TeamPanel(SlotMiddle);
-					TeamPanels[teamPanelIndex] = new TeamPanel(SlotLeft);
+						_teamPanels[teamPanelIndex++] = new TeamPanel(_slotMiddle);
+					_teamPanels[teamPanelIndex] = new TeamPanel(_slotLeft);
 					break;
 				case >= 4:
-					RectTransform slotLefter = Instantiate(SlotLeft, SlotLeft.parent);
+					RectTransform slotLefter = Instantiate(_slotLeft, _slotLeft.parent);
 					slotLefter.anchoredPosition += Vector2.left * SlotShiftAmount * 2;
-					RectTransform slotRighter = Instantiate(SlotRight, SlotRight.parent);
+					RectTransform slotRighter = Instantiate(_slotRight, _slotRight.parent);
 					slotRighter.anchoredPosition += Vector2.right * SlotShiftAmount * 2;
 					RectTransform slotLeftest = null;
 					RectTransform slotRightest = null;
 
 					if (teamCount >= 6)
 					{
-						slotLeftest = Instantiate(SlotLeft, SlotLeft.parent);
+						slotLeftest = Instantiate(_slotLeft, _slotLeft.parent);
 						slotLeftest.anchoredPosition += Vector2.left * SlotShiftAmount * 4;
-						slotRightest = Instantiate(SlotRight, SlotRight.parent);
+						slotRightest = Instantiate(_slotRight, _slotRight.parent);
 						slotRightest.anchoredPosition += Vector2.right * SlotShiftAmount * 4;
 					}
 
 					if (teamCount >= 6)
-						TeamPanels[teamPanelIndex++] = new TeamPanel(slotRightest);
-					TeamPanels[teamPanelIndex++] = new TeamPanel(slotRighter);
-					TeamPanels[teamPanelIndex++] = new TeamPanel(SlotRight);
+						_teamPanels[teamPanelIndex++] = new TeamPanel(slotRightest);
+					_teamPanels[teamPanelIndex++] = new TeamPanel(slotRighter);
+					_teamPanels[teamPanelIndex++] = new TeamPanel(_slotRight);
 					if (teamCount == 5)
-						TeamPanels[teamPanelIndex++] = new TeamPanel(SlotMiddle);
-					TeamPanels[teamPanelIndex++] = new TeamPanel(SlotLeft);
-					TeamPanels[teamPanelIndex++] = new TeamPanel(slotLefter);
+						_teamPanels[teamPanelIndex++] = new TeamPanel(_slotMiddle);
+					_teamPanels[teamPanelIndex++] = new TeamPanel(_slotLeft);
+					_teamPanels[teamPanelIndex++] = new TeamPanel(slotLefter);
 					if (teamCount >= 6)
-						TeamPanels[teamPanelIndex] = new TeamPanel(slotLeftest);
+						_teamPanels[teamPanelIndex] = new TeamPanel(slotLeftest);
 
-					LabelFirst.SetActive(teamCount > 6);
+					_labelFirst.SetActive(teamCount > 6);
 					break;
 			}
 		}
@@ -2824,8 +2823,8 @@ namespace Streamliner
 		{
 			InitiateLayout();
 
-			for (int i = 0; i < TeamPanels.Length; i++)
-				TeamPanels[i].UpdateTeam(Ships.Teams[i], TargetShip);
+			for (int i = 0; i < _teamPanels.Length; i++)
+				_teamPanels[i].UpdateTeam(Ships.Teams[i], TargetShip);
 
 			StartCoroutine(SetPlacement());
 			RaceTeam.OnScoreUpdated += UpdatePanels;
@@ -2848,9 +2847,9 @@ namespace Streamliner
 						teams.Length - 5 : otherTeamIndex;
 			}
 
-			TeamPanels[0].UpdateTeam(teams[0], TargetShip);
-			for (int i = 1; i < TeamPanels.Length; i++)
-				TeamPanels[i].UpdateTeam(teams[otherTeamIndex++], TargetShip);
+			_teamPanels[0].UpdateTeam(teams[0], TargetShip);
+			for (int i = 1; i < _teamPanels.Length; i++)
+				_teamPanels[i].UpdateTeam(teams[otherTeamIndex++], TargetShip);
 		}
 
 		private bool IsTeammateShip(ShipController ship)
@@ -2866,10 +2865,10 @@ namespace Streamliner
 			if (!IsTeammateShip(ship))
 				return;
 
-			TeammatePickupPanel.UpdateSprite(ship.CurrentPickupRegister.Name);
-			if (TeammatePickupPanel.CurrentTransition is not null)
-				StopCoroutine(TeammatePickupPanel.CurrentTransition);
-			TeammatePickupPanel.ShowInstant(
+			_teammatePickupPanel.UpdateSprite(ship.CurrentPickupRegister.Name);
+			if (_teammatePickupPanel.CurrentTransition is not null)
+				StopCoroutine(_teammatePickupPanel.CurrentTransition);
+			_teammatePickupPanel.ShowInstant(
 				ship.CurrentPickupRegister.HudColor == Pickup.EHudColor.Offensive
 			);
 		}
@@ -2879,17 +2878,17 @@ namespace Streamliner
 			if (!IsTeammateShip(ship))
 				return;
 
-			if (TeammatePickupPanel.CurrentTransition is not null)
-				StopCoroutine(TeammatePickupPanel.CurrentTransition);
-			TeammatePickupPanel.CurrentTransition =
-				StartCoroutine(TeammatePickupPanel.ColorFade(false));
+			if (_teammatePickupPanel.CurrentTransition is not null)
+				StopCoroutine(_teammatePickupPanel.CurrentTransition);
+			_teammatePickupPanel.CurrentTransition =
+				StartCoroutine(_teammatePickupPanel.ColorFade(false));
 		}
 
 		private IEnumerator SetPlacement()
 		{
 			while (true)
 			{
-				foreach (TeamPanel panel in TeamPanels)
+				foreach (TeamPanel panel in _teamPanels)
 					panel.UpdatePlacement();
 
 				yield return new WaitForSeconds(Position.UpdateTime);
