@@ -2627,12 +2627,16 @@ namespace Streamliner
 		internal RectTransform Panel;
 		private PickupPanel _teammatePickupPanel;
 		private GameObject _labelFirst;
+		private Text _labelSecond;
 		private RectTransform _slotLeft;
 		private RectTransform _slotRight;
 		private RectTransform _slotMiddle;
 		private TeamPanel[] _teamPanels;
 
 		private const float SlotShiftAmount = 105f;
+		private static readonly string[] SecondLabelString = {
+			"second", "third", "fourth"
+		};
 
 		private class TeamPanel
 		{
@@ -2752,11 +2756,13 @@ namespace Streamliner
 			_teammatePickupPanel =
 				new PickupPanel(Panel.Find("TeammatePickup").GetComponent<RectTransform>());
 			_labelFirst = Panel.Find("LabelFirst").gameObject;
+			_labelSecond = Panel.Find("LabelSecond").GetComponent<Text>();
 			_slotLeft = Panel.Find("SlotLeft").GetComponent<RectTransform>();
 			_slotRight = Panel.Find("SlotRight").GetComponent<RectTransform>();
 			_slotMiddle = Panel.Find("SlotMiddle").GetComponent<RectTransform>();
 
 			_labelFirst.GetComponent<Text>().color = GetTintColor();
+			_labelSecond.GetComponent<Text>().color = GetTintColor();
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
@@ -2815,6 +2821,7 @@ namespace Streamliner
 						_teamPanels[teamPanelIndex] = new TeamPanel(slotLeftest);
 
 					_labelFirst.SetActive(teamCount > 6);
+					_labelSecond.gameObject.SetActive(teamCount > 6);
 					break;
 			}
 		}
@@ -2846,6 +2853,8 @@ namespace Streamliner
 					1 : otherTeamIndex > teams.Length - 5 ?
 						teams.Length - 5 : otherTeamIndex;
 			}
+
+			_labelSecond.text = SecondLabelString[otherTeamIndex - 1];
 
 			_teamPanels[0].UpdateTeam(teams[0], TargetShip);
 			for (int i = 1; i < _teamPanels.Length; i++)
