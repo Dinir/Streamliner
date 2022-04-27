@@ -352,6 +352,7 @@ namespace Streamliner
 
 		public void Fill(float amount)
 		{
+			amount = amount < 0f ? 0f : amount > 1f ? 1f : amount;
 			CurrentSize.x = amount * MaxSize.x;
 			// This is only useful because the bar border is
 			// a 45deg slanted straight line.
@@ -390,6 +391,7 @@ namespace Streamliner
 
 		public void FillAccel(float amount)
 		{
+			amount = amount < 0f ? 0f : amount > 1f ? 1f : amount;
 			CurrentAccelSize.x = amount * MaxSize.x;
 			CurrentAccelSize.y = CurrentAccelSize.x >= MaxSize.y ?
 				MaxSize.y : CurrentAccelSize.x;
@@ -462,6 +464,7 @@ namespace Streamliner
 
 		public void FillBoth(float amount)
 		{
+			amount = amount < 0f ? 0f : amount > 1f ? 1f : amount;
 			CurrentSize.x = amount * MaxSize.x;
 			Gauge.sizeDelta = CurrentSize;
 			RightGauge.sizeDelta = CurrentSize;
@@ -571,6 +574,7 @@ namespace Streamliner
 
 		public void FillSecondGauges(float amount)
 		{
+			amount = amount < 0f ? 0f : amount > 1f ? 1f : amount;
 			CurrentSecondSize.x = amount * MaxSize.x;
 			SecondGauge.sizeDelta = CurrentSecondSize;
 			SecondRightGauge.sizeDelta = CurrentSecondSize;
@@ -578,6 +582,7 @@ namespace Streamliner
 
 		public void FillSmallGauges(float amount)
 		{
+			amount = amount < 0f ? 0f : amount > 1f ? 1f : amount;
 			CurrentSmallSize.x = amount * SmallMaxSize.x;
 			CurrentSmallSize.y = CurrentSmallSize.x >= SmallMaxSize.y ?
 				SmallMaxSize.y : CurrentSmallSize.x;
