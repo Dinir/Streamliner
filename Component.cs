@@ -2046,6 +2046,7 @@ namespace Streamliner
 
 		private bool _facingBackwardExpected;
 		private bool _noNewLapRecord;
+		private bool _usingThirdLine;
 
 		public override void Start()
 		{
@@ -2059,6 +2060,11 @@ namespace Streamliner
 			_noNewLapRecord = _gamemodeName switch
 			{
 				"Speed Lap" => false,
+				_ => true
+			};
+			_usingThirdLine = _gamemodeName switch
+			{
+				"Team Race" => false,
 				_ => true
 			};
 
@@ -2143,6 +2149,8 @@ namespace Streamliner
 
 				_lines.Add(new Line(line));
 			}
+
+			_lines[2].Value.gameObject.SetActive(_usingThirdLine);
 		}
 
 		private void AddMessage(string message, ShipController ship, Color color)
