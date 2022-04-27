@@ -2621,7 +2621,7 @@ namespace Streamliner
 			private static readonly Color MemberColor =
 				GetTintColor(TextAlpha.ThreeEighths);
 			private static readonly Color PlacementColor =
-				GetTintColor(clarity: 1);
+				GetTintColor(clarity: 2);
 			private static readonly Color PanelColor =
 				GetPanelColor();
 			private static readonly Color PlayerPanelColor =
