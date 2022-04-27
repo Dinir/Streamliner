@@ -1466,13 +1466,24 @@ namespace Streamliner
 				Value = { text = IntStrDb.GetNoSingleCharNumber(0) },
 				MaxValue = { text = IntStrDb.GetNoSingleCharNumber(Race.MaxLaps) }
 			};
+
+			NgRaceEvents.OnShipLapUpdate += UpdateLap;
 		}
 
-		public override void Update()
+		public void UpdateLap(ShipController ship)
 		{
+			if (ship != TargetShip)
+				return;
+
 			base.Update();
 			Panel.Value.text = IntStrDb.GetNoSingleCharNumber(TargetShip.CurrentLap);
 			Panel.Fill((float) TargetShip.CurrentLap / Race.MaxLaps);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			NgRaceEvents.OnShipLapUpdate -= UpdateLap;
 		}
 	}
 
