@@ -2083,7 +2083,7 @@ namespace Streamliner
 				_ => true
 			};
 
-			NgRaceEvents.OnCountdownStart += Initiate;
+			Initiate();
 
 			/*
 			 * `OnMidLineTriggered` happens when any ship hits the checkpoint laser,
@@ -2142,15 +2142,6 @@ namespace Streamliner
 				_lineTemplate.parent.GetComponent<RectTransform>().anchoredPosition +=
 					Vector2.down * LapResultLineHeight;
 
-			InitiateLines();
-			_lineTemplate.gameObject.SetActive(false);
-
-			_initiated = true;
-			NgRaceEvents.OnCountdownStart -= Initiate;
-		}
-
-		private void InitiateLines()
-		{
 			float lineHeight = _lineTemplate.sizeDelta.y * _lineTemplate.localScale.y;
 			for (int i = 0; i < LineMax; i++)
 			{
@@ -2166,6 +2157,9 @@ namespace Streamliner
 			}
 
 			_lines[2].Value.gameObject.SetActive(_usingThirdLine);
+			_lineTemplate.gameObject.SetActive(false);
+
+			_initiated = true;
 		}
 
 		private void AddMessage(string message, ShipController ship, Color color)
