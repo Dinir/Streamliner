@@ -2692,16 +2692,16 @@ namespace Streamliner
 				}
 			}
 
-			private float? Score
+			private float Score
 			{
 				set => _value.text =
-					(Math.Round(value * 100f ?? 0) / 100.0).ToString(CultureInfo.InvariantCulture);
+					(Math.Round(value * 100f) / 100.0).ToString("F2", CultureInfo.InvariantCulture);
 			}
 
-			private float? ScoreAddition
+			private float ScoreAddition
 			{
 				set => _valueAddition.text =
-					"+" + Math.Round(value * 100f ?? 0) / 100.0;
+					"+" + (Math.Round(value * 100f) / 100.0).ToString("F2", CultureInfo.InvariantCulture);
 			}
 
 			internal void UpdateTeam(RaceTeam team, ShipController playerShip)
