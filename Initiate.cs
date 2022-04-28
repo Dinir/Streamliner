@@ -10,7 +10,8 @@ namespace Streamliner
 {
 	public class HudRegister : CodeMod
 	{
-		private const string ID = "Streamliner";
+		// This name appears at "config - game - hud - style - hud style".
+		private const string ID = "Streamliner 1.0.0";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
@@ -45,6 +46,7 @@ namespace Streamliner
 			ModOptions.OnLoadSettings += OnLoadSettings;
 			ModOptions.OnSaveSettings += OnSaveSettings;
 
+			// This name appears at "config - game - mods - mod select - mod".
 			ModOptions.RegisterMod("Streamliner", GenerateModUi, ModUiToCode);
 		}
 
