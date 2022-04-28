@@ -2646,6 +2646,8 @@ namespace Streamliner
 				GetTintColor(TextAlpha.ThreeEighths);
 			private static readonly Color PlacementColor =
 				GetTintColor(clarity: 2);
+			private static readonly Color PlayerHighlightColor =
+				GetTintColor(clarity: 1);
 			private static readonly Color PanelColor =
 				GetPanelColor();
 			private static readonly Color PlayerPanelColor =
@@ -2661,6 +2663,7 @@ namespace Streamliner
 			private readonly Text _memberSecond;
 			private readonly Text _placementFirst;
 			private readonly Text _placementSecond;
+			private readonly Image _playerHighlight;
 
 			private bool IsPlayerTeam
 			{
@@ -2672,16 +2675,18 @@ namespace Streamliner
 						_panelImage.color = PlayerPanelColor;
 						_memberFirst.color = MemberColor;
 						_memberSecond.color = MemberColor;
-						_placementFirst.color = PlacementColor;
-						_placementSecond.color = PlacementColor;
+						_placementFirst.enabled = true;
+						_placementSecond.enabled = true;
+						_playerHighlight.enabled = true;
 					}
 					else
 					{
 						_panelImage.color = PanelColor;
 						_memberFirst.color = PlacementColor;
 						_memberSecond.color = PlacementColor;
-						_placementFirst.color = Color.clear;
-						_placementSecond.color = Color.clear;
+						_placementFirst.enabled = false;
+						_placementSecond.enabled = false;
+						_playerHighlight.enabled = false;
 					}
 
 				}
@@ -2743,9 +2748,13 @@ namespace Streamliner
 				_memberSecond = panel.Find("MemberSecond").GetComponent<Text>();
 				_placementFirst = panel.Find("PlacementFirst").GetComponent<Text>();
 				_placementSecond = panel.Find("PlacementSecond").GetComponent<Text>();
+				_playerHighlight = panel.Find("Highlight").GetComponent<Image>();
 
 				_value.color = ValueColor;
 				_valueAddition.color = ValueAdditionColor;
+				_placementFirst.color = PlacementColor;
+				_placementSecond.color = PlacementColor;
+				_playerHighlight.color = PlayerHighlightColor;
 			}
 		}
 
