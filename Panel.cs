@@ -15,9 +15,131 @@ using NgUi.RaceUi.HUD;
 using static Streamliner.HudRegister;
 using static Streamliner.PresetColorPicker;
 using static UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 namespace Streamliner
 {
+	internal static class Shifter
+	{
+		internal static float DampTime = 0.85f;
+		internal static float FactorShift = 2f;
+
+		internal static float MaxAirTime = 3f;
+		internal static float MaxLandingShakeAmount = 60f;
+		internal static float WallBounceShakeAmount = 30f;
+		internal static float ScrapingShakeAmount = 6f;
+		internal static float ShakeDurationDecaySpeed = 240f;
+
+		private static Vector2 _shiftAmount;
+		private static float _shakeAmount;
+		internal static Vector2 ShakeVector;
+		private static float _shakeDuration;
+		private static float _previousAirTime;
+
+		internal static readonly List<Panel> Panels = new(17);
+
+		internal class Panel
+		{
+			private readonly RectTransform _rt;
+			internal readonly string HudName;
+			internal readonly Vector2 OriginPosition;
+			internal Vector2 TargetPosition;
+			internal Vector2 CurrentSpeed;
+
+			internal Vector2 Position => _rt.anchoredPosition;
+
+			internal void SetTargetPosition(Vector2 position) =>
+				TargetPosition = OriginPosition + position;
+			internal void SetPosition(Vector2 position) =>
+				_rt.anchoredPosition = position;
+			internal void SetPosition() =>
+				_rt.anchoredPosition = OriginPosition;
+
+			internal Panel(RectTransform rt, string name)
+			{
+				_rt = rt;
+				HudName = name;
+				OriginPosition += rt.anchoredPosition;
+			}
+		}
+
+
+		internal static void Add(RectTransform panel, string name) => Panels.Add(new Panel(panel, name));
+
+		internal static void UpdateAmount(ShipController ship)
+		{
+			// update shift amount
+			_shiftAmount =
+				ship.InverseTransformDirection(ship.RBody.velocity) * FactorShift;
+
+			// update shake amount
+			float currentAirTime = ship.PysSim.AirTime;
+			float airTimeDiff = _previousAirTime - currentAirTime;
+
+			if (ship.OnMaglock)
+			{
+				_shakeAmount = 0;
+				_shakeDuration = _shakeAmount;
+			}
+			else if (ship.PysSim.isShipGrounded && _previousAirTime > currentAirTime)
+			{
+				float airTimeToCount = _previousAirTime - currentAirTime;
+				airTimeToCount = airTimeToCount > MaxAirTime ? MaxAirTime : airTimeToCount;
+				_shakeAmount = airTimeToCount / MaxAirTime * MaxLandingShakeAmount;
+				_shakeDuration = _shakeAmount;
+			}
+			else if (ship.PysSim.touchingWall && _shakeAmount < WallBounceShakeAmount)
+			{
+				_shakeAmount = WallBounceShakeAmount;
+				_shakeDuration = _shakeAmount;
+			}
+			else if (ship.PysSim.isShipScraping && _shakeAmount < ScrapingShakeAmount)
+			{
+				_shakeAmount = ScrapingShakeAmount;
+				_shakeDuration = _shakeAmount;
+			}
+
+			if (_shakeDuration > 0)
+			{
+				_shakeDuration -= Time.deltaTime * ShakeDurationDecaySpeed;
+			}
+			else
+			{
+				_shakeAmount = 0;
+				_shakeDuration = 0;
+			}
+
+			_previousAirTime = ship.PysSim.AirTime;
+		}
+
+
+		internal static IEnumerator Shift()
+		{
+			while (true)
+			{
+				ShakeVector = Random.insideUnitCircle.normalized * _shakeAmount;
+				foreach (Panel p in Panels)
+				{
+					p.SetTargetPosition(_shiftAmount);
+					if (p.Position == p.TargetPosition)
+					{
+						p.SetPosition();
+						continue;
+					}
+
+					Vector2 shiftDelta = Vector2.SmoothDamp(p.Position, p.TargetPosition, ref p.CurrentSpeed, DampTime);
+					if (_shakeDuration > 0)
+					{
+						shiftDelta += ShakeVector;
+					}
+					p.SetPosition(shiftDelta);
+				}
+
+				yield return null;
+			}
+		}
+	}
+
 	internal static class PresetColorPicker
 	{
 		private static readonly float[] StandardH = {

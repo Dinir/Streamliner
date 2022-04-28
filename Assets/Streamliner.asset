@@ -58,3 +58,5 @@ MonoBehaviour:
   - Name: Awards
     Object: {fileID: 3652333357894129320, guid: 56577e324a0ee124b95e7dec04e0c9f4,
       type: 3}
+  - Name: ShifterDebugger
+    Object: {fileID: 940403939630811218, guid: 777406d5ca2056c4c81ae79afab5c0ff, type: 3}

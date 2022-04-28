@@ -47,6 +47,8 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = new SpeedPanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
+
 		}
 
 		public override void Update()
@@ -194,6 +196,7 @@ namespace Streamliner
 				RaceManager.CurrentGamemode.Name == "Rush Hour";
 
 			Panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
 			_value = Panel.Find("Value").GetComponent<Text>();
 			_delta = Panel.Find("Delta").GetComponent<Text>();
 			_gaugeBackground = Panel.Find("GaugeBackground").GetComponent<Image>();
@@ -498,6 +501,7 @@ namespace Streamliner
 			_totalLaps = Race.MaxLaps;
 			_totalSections = GetTotalSectionCount();
 			Panel = new BasicPanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
 			_lapSlotTemplate = CustomComponents.GetById("LapSlot");
 			// I am hiding the components here, not on Unity,
 			// because I want to keep them visible on Unity.
@@ -630,6 +634,7 @@ namespace Streamliner
 			base.Start();
 			_totalSections = GetTotalSectionCount();
 			Panel = new BasicPanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
 			RectTransform bestTimeSlot = CustomComponents.GetById("LapSlot");
 			_bestTimeText = bestTimeSlot.Find("Time").GetComponent<Text>();
 			bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
@@ -817,6 +822,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
 			_normalDisplay = CustomComponents.GetById("Normal");
 			_normalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
 			_normalDisplayValue = _normalDisplay.Find("Value").GetComponent<Text>();
@@ -1112,6 +1118,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = new DoubleGaugePanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
 			_zoneName = CustomComponents.GetById<Text>("Name");
 			_zoneName.gameObject.SetActive(true);
 			_zoneScore = CustomComponents.GetById<Text>("Score");
@@ -1187,6 +1194,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = new LayeredDoubleGaugePanel(CustomComponents.GetById("Base"), true);
+			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
 			_energyInfo = CustomComponents.GetById("Energy");
 			_energyInfo.gameObject.SetActive(true);
 			_valueZoneText = _energyInfo.Find("ValueZone").GetComponent<Text>();
@@ -1378,6 +1386,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = new FractionPanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
 			switch (RaceManager.CurrentGamemode.Name)
 			{
 				case "Knockout":
@@ -1466,6 +1475,7 @@ namespace Streamliner
 				Value = { text = IntStrDb.GetNoSingleCharNumber(0) },
 				MaxValue = { text = IntStrDb.GetNoSingleCharNumber(Race.MaxLaps) }
 			};
+			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
 
 			NgRaceEvents.OnShipLapUpdate += UpdateLap;
 		}
@@ -1587,6 +1597,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
 			Panel.Find("BackgroundFill").GetComponent<Image>().color =
 				GetTintColor(TextAlpha.ThreeEighths);
 			ShipNode.Template = CustomComponents.GetById("Node");
@@ -1907,6 +1918,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
 			_panelAnimator = Panel.GetComponent<Animator>();
 
 			Panel.Find("Left").Find("Text").GetComponent<Text>().color = GetTintColor();
@@ -2110,6 +2122,7 @@ namespace Streamliner
 		private void Initiate()
 		{
 			Panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
 			RectTransform timeGroupRT = CustomComponents.GetById("TimeGroup");
 			_timeGroup = timeGroupRT.GetComponent<CanvasGroup>();
 			_timeDiff = timeGroupRT.Find("Difference").GetComponent<Text>();
@@ -2468,6 +2481,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
 			_playerPanel = new PickupPanel(
 				Panel.Find("IconBackground").GetComponent<RectTransform>(),
 				Panel.Find("Info").GetComponent<Text>());
@@ -2550,6 +2564,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
 			_playerPanel = new PickupPanel(Panel);
 
 			PickupBase.OnPickupInit += ShowPickup;
@@ -2594,6 +2609,7 @@ namespace Streamliner
 			base.Start();
 			Panel = new Playerboard(CustomComponents.GetById("Base"),
 				RaceManager.CurrentGamemode.Name);
+			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
@@ -2760,6 +2776,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
 			_teammatePickupPanel =
 				new PickupPanel(Panel.Find("TeammatePickup").GetComponent<RectTransform>());
 			_labelFirst = Panel.Find("LabelFirst").gameObject;
@@ -2970,6 +2987,7 @@ namespace Streamliner
 		{
 			base.Start();
 			Panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
 			PanelPlatinum = Panel.Find("Platinum").GetComponent<CanvasGroup>();
 			PanelPlatinumImage = PanelPlatinum.GetComponent<Image>();
 			TextPlatinum = Panel.Find("Platinum").Find("Value").GetComponent<Text>();
@@ -3120,6 +3138,68 @@ namespace Streamliner
 			{
 				NgUiEvents.OnZoneNumberUpdate -= UpdateZone;
 			}
+		}
+	}
+
+	public class ShifterHud : ScriptableHud
+	{
+		private Text slot1;
+		private Text slot2;
+		private Text slot3;
+		private Text slot0;
+		public override void Start()
+		{
+			base.Start();
+			slot1 = CustomComponents.GetById<Text>("Slot1");
+			slot2 = CustomComponents.GetById<Text>("Slot2");
+			slot3 = CustomComponents.GetById<Text>("Slot3");
+			slot0 = CustomComponents.GetById<Text>("Slot0");
+			slot2.GetComponent<RectTransform>().anchoredPosition += Vector2.down * slot2.GetComponent<RectTransform>().sizeDelta.y;
+			slot2.GetComponent<RectTransform>().sizeDelta += Vector2.right * 200;
+
+			StartCoroutine(Shifter.Shift());
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			if (Input.GetKeyDown(KeyCode.Keypad7))
+			{
+				Shifter.DampTime += 0.05f;
+			}
+			else if (Input.GetKeyDown(KeyCode.Keypad4))
+			{
+				Shifter.DampTime -= 0.05f;
+			}
+			if (Input.GetKeyDown(KeyCode.Keypad8))
+			{
+			}
+			else if (Input.GetKeyDown(KeyCode.Keypad5))
+			{
+			}
+			if (Input.GetKeyDown(KeyCode.Keypad9))
+			{
+				Shifter.FactorShift += 1f;
+			}
+			else if (Input.GetKeyDown(KeyCode.Keypad6))
+			{
+				Shifter.FactorShift -= 1f;
+			}
+
+
+			Shifter.UpdateAmount(TargetShip);
+
+			slot1.text = Shifter.DampTime.ToString(CultureInfo.InvariantCulture);
+			slot2.text = Shifter.ShakeVector.ToString();
+			slot3.text = Shifter.FactorShift.ToString(CultureInfo.InvariantCulture);
+			slot0.text = TargetShip.PysSim.AirTime.ToString(CultureInfo.InvariantCulture);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			StopCoroutine(Shifter.Shift());
+			Shifter.Panels.Clear();
 		}
 	}
 }

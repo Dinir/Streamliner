@@ -314,6 +314,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			if (NgCampaign.Enabled)
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("ShifterDebugger", false));
 		}
 	}
 
