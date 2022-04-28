@@ -1703,7 +1703,11 @@ namespace Streamliner
 				default:
 					_singleNode.Enabled = true;
 					foreach (ShipNode node in _nodes)
+					{
+						if (node.Id == TargetShip.ShipId)
+							continue;
 						node.Enabled = false;
+					}
 					break;
 			}
 		}
