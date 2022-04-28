@@ -28,11 +28,11 @@ namespace Streamliner
 		};
 		private static readonly float[][] StandardSV =
 		{
-			new[] { 0.32f, 0.40f }, // S4 V0.40
-			new[] { 0.32f, 0.73f }, // S4 V4
-			new[] { 0.26f, 0.81f }, // S3 V3
-			new[] { 0.18f, 0.86f }, // S2 V2
-			new[] { 0.40f, 0.89f }, // S6 V1
+			new[] { 0.32f, 0.40f }, // S4   V.40
+			new[] { 0.32f, 0.73f }, // S4   V4
+			new[] { 0.26f, 0.81f }, // S3   V3
+			new[] { 0.18f, 0.86f }, // S2   V2
+			new[] { 0.40f, 0.89f }, // S6   V1
 			new[] { 0.60f, 0.95f }  // S.60 V.95
 		};
 		private static readonly float[] TintAlphaList = {
@@ -57,7 +57,9 @@ namespace Streamliner
 					a = TintAlphaList[(int) transparencyIndex]
 				};
 
-		internal static Color GetPanelColor(int tintIndex = 0) =>
+		internal static Color GetPanelColor(
+			int tintIndex = 0
+		) =>
 			Color.HSVToRGB(
 					StandardH[tintIndex],
 					tintIndex == 0 ? 0 : StandardSV[0][0],
@@ -211,7 +213,7 @@ namespace Streamliner
 			Section section = TrackManager.Instance.data.sections[TrackManager.Instance.data.sectionStart];
 			Section next = section.next;
 			int count = 1;
-			while (count < TrackManager.Instance.data.sections.Count && (bool) (Object) next.next)
+			while (count < TrackManager.Instance.data.sections.Count && (bool) (UnityEngine.Object) next.next)
 			{
 				next = next.next;
 				++count;
