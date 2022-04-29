@@ -2141,7 +2141,6 @@ namespace Streamliner
 			_wrongWayCurrentColor = DefaultColor["WrongWay"];
 			_wrongWayCurrentColor.a = _wrongWayCurrentAlpha;
 			_wrongWay.color = _wrongWayCurrentColor;
-			_wrongWay.text = "wrong way";
 
 			if (Audio.Levels.MusicVolume == 0f)
 				_nowPlaying.gameObject.SetActive(false);
@@ -2171,6 +2170,14 @@ namespace Streamliner
 
 			_lines[2].Value.gameObject.SetActive(_usingThirdLine);
 			_lineTemplate.gameObject.SetActive(false);
+
+			NgRaceEvents.OnCountdownStart += InitiateWrongWayIndicator;
+		}
+
+		private void InitiateWrongWayIndicator()
+		{
+			_wrongWay.text = "wrong way";
+			NgRaceEvents.OnCountdownStart -= InitiateWrongWayIndicator;
 
 			_initiated = true;
 		}
