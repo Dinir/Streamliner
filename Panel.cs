@@ -110,14 +110,18 @@ namespace Streamliner
 		{
 			Vector2 localVelocity =
 				ship.InverseTransformDirection(ship.RBody.velocity);
+			float currentVerticalVelocity = localVelocity.y;
+
 			// update shift amount
-			float verticalShiftAmount = localVelocity.y * VerticalShiftEmphasis;
+			_shiftTarget = localVelocity * ShiftFactor;
+			// limit vertical amount from getting too big
+			float verticalShiftAmount = _shiftTarget.y * VerticalShiftEmphasis;
 			verticalShiftAmount = verticalShiftAmount > MaxVerticalShiftAmount ?
-				MaxVerticalShiftAmount : verticalShiftAmount;
-			_shiftTarget = localVelocity with { y = verticalShiftAmount } * ShiftFactor;
+				MaxVerticalShiftAmount : verticalShiftAmount < -MaxVerticalShiftAmount ?
+					-MaxVerticalShiftAmount : verticalShiftAmount;
+			_shiftTarget.y = verticalShiftAmount;
 
 			// update shake amount
-			float currentVerticalVelocity = localVelocity.y;
 			float verticalSpeedDiff = currentVerticalVelocity - _previousVerticalSpeed;
 
 			if (ship.OnMaglock)
@@ -169,10 +173,7 @@ namespace Streamliner
 				{
 					p.SetTargetPosition(_shiftTarget);
 					if (p.Position == p.TargetPosition && _shakeDuration == 0)
-					{
-						p.ResetPosition();
 						continue;
-					}
 
 					// always update position that's only affected by shifting
 					p.SetShiftedPosition(Vector2.SmoothDamp(
