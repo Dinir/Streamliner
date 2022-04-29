@@ -171,7 +171,7 @@ namespace Streamliner
 			ctx.GenerateSlider(
 				"ShakeMultiplier", "shake intensity",
 				"Set how intense shake of the hud should be.",
-				0.0f, 2.0f, OptionShiftMultiplier, 0.1f,
+				0.0f, 2.0f, OptionShakeMultiplier, 0.1f,
 				10, NgSlider.RoundMode.Round,
 				10, NgSlider.RoundMode.Round
 			);
