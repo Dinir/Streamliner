@@ -639,6 +639,8 @@ namespace Streamliner
 			_bestTimeText = bestTimeSlot.Find("Time").GetComponent<Text>();
 			bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
 
+			_bestTimeText.color = GetTintColor(TextAlpha.NineTenths);
+
 			_usingBestTimeDisplay = OptionBestTime != 0;
 			_bestTimeText.gameObject.SetActive(_usingBestTimeDisplay);
 
