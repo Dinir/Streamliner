@@ -966,7 +966,7 @@ namespace Streamliner
 					TargetShip.TargetTime,
 				true when TargetShip.BestLapTime <= 0f
 				          && TargetShip.TargetTime > 0f =>
-					TargetShip.TargetTime / Race.MaxLaps,
+					TargetShip.TargetTime / Race.GetBaseLapCountFor(Race.Speedclass),
 				true => TargetShip.BestLapTime,
 				false => TargetShip.HasBestLapTime ?
 					TargetShip.BestLapTime : -1f
