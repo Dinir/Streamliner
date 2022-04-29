@@ -123,7 +123,7 @@ namespace Streamliner
 			ctx.GenerateHeader(OptionSectionDisplay);
 
 			ctx.GenerateSelector(
-				"TextTint", "Text Tint",
+				"TextTint", "text tint",
 				"Change the colour of the texts.",
 				OptionValueTint,
 				"white", "red", "orange", "yellow", "lime", "green", "mint", "cyan", "azure", "blue", "violet", "magenta", "rose"
