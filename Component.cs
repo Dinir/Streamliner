@@ -1178,7 +1178,7 @@ namespace Streamliner
 		private const float TransitionTimerMax = 1.5f;
 		private float _transitionTimer;
 		private float _smallGaugeAlpha;
-		private readonly Color _overflowZoneTimeColor = GetTintColor(tintIndex: 2, clarity: 5);
+		private Color _overflowZoneTimeColor;
 		private Color _currentSmallGaugeColor;
 		private float _overflowTransitionAlpha;
 		private bool _valuesAreFinite = true;
@@ -1202,6 +1202,7 @@ namespace Streamliner
 			_barrierWarning = CustomComponents.GetById<Animator>("Barrier");
 			_barrierWarning.gameObject.SetActive(true);
 
+			_overflowZoneTimeColor = GetTintColor(tintIndex: 2, clarity: 5);
 			_currentSmallGaugeColor = Panel.SmallGaugeColor;
 			_smallGaugeAlpha = Panel.SmallGaugeColor.a;
 
@@ -2018,26 +2019,8 @@ namespace Streamliner
 			return StringKind.General;
 		}
 
-		private static readonly Dictionary<string, Color> TextColor = new()
-		{
-			{ "75", GetTintColor(TextAlpha.ThreeQuarters) },
-			{ "90", GetTintColor(TextAlpha.NineTenths) },
-			{ "100", GetTintColor() },
-			{ "red", GetTintColor(TextAlpha.NineTenths, 1, 1) },
-			{ "green", GetTintColor(TextAlpha.NineTenths, 5, 1) },
-			{ "magenta", GetTintColor(TextAlpha.NineTenths, 11, 1) },
-			{ "cyan", GetTintColor(TextAlpha.NineTenths, 7, 1) },
-			{ "empty", GetTintColor(TextAlpha.Zero) }
-		};
-		private static readonly Dictionary<string, Color> DefaultColor = new()
-		{
-			{ "TimeDiff", TextColor["90"] },
-			{ "LapResult", TextColor["90"] },
-			{ "FinalLap", TextColor["90"] },
-			{ "Line", TextColor["90"] },
-			{ "NowPlaying", TextColor["90"] },
-			{ "WrongWay", TextColor["100"] }
-		};
+		private static Dictionary<string, Color> _textColor;
+		private static Dictionary<string, Color> _defaultColor;
 
 		private readonly List<Line> _lines = new(LineMax);
 		private class Line
@@ -2095,6 +2078,27 @@ namespace Streamliner
 				_ => true
 			};
 
+			_textColor = new()
+			{
+				{"75", GetTintColor(TextAlpha.ThreeQuarters)},
+				{"90", GetTintColor(TextAlpha.NineTenths)},
+				{"100", GetTintColor()},
+				{"red", GetTintColor(TextAlpha.NineTenths, 1, 1)},
+				{"green", GetTintColor(TextAlpha.NineTenths, 5, 1)},
+				{"magenta", GetTintColor(TextAlpha.NineTenths, 11, 1)},
+				{"cyan", GetTintColor(TextAlpha.NineTenths, 7, 1)},
+				{"empty", GetTintColor(TextAlpha.Zero)}
+			};
+			_defaultColor = new()
+			{
+				{"TimeDiff", _textColor["90"]},
+				{"LapResult", _textColor["90"]},
+				{"FinalLap", _textColor["90"]},
+				{"Line", _textColor["90"]},
+				{"NowPlaying", _textColor["90"]},
+				{"WrongWay", _textColor["100"]}
+			};
+
 			Initiate();
 
 			/*
@@ -2133,13 +2137,12 @@ namespace Streamliner
 			_nowPlaying = CustomComponents.GetById<Text>("NowPlaying");
 			_wrongWay = CustomComponents.GetById<Text>("WrongWay");
 
-			_timeDiff.color = DefaultColor["TimeDiff"];
-			_lapResult.color = DefaultColor["LapResult"];
-			_finalLap.color = DefaultColor["FinalLap"];
-			lineTemplateText.color = DefaultColor["Line"];
-			_nowPlaying.color = DefaultColor["NowPlaying"];
-			_wrongWayCurrentColor = DefaultColor["WrongWay"];
-			_wrongWayCurrentColor.a = _wrongWayCurrentAlpha;
+			_timeDiff.color = _defaultColor["TimeDiff"];
+			_lapResult.color = _defaultColor["LapResult"];
+			_finalLap.color = _defaultColor["FinalLap"];
+			lineTemplateText.color = _defaultColor["Line"];
+			_nowPlaying.color = _defaultColor["NowPlaying"];
+			_wrongWayCurrentColor = _defaultColor["WrongWay"] with { a = _wrongWayCurrentAlpha };
 			_wrongWay.color = _wrongWayCurrentColor;
 
 			if (Audio.Levels.MusicVolume == 0f)
@@ -2190,10 +2193,10 @@ namespace Streamliner
 
 			color =
 				color == Color.green ?
-				TextColor["green"] :
+				_textColor["green"] :
 				color == Color.red ?
-					TextColor["red"] :
-					DefaultColor["Line"];
+					_textColor["red"] :
+					_defaultColor["Line"];
 
 			StringKind kind = GetStringKind(message);
 
@@ -2201,8 +2204,8 @@ namespace Streamliner
 			{
 				color = OptionTimeDiffColour switch
 				{
-					2 when color == TextColor["green"] => TextColor["cyan"],
-					1 when color == TextColor["red"] => TextColor["magenta"],
+					2 when color == _textColor["green"] => _textColor["cyan"],
+					1 when color == _textColor["red"] => _textColor["magenta"],
 					_ => color
 				};
 
@@ -2244,7 +2247,7 @@ namespace Streamliner
 				return;
 
 			_nowPlaying.text = songName;
-			_nowPlaying.color = DefaultColor["NowPlaying"];
+			_nowPlaying.color = _defaultColor["NowPlaying"];
 			_npDisplayTime = DisplayTimeMax;
 			_npFadeOutTimeRemaining = 0f;
 		}
@@ -2317,7 +2320,7 @@ namespace Streamliner
 				)
 				{
 					_lines[i].Value.text = "";
-					_lines[i].Value.color = DefaultColor["Line"];
+					_lines[i].Value.color = _defaultColor["Line"];
 				}
 			}
 
@@ -2346,9 +2349,9 @@ namespace Streamliner
 				_timeDiff.text = "";
 				_lapResult.text = "";
 				_finalLap.text = "";
-				_timeDiff.color = DefaultColor["TimeDiff"];
-				_lapResult.color = DefaultColor["LapResult"];
-				_finalLap.color = DefaultColor["FinalLap"];
+				_timeDiff.color = _defaultColor["TimeDiff"];
+				_lapResult.color = _defaultColor["LapResult"];
+				_finalLap.color = _defaultColor["FinalLap"];
 			}
 
 			// now playing
@@ -2376,7 +2379,7 @@ namespace Streamliner
 				)
 				{
 					_nowPlaying.text = "";
-					_nowPlaying.color = DefaultColor["NowPlaying"];
+					_nowPlaying.color = _defaultColor["NowPlaying"];
 				}
 			}
 
@@ -2399,14 +2402,12 @@ namespace Streamliner
 				_wrongWayCurrentAlpha =
 					Mathf.Lerp(_wrongWayCurrentAlpha, _wrongWayAlpha,
 						Time.deltaTime * WrongWayFadeSpeed);
-				_wrongWayCurrentColor.a = _wrongWayCurrentAlpha;
-				_wrongWay.color = _wrongWayCurrentColor;
+				_wrongWay.color = _wrongWayCurrentColor with { a = _wrongWayCurrentAlpha };
 				_wrongWayFadeTimeRemaining -= Time.deltaTime;
 			}
 			else
 			{
-				_wrongWayCurrentColor.a = _wrongWayAlpha;
-				_wrongWay.color = _wrongWayCurrentColor;
+				_wrongWay.color = _wrongWayCurrentColor with { a = _wrongWayAlpha };
 				_wrongWayFadeTimeRemaining = 0f;
 			}
 		}
@@ -2451,7 +2452,7 @@ namespace Streamliner
 			{
 				if (_npDisplayTime == DisplayTimeMax)
 				{
-					_nowPlaying.color = DefaultColor["NowPlaying"];
+					_nowPlaying.color = _defaultColor["NowPlaying"];
 					break;
 				}
 

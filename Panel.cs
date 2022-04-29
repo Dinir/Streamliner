@@ -496,7 +496,7 @@ namespace Streamliner
 		protected readonly Image GaugeBackgroundImage;
 		protected readonly RectTransform Gauge;
 		protected readonly Image GaugeImage;
-		internal readonly Color GaugeColor = GetTintColor();
+		internal readonly Color GaugeColor;
 		internal readonly Vector2 MaxSize;
 		internal Vector2 CurrentSize;
 
@@ -510,6 +510,7 @@ namespace Streamliner
 			Gauge = (RectTransform)GaugeBackground.Find("Gauge");
 			GaugeImage = Gauge.GetComponent<Image>();
 			MaxSize = Gauge.sizeDelta;
+			GaugeColor = GetTintColor();
 
 			ChangeColor();
 			Fill(0f);
@@ -697,9 +698,9 @@ namespace Streamliner
 		protected readonly RectTransform SmallRightGauge;
 		protected readonly Image SmallRightGaugeImage;
 		protected readonly bool UsingSmallGauges;
-		internal readonly Color SecondGaugeColor = GetTintColor(TextAlpha.ThreeEighths);
+		internal readonly Color SecondGaugeColor;
 		internal Vector2 CurrentSecondSize;
-		internal readonly Color SmallGaugeColor = GetTintColor(clarity: 1);
+		internal readonly Color SmallGaugeColor;
 		internal readonly Vector2 SmallMaxSize;
 		internal Vector2 CurrentSmallSize;
 
@@ -715,6 +716,9 @@ namespace Streamliner
 			SecondGauge.gameObject.SetActive(true);
 			SecondRightGauge.gameObject.SetActive(true);
 			CurrentSecondSize.y = MaxSize.y;
+
+			SecondGaugeColor = GetTintColor(TextAlpha.ThreeEighths);
+			SmallGaugeColor = GetTintColor(clarity: 1);
 
 			ChangeSecondGaugesColor();
 			FillSecondGauges(0f);
@@ -837,11 +841,9 @@ namespace Streamliner
 
 		public Coroutine CurrentTransition;
 
-		private static readonly Color _offensiveColor =
-			GetTintColor(tintIndex: 2, clarity: 2);
-		private static readonly Color _defensiveColor =
-			GetTintColor(tintIndex: 8, clarity: 2);
-		private static readonly Color _hudDefaultColor = GetTintColor();
+		private static Color _offensiveColor;
+		private static Color _defensiveColor;
+		private static Color _hudDefaultColor;
 
 		public IEnumerator ColorFade(bool enableIcon, bool offensive = false)
 		{
@@ -956,6 +958,10 @@ namespace Streamliner
 			_panelGroup.alpha = 0f;
 			_bracketsImage.enabled = false;
 			_iconImage.enabled = false;
+
+			_offensiveColor = GetTintColor(tintIndex: 2, clarity: 2);
+			_defensiveColor = GetTintColor(tintIndex: 8, clarity: 2);
+			_hudDefaultColor = GetTintColor();
 		}
 
 		public PickupPanel(RectTransform basePanel, Text infoText)
@@ -971,6 +977,10 @@ namespace Streamliner
 			_iconImage.enabled = false;
 			_info.enabled = false;
 			_info.text = "";
+
+			_offensiveColor = GetTintColor(tintIndex: 2, clarity: 2);
+			_defensiveColor = GetTintColor(tintIndex: 8, clarity: 2);
+			_hudDefaultColor = GetTintColor();
 		}
 	}
 
@@ -1012,7 +1022,7 @@ namespace Streamliner
 			internal int RefId;
 			private readonly Vector2 _maxSize;
 			private Vector2 _currentSize;
-			private readonly Color _slotColor = GetTintColor(TextAlpha.ThreeQuarters);
+			private readonly Color _slotColor;
 
 			public EntrySlot(RectTransform template)
 			{
@@ -1023,6 +1033,8 @@ namespace Streamliner
 				_gauge = (RectTransform)template.Find("GaugeBackground").Find("Gauge");
 				_gaugeImage = _gauge.GetComponent<Image>();
 				_maxSize = _gauge.sizeDelta;
+
+				_slotColor = GetTintColor(TextAlpha.ThreeQuarters);
 
 				ChangeColor();
 				SetName("");
