@@ -21,11 +21,12 @@ namespace Streamliner
 		private const string OptionSectionMotion = "Motion Effect";
 		private const string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint;
+		public static int OptionTimeDiffColour;
+		public static bool OptionCountdownTimer = true;
+		public static bool OptionPositionBoard = true;
 		public static bool OptionMotion = true;
 		public static float OptionShiftMultiplier = 1f;
 		public static float OptionShakeMultiplier = 1f;
-		public static int OptionTimeDiffColour;
-		public static bool OptionCountdownTimer = true;
 		public static bool OptionSpeedHighlight = true;
 		public static bool OptionEnergyChange = true;
 		public static int OptionLowEnergy = 1;
@@ -143,6 +144,13 @@ namespace Streamliner
 				"off", "on"
 			);
 
+			ctx.GenerateSelector(
+				"PositionBoard", "position board",
+				"Show the position listing HUD. Disabling this option will turn it off even in multiplayer races.",
+				OptionPositionBoard ? 1 : 0,
+				"off", "follow game setting"
+			);
+
 			ctx.GenerateHeader(OptionSectionMotion);
 
 			ctx.GenerateSelector(
@@ -215,6 +223,7 @@ namespace Streamliner
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
 			OptionTimeDiffColour = ctx.GetSelectorValue("TimeDiffColour");
 			OptionCountdownTimer = ctx.GetSelectorValue("CountDownTimer") == 1;
+			OptionPositionBoard = ctx.GetSelectorValue("PositionBoard") == 1;
 			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
 			OptionShiftMultiplier = ctx.GetSliderValue("ShiftMultiplier");
 			OptionShakeMultiplier = ctx.GetSliderValue("ShakeMultiplier");
@@ -233,6 +242,7 @@ namespace Streamliner
 			OptionValueTint = ini.ReadValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			OptionTimeDiffColour = ini.ReadValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
 			OptionCountdownTimer = ini.ReadValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
+			OptionPositionBoard = ini.ReadValue(OptionSectionDisplay, "PositionBoard", OptionPositionBoard);
 			OptionMotion = ini.ReadValue(OptionSectionMotion, "Motion", OptionMotion);
 			OptionShiftMultiplier = (float) ini.ReadValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
 			OptionShakeMultiplier = (float) ini.ReadValue(OptionSectionMotion, "ShakeMultiplier", OptionShakeMultiplier);
@@ -255,6 +265,7 @@ namespace Streamliner
 			ini.WriteValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			ini.WriteValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
 			ini.WriteValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
+			ini.WriteValue(OptionSectionDisplay, "PositionBoard", OptionPositionBoard);
 			ini.WriteValue(OptionSectionMotion, "Motion", OptionMotion);
 			ini.WriteValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
 			ini.WriteValue(OptionSectionMotion, "ShakeMultiplier", OptionShakeMultiplier);
@@ -309,7 +320,7 @@ namespace Streamliner
 			RegisterHud<Pitlane>(HudRegister.Assets.GetComponent<HudComponents>("Pitlane", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
-			if (Hud.GetPositionBoardEnabled())
+			if (HudRegister.OptionPositionBoard && Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
@@ -393,7 +404,7 @@ namespace Streamliner
 			RegisterHud<Pitlane>(HudRegister.Assets.GetComponent<HudComponents>("Pitlane", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
-			if (Hud.GetPositionBoardEnabled())
+			if (HudRegister.OptionPositionBoard && Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 		}
