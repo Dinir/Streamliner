@@ -1106,7 +1106,7 @@ PrefabInstance:
     - target: {fileID: 940403939630811218, guid: 777406d5ca2056c4c81ae79afab5c0ff,
         type: 3}
       propertyPath: m_Name
-      value: ShifterDebugger
+      value: Shifter
       objectReference: {fileID: 0}
     - target: {fileID: 4037859434327146574, guid: 777406d5ca2056c4c81ae79afab5c0ff,
         type: 3}

@@ -18,9 +18,12 @@ namespace Streamliner
 		// options
 		private string _settingsPath;
 		private const string OptionSectionDisplay = "Display";
+		private const string OptionSectionMotion = "Motion Effect";
 		private const string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint;
 		public static bool OptionMotion = true;
+		public static float OptionShiftMultiplier = 1f;
+		public static float OptionShakeMultiplier = 1f;
 		public static int OptionTimeDiffColour;
 		public static bool OptionCountdownTimer = true;
 		public static bool OptionSpeedHighlight = true;
@@ -134,17 +137,35 @@ namespace Streamliner
 			);
 
 			ctx.GenerateSelector(
+				"CountDownTimer", "countdown timer",
+				"Put a countdown timer on top of the screen on Time Trial and Speed Lap mode.",
+				OptionCountdownTimer ? 1 : 0,
+				"off", "on"
+			);
+
+			ctx.GenerateHeader(OptionSectionMotion);
+
+			ctx.GenerateSelector(
 				"Motion", "motion effect",
 				"Loosen the hud a bit.",
 				OptionMotion ? 1 : 0,
 				"off", "on"
 			);
 
-			ctx.GenerateSelector(
-				"CountDownTimer", "countdown timer",
-				"Put a countdown timer on top of the screen on Time Trial and Speed Lap mode.",
-				OptionCountdownTimer ? 1 : 0,
-				"off", "on"
+			ctx.GenerateSlider(
+				"ShiftMultiplier", "shift intensity",
+				"Set how intense smooth shifting of the hud should be.",
+				0.0f, 2.0f, OptionShiftMultiplier, 0.1f,
+				10, NgSlider.RoundMode.Round,
+				10, NgSlider.RoundMode.Round
+			);
+
+			ctx.GenerateSlider(
+				"ShakeMultiplier", "shake intensity",
+				"Set how intense shake of the hud should be.",
+				0.0f, 2.0f, OptionShiftMultiplier, 0.1f,
+				10, NgSlider.RoundMode.Round,
+				10, NgSlider.RoundMode.Round
 			);
 
 			ctx.GenerateHeader(OptionSectionAddition);
@@ -193,8 +214,10 @@ namespace Streamliner
 		{
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
 			OptionTimeDiffColour = ctx.GetSelectorValue("TimeDiffColour");
-			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
 			OptionCountdownTimer = ctx.GetSelectorValue("CountDownTimer") == 1;
+			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
+			OptionShiftMultiplier = ctx.GetSliderValue("ShiftMultiplier");
+			OptionShakeMultiplier = ctx.GetSliderValue("ShakeMultiplier");
 			OptionSpeedHighlight = ctx.GetSelectorValue("SpeedHighlight") == 1;
 			OptionEnergyChange = ctx.GetSelectorValue("EnergyChange") == 1;
 			OptionLowEnergy = ctx.GetSelectorValue("LowEnergyTransition");
@@ -209,8 +232,10 @@ namespace Streamliner
 
 			OptionValueTint = ini.ReadValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			OptionTimeDiffColour = ini.ReadValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
-			OptionMotion = ini.ReadValue(OptionSectionDisplay, "Motion", OptionMotion);
 			OptionCountdownTimer = ini.ReadValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
+			OptionMotion = ini.ReadValue(OptionSectionMotion, "Motion", OptionMotion);
+			OptionShiftMultiplier = (float) ini.ReadValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
+			OptionShakeMultiplier = (float) ini.ReadValue(OptionSectionMotion, "ShakeMultiplier", OptionShakeMultiplier);
 			OptionSpeedHighlight = ini.ReadValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
 			OptionEnergyChange = ini.ReadValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
 			OptionLowEnergy = ini.ReadValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
@@ -218,6 +243,8 @@ namespace Streamliner
 			OptionBestTime = ini.ReadValue(OptionSectionAddition, "BestTime", OptionBestTime);
 
 			ini.Close();
+
+			Shifter.ApplySettings();
 		}
 
 		private void OnSaveSettings()
@@ -227,8 +254,10 @@ namespace Streamliner
 
 			ini.WriteValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			ini.WriteValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
-			ini.WriteValue(OptionSectionDisplay, "Motion", OptionMotion);
 			ini.WriteValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
+			ini.WriteValue(OptionSectionMotion, "Motion", OptionMotion);
+			ini.WriteValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
+			ini.WriteValue(OptionSectionMotion, "ShakeMultiplier", OptionShakeMultiplier);
 			ini.WriteValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
 			ini.WriteValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
 			ini.WriteValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
@@ -236,6 +265,8 @@ namespace Streamliner
 			ini.WriteValue(OptionSectionAddition, "BestTime", OptionBestTime);
 
 			ini.Close();
+
+			Shifter.ApplySettings();
 		}
 	}
 
@@ -280,6 +311,7 @@ namespace Streamliner
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			if (Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}
@@ -297,6 +329,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			RegisterHud<TeamScoreboard>(HudRegister.Assets.GetComponent<HudComponents>("Teamboard", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}
@@ -314,7 +347,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			if (NgCampaign.Enabled)
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
-			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("ShifterDebugger", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 		}
 	}
 
@@ -329,6 +362,7 @@ namespace Streamliner
 			RegisterHud<TurboDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Turbo", false));
 			if (NgCampaign.Enabled)
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}
@@ -343,6 +377,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			if (NgCampaign.Enabled)
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}
@@ -360,6 +395,7 @@ namespace Streamliner
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			if (Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 		}
 	}
 
@@ -373,6 +409,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}
@@ -386,6 +423,7 @@ namespace Streamliner
 			RegisterHud<UpsurgeTracker>(HudRegister.Assets.GetComponent<HudComponents>("Zone", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}
@@ -401,6 +439,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<TurboDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Turbo", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}

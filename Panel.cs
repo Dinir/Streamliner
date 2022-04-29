@@ -21,22 +21,39 @@ namespace Streamliner
 {
 	internal static class Shifter
 	{
-		internal static float DampTime = 0.85f;
-		internal static float FactorShift = 2f;
+		internal const int MaxPanelCount = 17;
 
-		internal static float MaxAirTime = 3f;
+		internal const float DampTime = 0.2f;
+		internal const float BaseShiftFactor = 3f;
+		internal const float VerticalShiftEmphasis = -2f;
+		internal const float MaxVerticalShiftAmount = 127.5f;
+		internal const float BaseMaxLandingShakeAmount = 60f;
+		internal const float BaseWallBounceShakeAmount = 30f;
+		internal const float BaseScrapingShakeAmount = 6f;
+
+		internal const float MinVerticalSpeedDiff = 10f;
+		internal const float MaxVerticalSpeedDiff = 20f;
+		internal static readonly float VerticalSpeedDiffRange =
+			MaxVerticalSpeedDiff - MinVerticalSpeedDiff;
+
+		// duration / decay speed == total lasting time in seconds
+		internal const float ShakeDuration = 60f;
+		internal const float ShakeDurationDecaySpeed = 240f;
+
+		internal static float ShiftFactor = 3f;
 		internal static float MaxLandingShakeAmount = 60f;
 		internal static float WallBounceShakeAmount = 30f;
 		internal static float ScrapingShakeAmount = 6f;
-		internal static float ShakeDurationDecaySpeed = 240f;
 
-		private static Vector2 _shiftAmount;
+		private static Vector2 _shiftTarget;
 		private static float _shakeAmount;
-		internal static Vector2 ShakeVector;
+		private static Vector2 _shakeVector;
 		private static float _shakeDuration;
-		private static float _previousAirTime;
+		private static float _previousVerticalSpeed;
 
-		internal static readonly List<Panel> Panels = new(17);
+		internal static ShipController TargetShip;
+
+		internal static readonly List<Panel> Panels = new(MaxPanelCount);
 
 		internal class Panel
 		{
@@ -45,58 +62,88 @@ namespace Streamliner
 			internal readonly Vector2 OriginPosition;
 			internal Vector2 TargetPosition;
 			internal Vector2 CurrentSpeed;
+			internal Vector2 ShiftedPosition;
+			internal Vector2 ShakingPosition;
 
 			internal Vector2 Position => _rt.anchoredPosition;
 
 			internal void SetTargetPosition(Vector2 position) =>
 				TargetPosition = OriginPosition + position;
-			internal void SetPosition(Vector2 position) =>
-				_rt.anchoredPosition = position;
-			internal void SetPosition() =>
+			internal void SetShiftedPosition(Vector2 position) =>
+				ShiftedPosition = position;
+			internal void SetShakingPosition(Vector2 position) =>
+				ShakingPosition = ShiftedPosition + position;
+			internal void ResetShakingPosition() =>
+				ShakingPosition = ShiftedPosition;
+
+			internal void SetPositionToShifted() =>
+				_rt.anchoredPosition = ShiftedPosition;
+			internal void SetPositionToShaking() =>
+				_rt.anchoredPosition = ShakingPosition;
+			internal void ResetPosition() =>
 				_rt.anchoredPosition = OriginPosition;
+
+			internal void Hide() => _rt.gameObject.SetActive(false);
+			internal void Show() => _rt.gameObject.SetActive(true);
 
 			internal Panel(RectTransform rt, string name)
 			{
 				_rt = rt;
 				HudName = name;
-				OriginPosition += rt.anchoredPosition;
+				Vector2 anchoredPosition = rt.anchoredPosition;
+				OriginPosition = anchoredPosition;
+				ShiftedPosition = anchoredPosition;
 			}
 		}
 
+		internal static void ApplySettings()
+		{
+			ShiftFactor = BaseShiftFactor * OptionShiftMultiplier;
+			MaxLandingShakeAmount = BaseMaxLandingShakeAmount * OptionShakeMultiplier;
+			WallBounceShakeAmount = BaseWallBounceShakeAmount * OptionShakeMultiplier;
+			ScrapingShakeAmount = BaseScrapingShakeAmount * OptionShakeMultiplier;
+		}
 
 		internal static void Add(RectTransform panel, string name) => Panels.Add(new Panel(panel, name));
 
 		internal static void UpdateAmount(ShipController ship)
 		{
+			Vector2 localVelocity =
+				ship.InverseTransformDirection(ship.RBody.velocity);
 			// update shift amount
-			_shiftAmount =
-				ship.InverseTransformDirection(ship.RBody.velocity) * FactorShift;
+			float verticalShiftAmount = localVelocity.y * VerticalShiftEmphasis;
+			verticalShiftAmount = verticalShiftAmount > MaxVerticalShiftAmount ?
+				MaxVerticalShiftAmount : verticalShiftAmount;
+			_shiftTarget = localVelocity with { y = verticalShiftAmount } * ShiftFactor;
 
 			// update shake amount
-			float currentAirTime = ship.PysSim.AirTime;
-			float airTimeDiff = _previousAirTime - currentAirTime;
+			float currentVerticalVelocity = localVelocity.y;
+			float verticalSpeedDiff = currentVerticalVelocity - _previousVerticalSpeed;
 
 			if (ship.OnMaglock)
 			{
 				_shakeAmount = 0;
 				_shakeDuration = _shakeAmount;
 			}
-			else if (ship.PysSim.isShipGrounded && _previousAirTime > currentAirTime)
+			else if (verticalSpeedDiff > MinVerticalSpeedDiff)
 			{
-				float airTimeToCount = _previousAirTime - currentAirTime;
-				airTimeToCount = airTimeToCount > MaxAirTime ? MaxAirTime : airTimeToCount;
-				_shakeAmount = airTimeToCount / MaxAirTime * MaxLandingShakeAmount;
-				_shakeDuration = _shakeAmount;
+				verticalSpeedDiff =
+					(verticalSpeedDiff - MinVerticalSpeedDiff) / VerticalSpeedDiffRange;
+				verticalSpeedDiff = verticalSpeedDiff < 0 ?
+					0 : verticalSpeedDiff > 1f ?
+						1f : verticalSpeedDiff;
+				_shakeAmount = verticalSpeedDiff / 1f * MaxLandingShakeAmount;
+				_shakeDuration = ShakeDuration;
 			}
 			else if (ship.PysSim.touchingWall && _shakeAmount < WallBounceShakeAmount)
 			{
 				_shakeAmount = WallBounceShakeAmount;
-				_shakeDuration = _shakeAmount;
+				_shakeDuration = ShakeDuration;
 			}
 			else if (ship.PysSim.isShipScraping && _shakeAmount < ScrapingShakeAmount)
 			{
 				_shakeAmount = ScrapingShakeAmount;
-				_shakeDuration = _shakeAmount;
+				_shakeDuration = ShakeDuration;
 			}
 
 			if (_shakeDuration > 0)
@@ -109,34 +156,57 @@ namespace Streamliner
 				_shakeDuration = 0;
 			}
 
-			_previousAirTime = ship.PysSim.AirTime;
+			_previousVerticalSpeed = currentVerticalVelocity;
 		}
-
 
 		internal static IEnumerator Shift()
 		{
 			while (true)
 			{
-				ShakeVector = Random.insideUnitCircle.normalized * _shakeAmount;
+				if (_shakeDuration > 0)
+					_shakeVector = Random.insideUnitCircle.normalized * _shakeAmount;
 				foreach (Panel p in Panels)
 				{
-					p.SetTargetPosition(_shiftAmount);
-					if (p.Position == p.TargetPosition)
+					p.SetTargetPosition(_shiftTarget);
+					if (p.Position == p.TargetPosition && _shakeDuration == 0)
 					{
-						p.SetPosition();
+						p.ResetPosition();
 						continue;
 					}
 
-					Vector2 shiftDelta = Vector2.SmoothDamp(p.Position, p.TargetPosition, ref p.CurrentSpeed, DampTime);
+					// always update position that's only affected by shifting
+					p.SetShiftedPosition(Vector2.SmoothDamp(
+						p.ShiftedPosition, p.TargetPosition, ref p.CurrentSpeed, DampTime
+					));
+
+					// if shake is in effect, force apply the shake to the shifted position,
+					// but don't actually change the stored variable.
 					if (_shakeDuration > 0)
 					{
-						shiftDelta += ShakeVector;
+						p.SetShakingPosition(_shakeVector);
+						p.SetPositionToShaking();
 					}
-					p.SetPosition(shiftDelta);
+					else
+					{
+						p.ResetShakingPosition();
+						p.SetPositionToShifted();
+					}
 				}
 
 				yield return null;
 			}
+		}
+
+		internal static void HideHud(ShipController ship)
+		{
+			if (ship != TargetShip) return;
+			foreach (Panel p in Panels) p.Hide();
+		}
+
+		internal static void ShowHud(ShipController ship)
+		{
+			if (ship != TargetShip) return;
+			foreach (Panel p in Panels) p.Show();
 		}
 	}
 

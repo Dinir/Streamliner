@@ -3143,63 +3143,31 @@ namespace Streamliner
 
 	public class ShifterHud : ScriptableHud
 	{
-		private Text slot1;
-		private Text slot2;
-		private Text slot3;
-		private Text slot0;
 		public override void Start()
 		{
 			base.Start();
-			slot1 = CustomComponents.GetById<Text>("Slot1");
-			slot2 = CustomComponents.GetById<Text>("Slot2");
-			slot3 = CustomComponents.GetById<Text>("Slot3");
-			slot0 = CustomComponents.GetById<Text>("Slot0");
-			slot2.GetComponent<RectTransform>().anchoredPosition += Vector2.down * slot2.GetComponent<RectTransform>().sizeDelta.y;
-			slot2.GetComponent<RectTransform>().sizeDelta += Vector2.right * 200;
-
+			Shifter.TargetShip = TargetShip;
 			StartCoroutine(Shifter.Shift());
+
+			NgRaceEvents.OnShipExploded += Shifter.HideHud;
+			NgRaceEvents.OnShipRespawn += Shifter.ShowHud;
 		}
 
 		public override void Update()
 		{
 			base.Update();
-			if (Input.GetKeyDown(KeyCode.Keypad7))
-			{
-				Shifter.DampTime += 0.05f;
-			}
-			else if (Input.GetKeyDown(KeyCode.Keypad4))
-			{
-				Shifter.DampTime -= 0.05f;
-			}
-			if (Input.GetKeyDown(KeyCode.Keypad8))
-			{
-			}
-			else if (Input.GetKeyDown(KeyCode.Keypad5))
-			{
-			}
-			if (Input.GetKeyDown(KeyCode.Keypad9))
-			{
-				Shifter.FactorShift += 1f;
-			}
-			else if (Input.GetKeyDown(KeyCode.Keypad6))
-			{
-				Shifter.FactorShift -= 1f;
-			}
-
-
 			Shifter.UpdateAmount(TargetShip);
-
-			slot1.text = Shifter.DampTime.ToString(CultureInfo.InvariantCulture);
-			slot2.text = Shifter.ShakeVector.ToString();
-			slot3.text = Shifter.FactorShift.ToString(CultureInfo.InvariantCulture);
-			slot0.text = TargetShip.PysSim.AirTime.ToString(CultureInfo.InvariantCulture);
 		}
 
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
 			StopCoroutine(Shifter.Shift());
+			Shifter.TargetShip = null;
 			Shifter.Panels.Clear();
+
+			NgRaceEvents.OnShipExploded -= Shifter.HideHud;
+			NgRaceEvents.OnShipRespawn -= Shifter.ShowHud;
 		}
 	}
 }
