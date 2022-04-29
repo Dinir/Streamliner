@@ -241,15 +241,19 @@ namespace Streamliner
 			TextAlpha transparencyIndex = TextAlpha.Full,
 			int tintIndex = -1,
 			int clarity = 3
-		) =>
-			Color.HSVToRGB(
-					StandardH[tintIndex < 0 ? OptionValueTint : tintIndex],
-					tintIndex == 0 ? 0 : StandardSV[clarity][0],
+		)
+		{
+			int initiatedTintIndex = tintIndex < 0 ? OptionValueTint : tintIndex;
+
+			return Color.HSVToRGB(
+					StandardH[initiatedTintIndex],
+					initiatedTintIndex == 0 ? 0 : StandardSV[clarity][0],
 					StandardSV[clarity][1]
 				) with
 				{
 					a = TintAlphaList[(int) transparencyIndex]
 				};
+		}
 
 		internal static Color GetPanelColor(
 			int tintIndex = 0
