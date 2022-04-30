@@ -850,12 +850,16 @@ namespace Streamliner
 		private static Color _defensiveColor;
 		private static Color _hudDefaultColor;
 
-		public IEnumerator ColorFade(bool enableIcon, bool offensive = false)
+		public IEnumerator ColorFade(
+			bool enableIcon, bool offensive = false, bool usePickupColor = true
+		)
 		{
 			Color startColor = enableIcon ?
 				Color.clear : _iconImage.color;
 			Color endColor = enableIcon ?
-				offensive ? _offensiveColor : _defensiveColor :
+				usePickupColor ?
+					offensive ? _offensiveColor : _defensiveColor :
+					_hudDefaultColor :
 				Color.clear;
 			Color transitionColor;
 			float t = enableIcon ? 0 : AnimationLength;
@@ -882,21 +886,28 @@ namespace Streamliner
 					yield return null;
 				}
 			}
-			while (t <= AnimationLength * 2)
+			/*
+			 * when enabling, only change to pickup color when usePickupColor is on
+			 * when disabling, usePickupColor doesn't matter
+			 */
+			if (!enableIcon || usePickupColor)
 			{
-				t += Time.deltaTime;
-				float secondFadeProgress = (t - AnimationLength) * AnimationSpeed;
-				if (!enableIcon)
+				while (t <= AnimationLength * 2)
 				{
-					_panelGroup.alpha = 1f - secondFadeProgress;
+					t += Time.deltaTime;
+					float secondFadeProgress = (t - AnimationLength) * AnimationSpeed;
+					if (!enableIcon)
+					{
+						_panelGroup.alpha = 1f - secondFadeProgress;
+					}
+					else
+					{
+						transitionColor = Color.Lerp(_iconImage.color, endColor, secondFadeProgress);
+						_bracketsImage.color = transitionColor;
+						_iconImage.color = transitionColor;
+					}
+					yield return null;
 				}
-				else
-				{
-					transitionColor = Color.Lerp(_iconImage.color, endColor, secondFadeProgress);
-					_bracketsImage.color = transitionColor;
-					_iconImage.color = transitionColor;
-				}
-				yield return null;
 			}
 			_bracketsImage.color = endColor;
 			_iconImage.color = endColor;

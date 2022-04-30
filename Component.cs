@@ -2598,7 +2598,7 @@ namespace Streamliner
 			if(_playerPanel.CurrentTransition is not null)
 				StopCoroutine(_playerPanel.CurrentTransition);
 			_playerPanel.CurrentTransition =
-				StartCoroutine(_playerPanel.ColorFade(true));
+				StartCoroutine(_playerPanel.ColorFade(true, usePickupColor: false));
 		}
 
 		public void HidePickup(PickupBase pickup, ShipController ship)
