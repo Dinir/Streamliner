@@ -3,6 +3,7 @@ using BallisticUnityTools.AssetApi;
 using BallisticUnityTools.Placeholders;
 using NgModding;
 using NgModding.Huds;
+using NgMp;
 using NgSettings;
 using NgSp;
 
@@ -323,6 +324,8 @@ namespace Streamliner
 			if (HudRegister.OptionPositionBoard && Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
+			if (NgNetworkBase.CurrentNetwork)
+				RegisterInternalHud("NetworkWaitingList");
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}
