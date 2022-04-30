@@ -108,6 +108,7 @@ namespace Streamliner
 
 		internal static void UpdateAmount(ShipController ship)
 		{
+			ShipSim sim = ship.PysSim;
 			Vector2 localVelocity =
 				ship.InverseTransformDirection(ship.RBody.velocity);
 			float currentVerticalVelocity = localVelocity.y;
@@ -139,12 +140,15 @@ namespace Streamliner
 				_shakeAmount = verticalSpeedDiff / 1f * MaxLandingShakeAmount;
 				_shakeDuration = ShakeDuration;
 			}
-			else if (ship.PysSim.touchingWall && _shakeAmount < WallBounceShakeAmount)
+			else if (sim.touchingWall && _shakeAmount < WallBounceShakeAmount)
 			{
 				_shakeAmount = WallBounceShakeAmount;
 				_shakeDuration = ShakeDuration;
 			}
-			else if (ship.PysSim.isShipScraping && _shakeAmount < ScrapingShakeAmount)
+			else if (
+				(sim.isShipScraping || sim.ScrapingShip) &&
+				_shakeAmount < ScrapingShakeAmount
+			)
 			{
 				_shakeAmount = ScrapingShakeAmount;
 				_shakeDuration = ShakeDuration;
