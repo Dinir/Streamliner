@@ -2204,18 +2204,22 @@ namespace Streamliner
 			_initiated = true;
 		}
 
+		private static Color GetAdaptedColor(Color inputColor)
+		{
+			return inputColor == Color.green ?
+				_textColor["green"] :
+				inputColor == Color.red ?
+					_textColor["red"] :
+					_defaultColor["Line"];
+		}
+
 		private void AddMessage(string message, ShipController ship, Color color)
 		{
 			// this will ignore messages that have an other ship as "a receiver"
 			if (ship != TargetShip)
 				return;
 
-			color =
-				color == Color.green ?
-				_textColor["green"] :
-				color == Color.red ?
-					_textColor["red"] :
-					_defaultColor["Line"];
+			color = GetAdaptedColor(color);
 
 			StringKind kind = GetStringKind(message);
 
