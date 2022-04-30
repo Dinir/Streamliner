@@ -323,9 +323,13 @@ namespace Streamliner
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			if (HudRegister.OptionPositionBoard && Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
-			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			if (NgNetworkBase.CurrentNetwork)
+			{
+				RegisterHud<RaceFinishCountdown>(HudRegister.Assets.GetComponent<HudComponents>("RaceFinishTimer", false));
 				RegisterInternalHud("NetworkWaitingList");
+			}
+
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
 	}
@@ -343,6 +347,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			RegisterHud<TeamScoreboard>(HudRegister.Assets.GetComponent<HudComponents>("Teamboard", false));
+
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
@@ -361,6 +366,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			if (NgCampaign.Enabled)
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
+
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 		}
 	}
@@ -376,6 +382,7 @@ namespace Streamliner
 			RegisterHud<TurboDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Turbo", false));
 			if (NgCampaign.Enabled)
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
+
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
@@ -391,6 +398,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			if (NgCampaign.Enabled)
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
+
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
@@ -409,6 +417,7 @@ namespace Streamliner
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			if (HudRegister.OptionPositionBoard && Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 		}
 	}
@@ -423,6 +432,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
@@ -437,6 +447,7 @@ namespace Streamliner
 			RegisterHud<UpsurgeTracker>(HudRegister.Assets.GetComponent<HudComponents>("Zone", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}
@@ -453,6 +464,7 @@ namespace Streamliner
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<TurboDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Turbo", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
+
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
 		}

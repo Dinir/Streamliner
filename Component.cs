@@ -12,6 +12,7 @@ using NgGame;
 using NgLib;
 using NgModes;
 using NgMp;
+using NgMp.Packets;
 using NgPickups;
 using NgPickups.Physical;
 using NgSettings;
@@ -3154,6 +3155,64 @@ namespace Streamliner
 			{
 				NgUiEvents.OnZoneNumberUpdate -= UpdateZone;
 			}
+		}
+	}
+
+	public class RaceFinishCountdown : ScriptableHud
+	{
+		private RectTransform _panel;
+		private Text _label;
+		private Text _value;
+		private float _timer;
+
+		public override void Start()
+		{
+			base.Start();
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			_label = _panel.Find("Label").GetComponent<Text>();
+			_value = _panel.Find("Value").GetComponent<Text>();
+			_label.color = GetTintColor(TextAlpha.ThreeQuarters);
+			_value.color = GetTintColor(TextAlpha.NineTenths);
+
+			NgNetworkBase.CurrentNetwork.OnCountdownStarted += CountdownInitiate;
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			if (!_value.gameObject.activeSelf)
+				return;
+
+			if (_timer >= 0f)
+			{
+				_timer -= Time.deltaTime;
+				if (_timer < 0f) _timer = 0f;
+			}
+
+			_value.text =
+				(Math.Round(_timer * 100f) / 100.0).ToString("F2", CultureInfo.InvariantCulture);
+		}
+
+		private void CountdownInitiate(NgCountdownHeaders type)
+		{
+			if (type != NgCountdownHeaders.RaceFinish)
+				return;
+
+			_label.gameObject.SetActive(true);
+			_value.gameObject.SetActive(true);
+
+			_label.text = "race ends in";
+			_timer = GetCountdownTime();
+		}
+
+		// can't access the actual value at the moment so here's a placeholder.
+		private static float GetCountdownTime() => 30.0f;
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			NgNetworkBase.CurrentNetwork.OnCountdownStarted -= CountdownInitiate;
 		}
 	}
 

@@ -60,3 +60,6 @@ MonoBehaviour:
       type: 3}
   - Name: Shifter
     Object: {fileID: 940403939630811218, guid: 777406d5ca2056c4c81ae79afab5c0ff, type: 3}
+  - Name: RaceFinishTimer
+    Object: {fileID: 1796503289498645355, guid: 6951d4f4b11ed1b499b5783960311342,
+      type: 3}
