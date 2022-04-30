@@ -1821,28 +1821,38 @@ namespace Streamliner
 		{
 			List<RawValuePair> orderedList =
 				_racerRelativeSections.OrderByDescending(p => p.Value).ToList();
-			int indexFirstShipAlive = 0;
-			int indexLastShipAlive = orderedList.Count - 1;
+			int endDistance;
 
-			while (Ships.Loaded[orderedList[indexFirstShipAlive].Id].Eliminated)
-				if (++indexFirstShipAlive >= orderedList.Count)
-				{
-					indexFirstShipAlive = -1;
-					break;
-				}
-			while (Ships.Loaded[orderedList[indexLastShipAlive].Id].Eliminated)
-				if (--indexLastShipAlive < 0)
-				{
-					indexLastShipAlive = -1;
-					break;
-				}
+			if (orderedList.Count <= 2)
+				endDistance = _halfTotalSections;
+			else
+			{
+				int indexFirstShipAlive = 0;
+				int indexLastShipAlive = orderedList.Count - 1;
 
-			int endDistance = Math.Max(
-				indexFirstShipAlive >= 0 ?
-					orderedList[indexFirstShipAlive].Value : 1, // >=0
-				indexLastShipAlive >= 0 ?
-					Math.Abs(orderedList[indexLastShipAlive].Value) : 1 // <= 0
-			);
+				while (Ships.Loaded[orderedList[indexFirstShipAlive].Id].Eliminated)
+					if (++indexFirstShipAlive >= orderedList.Count)
+					{
+						indexFirstShipAlive = -1;
+						break;
+					}
+
+				while (Ships.Loaded[orderedList[indexLastShipAlive].Id].Eliminated)
+					if (--indexLastShipAlive < 0)
+					{
+						indexLastShipAlive = -1;
+						break;
+					}
+
+				endDistance = Math.Max(
+					indexFirstShipAlive >= 0 ?
+						orderedList[indexFirstShipAlive].Value :
+						1, // Value >= 0
+					indexLastShipAlive >= 0 ?
+						Math.Abs(orderedList[indexLastShipAlive].Value) :
+						1 // Value <= 0
+				);
+			}
 
 			int siblingIndex = 0;
 			bool siblingIndexUpdateFromTop = true;
