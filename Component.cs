@@ -2048,20 +2048,17 @@ namespace Streamliner
 		private class Line
 		{
 			internal readonly Text Value;
+			private readonly CanvasGroup _cg;
 			public float Alpha
 			{
-				set
-				{
-					Color color = Value.color;
-					color.a = value;
-					Value.color = color;
-				}
-				get => Value.color.a;
+				set => _cg.alpha = value;
+				get => _cg.alpha;
 			}
 
 			public Line(RectTransform template)
 			{
 				Value = template.GetComponent<Text>();
+				_cg = template.GetComponent<CanvasGroup>();
 			}
 		}
 		private readonly float[] _lineDisplayTime = new float[LineMax];
@@ -2296,6 +2293,7 @@ namespace Streamliner
 				line = _lines[i];
 				Line lineBelow = _lines[i - 1];
 
+				line.Alpha = lineBelow.Alpha;
 				line.Value.text = lineBelow.Value.text;
 				line.Value.color = lineBelow.Value.color;
 				_lineDisplayTime[i] = _lineDisplayTime[i - 1];
@@ -2303,6 +2301,7 @@ namespace Streamliner
 			}
 
 			line = _lines[0];
+			line.Alpha = 1f;
 			line.Value.text = message;
 			line.Value.color = color;
 			_lineDisplayTime[0] = DisplayTimeMax;
@@ -2338,6 +2337,7 @@ namespace Streamliner
 					!_lineFadeOutInProgress[i]
 				)
 				{
+					_lines[i].Alpha = 0f;
 					_lines[i].Value.text = "";
 					_lines[i].Value.color = _defaultColor["Line"];
 				}
