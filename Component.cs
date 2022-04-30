@@ -1807,12 +1807,13 @@ namespace Streamliner
 
 		private void SetSingleNode()
 		{
+			int previousId = _singleNode.Id;
 			_singleNode.Id =
 				Ships.FindShipInPlace(TargetShip.CurrentPlace == 1 ? 2 : 1).ShipId;
 
 			_singleNode.SetPosition(ConvertDistanceRate(
 				(float) _racerRelativeSections[_singleNode.Id].Value / _halfTotalSections
-			));
+			), previousId != _singleNode.Id);
 		}
 
 		private void SetMultipleNodes()
