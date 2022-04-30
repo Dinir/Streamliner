@@ -2284,12 +2284,19 @@ namespace Streamliner
 				ship.LastAttacker is not null ?
 					ship.LastAttacker.ShipName + " eliminated " + ship.ShipName :
 					ship.ShipName + " eliminated";
-			// gonna show this message to the player ship,
-			// so change this "receiver" parameter value to TargetShip.
-			AddMessage(message, TargetShip, Color.red);
+
+			InsertMessageLine(
+				message,
+				GetAdaptedColor(Color.red),
+				/*
+				 * Motion effect includes hiding hud on getting exploded,
+				 * so if it's disabled the extended display time is not needed.
+				 */
+				OptionMotion && ship == TargetShip ? Gamemode.DefaultRespawnTime : 0
+			);
 		}
 
-		private void InsertMessageLine(string message, Color color)
+		private void InsertMessageLine(string message, Color color, float extendTime = 0)
 		{
 			Line line;
 			for (int i = _lines.Count - 1; i > 0; i--)
@@ -2308,7 +2315,7 @@ namespace Streamliner
 			line.Alpha = 1f;
 			line.Value.text = message;
 			line.Value.color = color;
-			_lineDisplayTime[0] = DefaultDisplayTime;
+			_lineDisplayTime[0] = DefaultDisplayTime + extendTime;
 			_lineFadeOutTimeRemaining[0] = 0f;
 		}
 
