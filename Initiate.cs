@@ -283,10 +283,8 @@ namespace Streamliner
 	}
 
 	/*
-	 * Brief Table of Components for Gamemodes
+	 * Brief Table of Vanilla Hud Components for Gamemodes
 	 * For an accurate list, you gotta check where each classes of `NgUi.RaceUi.HUD` are loaded.
-	 * But just looking at the screen already gives me enough to start off,
-	 * so making an accurate list was not worth to invest more time.
 	 *
 	 *            R  TR TT SL SU KN EL UP RH
 	 * Speed      V  V  V  V  V  V  V  V  V
@@ -298,12 +296,13 @@ namespace Streamliner
 	 * Lap        V  V  V  .  .  .  .  .  .
 	 * Position   V  V  .  .  .  V  V  .  V
 	 * Pitlane    V  V  V  .  .  V  .  .  .
-	 * Message    V  V  V  V  V  V  V  ?  V
+	 * Message    V  V  V  V  V  V  V  V  V
 	 * Pickup     V  V  .  V  .  V  V  .  V
 	 * Board      V1 V2 .  .  .  V1 V  V2 V
 	 * Awards     .  .  V3 .  V3 .  .  .  .
+	 *
 	 * 1: when `Hud.GetPositionBoardEnabled()` is `true`
-	 * 2: replace the default one with a variation
+	 * 2: replaces the default one with a variation
 	 * 3: when `NgCampaign.Enabled` is `true`
 	 */
 
