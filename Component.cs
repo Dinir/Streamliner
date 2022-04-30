@@ -1896,7 +1896,15 @@ namespace Streamliner
 		}
 
 		private static float ConvertDistanceRate(float distanceRate) =>
-			(float) ( ( Math.Sin(distanceRate*Math.PI/2) + 1 ) / 2 );
+			(float) (
+				(
+					Math.Sin(
+						(distanceRate > 1f ? 1f :
+							distanceRate < -1f ? -1f : distanceRate)
+						* Math.PI / 2
+					) + 1
+				) / 2
+			);
 
 		public override void OnDestroy()
 		{
