@@ -2265,10 +2265,7 @@ namespace Streamliner
 
 		private void AddEliminationMessage(ShipController ship)
 		{
-			if (
-				!RaceManager.CurrentGamemode.Configuration.KillFeedEnabled ||
-				NgNetworkBase.CurrentNetwork is not null
-			)
+			if (!RaceManager.CurrentGamemode.Configuration.KillFeedEnabled)
 				return;
 
 			string message =
