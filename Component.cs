@@ -1999,7 +1999,7 @@ namespace Streamliner
 
 		private const int LineMax = 3;
 		private const float LapResultLineHeight = 22f; // at hud font size 15
-		private const float DisplayTimeMax = 3.0f;
+		private const float DefaultDisplayTime = 3.0f;
 		private const int FadeOutSpeed = 9;
 		private const float FadeOutTimeMax = 1.2f;
 		private const int WrongWayFadeSpeed = 13;
@@ -2253,7 +2253,7 @@ namespace Streamliner
 				}
 
 				_timeGroup.alpha = 1f;
-				_timeDisplayTime = DisplayTimeMax;
+				_timeDisplayTime = DefaultDisplayTime;
 				_timeFadeOutTimeRemaining = 0f;
 			}
 			else
@@ -2271,7 +2271,7 @@ namespace Streamliner
 
 			_nowPlaying.text = songName;
 			_nowPlaying.color = _defaultColor["NowPlaying"];
-			_npDisplayTime = DisplayTimeMax;
+			_npDisplayTime = DefaultDisplayTime;
 			_npFadeOutTimeRemaining = 0f;
 		}
 
@@ -2308,7 +2308,7 @@ namespace Streamliner
 			line.Alpha = 1f;
 			line.Value.text = message;
 			line.Value.color = color;
-			_lineDisplayTime[0] = DisplayTimeMax;
+			_lineDisplayTime[0] = DefaultDisplayTime;
 			_lineFadeOutTimeRemaining[0] = 0f;
 		}
 
@@ -2473,7 +2473,7 @@ namespace Streamliner
 
 			while (_npFadeOutTimeRemaining > 0f)
 			{
-				if (_npDisplayTime == DisplayTimeMax)
+				if (_npDisplayTime >= DefaultDisplayTime)
 				{
 					_nowPlaying.color = _defaultColor["NowPlaying"];
 					break;
