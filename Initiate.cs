@@ -120,6 +120,21 @@ namespace Streamliner
 					Path.Combine(_modPathOnClassScope, "WeaponSprites/hellstorm.png")));
 		}
 
+		/*
+		 * Settings Handling Flow
+		 *
+		 * Starting, restarting or quitting a race:
+		 *	 OnSavePreferences -> OnLoadSettings -> OnLoadPreferences
+		 *
+		 * User enters any menus in "config":
+		 *   OnLoadSettings -> GenerateModUi -> OnLoadSettings
+		 *
+		 * User selects "save" and exits from any menus in "config":
+		 *   ModUiToCode -> OnSaveSettings -> OnSaveSettings
+		 *
+		 * Any value changes made by the user are applied in ModUiToCode.
+		 */
+
 		private void GenerateModUi(ModOptionsUiContext ctx)
 		{
 			ctx.GenerateHeader(OptionSectionDisplay);
@@ -233,6 +248,8 @@ namespace Streamliner
 			OptionLowEnergy = ctx.GetSelectorValue("LowEnergyTransition");
 			OptionRechargeAmount = ctx.GetSelectorValue("RechargeAmount") == 1;
 			OptionBestTime = ctx.GetSelectorValue("BestTime");
+
+			Shifter.ApplySettings();
 		}
 
 		private void OnLoadSettings()
@@ -254,8 +271,6 @@ namespace Streamliner
 			OptionBestTime = ini.ReadValue(OptionSectionAddition, "BestTime", OptionBestTime);
 
 			ini.Close();
-
-			Shifter.ApplySettings();
 		}
 
 		private void OnSaveSettings()
@@ -277,8 +292,6 @@ namespace Streamliner
 			ini.WriteValue(OptionSectionAddition, "BestTime", OptionBestTime);
 
 			ini.Close();
-
-			Shifter.ApplySettings();
 		}
 	}
 
