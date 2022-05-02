@@ -639,36 +639,50 @@ namespace Streamliner
 	{
 		protected readonly RectTransform RightGauge;
 		protected readonly Image RightGaugeImage;
+		protected internal readonly Text SmallValue;
+		protected readonly bool UsingSmallValue;
 
 		internal enum StartingPoint
 		{
 			Edge, Center
 		}
 
-		public DoubleGaugePanel(RectTransform panelElement) : base(panelElement)
+		public DoubleGaugePanel(RectTransform panelElement, bool usingSmallValue = false) : base(panelElement)
 		{
 			RightGauge = (RectTransform) GaugeBackground.Find("RightGauge");
 			RightGaugeImage = RightGauge.GetComponent<Image>();
 			// the bar borders are perpendicular straight lines
 			CurrentSize.y = MaxSize.y;
+			UsingSmallValue = usingSmallValue;
+			if (usingSmallValue)
+				SmallValue = panelElement.Find("SmallValue").GetComponent<Text>();
 
-			ChangeRightGaugeColor();
+			ChangeAdditionalPartsColor();
 			FillBoth(0f);
 		}
 
-		private void ChangeRightGaugeColor() =>
+		private void ChangeAdditionalPartsColor()
+		{
 			RightGaugeImage.color = GaugeColor;
+			if (UsingSmallValue) SmallValue.color = GaugeColor;
+		}
+
+		private void ChangeAdditionalPartsColor(Color color)
+		{
+			RightGaugeImage.color = color;
+			if (UsingSmallValue) SmallValue.color = color;
+		}
 
 		protected override void ChangeColor(Color color)
 		{
 			base.ChangeColor(color);
-			RightGaugeImage.color = color;
+			ChangeAdditionalPartsColor(color);
 		}
 
 		public override void ChangeDataPartColor(Color color)
 		{
 			base.ChangeDataPartColor(color);
-			RightGaugeImage.color = color;
+			ChangeAdditionalPartsColor(color);
 		}
 
 		public void FillBoth(float amount)
