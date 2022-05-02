@@ -153,12 +153,7 @@ namespace Streamliner
 				"red & green", "magenta & green", "red & cyan"
 			);
 
-			ctx.GenerateSelector(
-				"TargetTimer", "target timer",
-				"Put a countdown timer on top of the screen on Time Trial and Speed Lap mode.",
-				OptionTargetTimer ? 1 : 0,
-				"off", "on"
-			);
+			ctx.GenerateSpace();
 
 			ctx.GenerateSelector(
 				"PositionBoard", "position board",
@@ -227,6 +222,13 @@ namespace Streamliner
 			ctx.GenerateSpace();
 
 			ctx.GenerateSelector(
+				"TargetTimer", "target timer",
+				"Put a countdown timer on top of the screen on Time Trial and Speed Lap mode.",
+				OptionTargetTimer ? 1 : 0,
+				"off", "on"
+			);
+
+			ctx.GenerateSelector(
 				"BestTime", "best time",
 				"Set which time to show as the best time on Race and Time Trial mode.",
 				OptionBestTime,
@@ -238,7 +240,6 @@ namespace Streamliner
 		{
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
 			OptionTimeDiffColour = ctx.GetSelectorValue("TimeDiffColour");
-			OptionTargetTimer = ctx.GetSelectorValue("TargetTimer") == 1;
 			OptionPositionBoard = ctx.GetSelectorValue("PositionBoard") == 1;
 			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
 			OptionShiftMultiplier = ctx.GetSliderValue("ShiftMultiplier");
@@ -247,6 +248,7 @@ namespace Streamliner
 			OptionEnergyChange = ctx.GetSelectorValue("EnergyChange") == 1;
 			OptionLowEnergy = ctx.GetSelectorValue("LowEnergyTransition");
 			OptionRechargeAmount = ctx.GetSelectorValue("RechargeAmount") == 1;
+			OptionTargetTimer = ctx.GetSelectorValue("TargetTimer") == 1;
 			OptionBestTime = ctx.GetSelectorValue("BestTime");
 
 			Shifter.ApplySettings();
@@ -259,7 +261,6 @@ namespace Streamliner
 
 			OptionValueTint = ini.ReadValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			OptionTimeDiffColour = ini.ReadValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
-			OptionTargetTimer = ini.ReadValue(OptionSectionDisplay, "TargetTimer", OptionTargetTimer);
 			OptionPositionBoard = ini.ReadValue(OptionSectionDisplay, "PositionBoard", OptionPositionBoard);
 			OptionMotion = ini.ReadValue(OptionSectionMotion, "Motion", OptionMotion);
 			OptionShiftMultiplier = (float) ini.ReadValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
@@ -268,6 +269,7 @@ namespace Streamliner
 			OptionEnergyChange = ini.ReadValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
 			OptionLowEnergy = ini.ReadValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
 			OptionRechargeAmount = ini.ReadValue(OptionSectionAddition, "RechargeAmount", OptionRechargeAmount);
+			OptionTargetTimer = ini.ReadValue(OptionSectionAddition, "TargetTimer", OptionTargetTimer);
 			OptionBestTime = ini.ReadValue(OptionSectionAddition, "BestTime", OptionBestTime);
 
 			ini.Close();
@@ -280,7 +282,6 @@ namespace Streamliner
 
 			ini.WriteValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			ini.WriteValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
-			ini.WriteValue(OptionSectionDisplay, "TargetTimer", OptionTargetTimer);
 			ini.WriteValue(OptionSectionDisplay, "PositionBoard", OptionPositionBoard);
 			ini.WriteValue(OptionSectionMotion, "Motion", OptionMotion);
 			ini.WriteValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
@@ -289,6 +290,7 @@ namespace Streamliner
 			ini.WriteValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
 			ini.WriteValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
 			ini.WriteValue(OptionSectionAddition, "RechargeAmount", OptionRechargeAmount);
+			ini.WriteValue(OptionSectionAddition, "TargetTimer", OptionTargetTimer);
 			ini.WriteValue(OptionSectionAddition, "BestTime", OptionBestTime);
 
 			ini.Close();
