@@ -787,8 +787,8 @@ namespace Streamliner
 			 */
 			_displayType = gamemodeName switch
 			{
-				StringSpeedLap => _isCampaign || OptionCountdownTimer ? DisplayType.Big : DisplayType.None,
-				StringTimeTrial => _isCampaign || OptionCountdownTimer ? DisplayType.Both : DisplayType.Normal,
+				StringSpeedLap => _isCampaign || OptionTargetTimer ? DisplayType.Big : DisplayType.None,
+				StringTimeTrial => _isCampaign || OptionTargetTimer ? DisplayType.Both : DisplayType.Normal,
 				_ => DisplayType.Normal
 			};
 

@@ -23,7 +23,7 @@ namespace Streamliner
 		private const string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint;
 		public static int OptionTimeDiffColour;
-		public static bool OptionCountdownTimer = true;
+		public static bool OptionTargetTimer = true;
 		public static bool OptionPositionBoard = true;
 		public static bool OptionMotion = true;
 		public static float OptionShiftMultiplier = 1f;
@@ -154,9 +154,9 @@ namespace Streamliner
 			);
 
 			ctx.GenerateSelector(
-				"CountDownTimer", "countdown timer",
+				"TargetTimer", "target timer",
 				"Put a countdown timer on top of the screen on Time Trial and Speed Lap mode.",
-				OptionCountdownTimer ? 1 : 0,
+				OptionTargetTimer ? 1 : 0,
 				"off", "on"
 			);
 
@@ -238,7 +238,7 @@ namespace Streamliner
 		{
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
 			OptionTimeDiffColour = ctx.GetSelectorValue("TimeDiffColour");
-			OptionCountdownTimer = ctx.GetSelectorValue("CountDownTimer") == 1;
+			OptionTargetTimer = ctx.GetSelectorValue("TargetTimer") == 1;
 			OptionPositionBoard = ctx.GetSelectorValue("PositionBoard") == 1;
 			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
 			OptionShiftMultiplier = ctx.GetSliderValue("ShiftMultiplier");
@@ -259,7 +259,7 @@ namespace Streamliner
 
 			OptionValueTint = ini.ReadValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			OptionTimeDiffColour = ini.ReadValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
-			OptionCountdownTimer = ini.ReadValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
+			OptionTargetTimer = ini.ReadValue(OptionSectionDisplay, "TargetTimer", OptionTargetTimer);
 			OptionPositionBoard = ini.ReadValue(OptionSectionDisplay, "PositionBoard", OptionPositionBoard);
 			OptionMotion = ini.ReadValue(OptionSectionMotion, "Motion", OptionMotion);
 			OptionShiftMultiplier = (float) ini.ReadValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
@@ -280,7 +280,7 @@ namespace Streamliner
 
 			ini.WriteValue(OptionSectionDisplay, "TextTint", OptionValueTint);
 			ini.WriteValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
-			ini.WriteValue(OptionSectionDisplay, "CountDownTimer", OptionCountdownTimer);
+			ini.WriteValue(OptionSectionDisplay, "TargetTimer", OptionTargetTimer);
 			ini.WriteValue(OptionSectionDisplay, "PositionBoard", OptionPositionBoard);
 			ini.WriteValue(OptionSectionMotion, "Motion", OptionMotion);
 			ini.WriteValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
