@@ -816,6 +816,7 @@ namespace Streamliner
 		private bool _usingLeftTimeDisplay;
 		private bool _showingLapTimeAdvantage;
 		private string _gamemodeName;
+		private bool _isPointToPointTrack;
 		private bool _isCampaign;
 		private float _bestTime;
 		private float _bronzeTarget;
@@ -843,6 +844,7 @@ namespace Streamliner
 			_bigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
 
 			_gamemodeName = RaceManager.CurrentGamemode.Name;
+			_isPointToPointTrack = RaceManager.Instance.PointToPointTrack;
 			_isCampaign = NgCampaign.Enabled;
 			SetTimeType(_gamemodeName);
 			SetDisplayType(_gamemodeName);
@@ -978,7 +980,9 @@ namespace Streamliner
 					TargetShip.TargetTime,
 				true when TargetShip.BestLapTime <= 0f
 				          && TargetShip.TargetTime > 0f =>
-					TargetShip.TargetTime / Race.GetBaseLapCountFor(Race.Speedclass),
+					TargetShip.TargetTime / (
+						_isPointToPointTrack ? 1 : Race.GetBaseLapCountFor(Race.Speedclass)
+					),
 				true => TargetShip.BestLapTime,
 				false => TargetShip.HasBestLapTime ?
 					TargetShip.BestLapTime : -1f
