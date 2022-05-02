@@ -1162,41 +1162,40 @@ namespace Streamliner
 				) * OneLetterWidth
 				+ (_valueType == ValueType.Score ? OneDotWidth + OneLetterWidth * 2f : 0f);
 
-			if (additionalWidth == 0f)
-				return;
+			if (additionalWidth > 0f)
+			{
+				Vector2 widthAdjustmentVector2 = new Vector2(additionalWidth, 0);
+				Vector3 widthAdjustmentVector3 = new Vector3(additionalWidth, 0, 0);
 
-			Vector2 widthAdjustmentVector2 =
-				new Vector2(additionalWidth, 0);
-			Vector3 widthAdjustmentVector3 =
-				new Vector3(additionalWidth, 0, 0);
+				TargetRow.Find("Target").GetComponent<RectTransform>()
+					.localPosition -= widthAdjustmentVector3;
+				TargetRow.Find("TargetValue").GetComponent<RectTransform>()
+					.sizeDelta += widthAdjustmentVector2;
+
+				/*
+				 * I don't know why I can't do this with
+				 * either `localScale` or `lossyScale` of
+				 * the directly related component `_templateGauge`.
+				 *
+				 * Since I know gauge scale is 1, and it's a child of the bg,
+				 * I'll just use the bg scale that's not 1.
+				 */
+				Vector2 gaugeAdjustmentVector =
+					widthAdjustmentVector2 / TemplateGaugeBackground.localScale;
+				RectTransform name = EntrySlotTemplate.Find("Name").GetComponent<RectTransform>();
+
+				TemplateGaugeBackground.sizeDelta -= gaugeAdjustmentVector;
+				TemplateGauge.sizeDelta -= gaugeAdjustmentVector;
+				name.localPosition -= widthAdjustmentVector3;
+				name.sizeDelta -= widthAdjustmentVector2 / name.localScale;
+				EntrySlotTemplate.Find("Plate").GetComponent<RectTransform>()
+					.sizeDelta += widthAdjustmentVector2;
+			}
 
 			TargetRow.Find("TargetValue").Find("Value").GetComponent<Text>()
 				.text = _valueType == ValueType.Score ?
 				IntStrDb.GetNumber((int) targetScore) + ".00" :
 				IntStrDb.GetNumber((int) targetScore);
-			TargetRow.Find("Target").GetComponent<RectTransform>()
-				.localPosition -= widthAdjustmentVector3;
-			TargetRow.Find("TargetValue").GetComponent<RectTransform>()
-				.sizeDelta += widthAdjustmentVector2;
-
-			/*
-			 * I don't know why I can't do this with
-			 * either `localScale` or `lossyScale` of
-			 * the directly related component `_templateGauge`.
-			 *
-			 * Since I know gauge scale is 1, and it's a child of the bg,
-			 * I'll just use the bg scale that's not 1.
-			 */
-			Vector2 gaugeAdjustmentVector =
-				widthAdjustmentVector2 / TemplateGaugeBackground.localScale;
-			RectTransform name = EntrySlotTemplate.Find("Name").GetComponent<RectTransform>();
-
-			TemplateGaugeBackground.sizeDelta -= gaugeAdjustmentVector;
-			TemplateGauge.sizeDelta -= gaugeAdjustmentVector;
-			name.localPosition -= widthAdjustmentVector3;
-			name.sizeDelta -= widthAdjustmentVector2 / name.localScale;
-			EntrySlotTemplate.Find("Plate").GetComponent<RectTransform>()
-					.sizeDelta += widthAdjustmentVector2;
 		}
 
 		public void InitiateSlots(List<ShipController> loadedShips)
