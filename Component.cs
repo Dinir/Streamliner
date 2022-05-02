@@ -2531,7 +2531,7 @@ namespace Streamliner
 			NgUiEvents.OnWeaponWarning += Warn;
 		}
 
-		public void ShowPickup(PickupBase pickup, ShipController ship)
+		private void ShowPickup(PickupBase pickup, ShipController ship)
 		{
 			if (ship != TargetShip)
 				return;
@@ -2546,7 +2546,7 @@ namespace Streamliner
 				));
 		}
 
-		public void HidePickup(PickupBase pickup, ShipController ship)
+		private void HidePickup(PickupBase pickup, ShipController ship)
 		{
 			if (ship != TargetShip)
 				return;
@@ -2556,7 +2556,7 @@ namespace Streamliner
 				StartCoroutine(_playerPanel.ColorFade(false));
 		}
 
-		public void Warn(Pickup pickup)
+		private void Warn(Pickup pickup)
 		{
 			if(_warningPanel.CurrentTransition is not null)
 				StopCoroutine(_warningPanel.CurrentTransition);
@@ -2609,7 +2609,7 @@ namespace Streamliner
 			PickupBase.OnPickupDeinit += HidePickup;
 		}
 
-		public void ShowPickup(PickupBase pickup, ShipController ship)
+		private void ShowPickup(PickupBase pickup, ShipController ship)
 		{
 			if (ship != TargetShip)
 				return;
@@ -2620,7 +2620,7 @@ namespace Streamliner
 				StartCoroutine(_playerPanel.ColorFade(true, usePickupColor: false));
 		}
 
-		public void HidePickup(PickupBase pickup, ShipController ship)
+		private void HidePickup(PickupBase pickup, ShipController ship)
 		{
 			if (ship != TargetShip)
 				return;
