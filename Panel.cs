@@ -292,6 +292,12 @@ namespace Streamliner
 			"--" + StringAfterSecond +
 			"--" + StringAfterHundredth;
 
+		private const string StringAfterSecondNoDecimal =
+			".";
+		private static readonly string EmptyTimeNoDecimal =
+			"-" + StringAfterMinute +
+			"--" + StringAfterSecondNoDecimal;
+
 		internal string ToString(float value)
 		{
 			if (value < 0f)
@@ -314,6 +320,25 @@ namespace Streamliner
 			_sb.Append(StringAfterSecond);
 			_sb.Append(hundredths);
 			_sb.Append(StringAfterHundredth);
+
+			return _sb.ToString();
+		}
+
+		internal string ToStringNoDecimal(float value)
+		{
+			if (value < 0f)
+				return EmptyTimeNoDecimal;
+
+			_sb.Clear();
+			string minutes = IntStrDb.GetNumber(
+				Mathf.FloorToInt(value / 60f));
+			string seconds = IntStrDb.GetNoSingleCharNumber(
+				Mathf.FloorToInt(value) % 60);
+
+			_sb.Append(minutes);
+			_sb.Append(StringAfterMinute);
+			_sb.Append(seconds);
+			_sb.Append(StringAfterSecondNoDecimal);
 
 			return _sb.ToString();
 		}

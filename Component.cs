@@ -839,7 +839,7 @@ namespace Streamliner
 			_normalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
 			_normalDisplayValue = _normalDisplay.Find("Value").GetComponent<Text>();
 			_normalDisplayValue.color = GetTintColor();
-			_bigDisplay = new DoubleGaugePanel(CustomComponents.GetById("Big"));
+			_bigDisplay = new DoubleGaugePanel(CustomComponents.GetById("Big"), true);
 			_bigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
 
 			_gamemodeName = RaceManager.CurrentGamemode.Name;
@@ -1078,13 +1078,16 @@ namespace Streamliner
 		{
 			if (_currentTime < 0f || _lapInvalidated)
 			{
-				_bigDisplay.Value.text = _bigTimeTextBuilder.ToString(-1f);
+				_bigDisplay.Value.text = _bigTimeTextBuilder.ToStringNoDecimal(-1f);
+				_bigDisplay.SmallValue.text = "--";
 				_bigDisplay.FillBoth(0f);
 				return;
 			}
 			if (_targetTime <= 0f)
 			{
-				_bigDisplay.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
+				_bigDisplay.Value.text = _bigTimeTextBuilder.ToStringNoDecimal(_currentTime);
+				_bigDisplay.SmallValue.text =
+					IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(_currentTime * 100f % 100f));
 				_bigDisplay.FillBoth(1f);
 				return;
 			}
@@ -1094,7 +1097,9 @@ namespace Streamliner
 			if (_showingLapTimeAdvantage)
 				timeLeft += _averageLapTimeAdvantage;
 			timeLeft = timeLeft < 0f ? 0f : timeLeft;
-			_bigDisplay.Value.text = _bigTimeTextBuilder.ToString(timeLeft);
+			_bigDisplay.Value.text = _bigTimeTextBuilder.ToStringNoDecimal(timeLeft);
+			_bigDisplay.SmallValue.text =
+				IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(timeLeft * 100f % 100f));
 			timeLeft = timeLeft > _targetTime ? _targetTime : timeLeft;
 			_bigDisplay.FillBoth(timeLeft / timeMax);
 		}
