@@ -1861,6 +1861,7 @@ namespace Streamliner
 						Math.Abs(orderedList[indexLastShipAlive].Value) :
 						1 // Value <= 0
 				);
+				endDistance = endDistance < 1 ? 1 : endDistance;
 			}
 
 			int siblingIndex = 0;
