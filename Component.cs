@@ -31,7 +31,7 @@ namespace Streamliner
 {
 	public class Speedometer : ScriptableHud
 	{
-		internal SpeedPanel Panel;
+		private SpeedPanel _panel;
 		private float _computedValue;
 
 		private readonly Color _highlightColor = GetTintColor(clarity: 0);
@@ -47,22 +47,22 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = new SpeedPanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
+			_panel = new SpeedPanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 
 		}
 
 		public override void Update()
 		{
 			base.Update();
-			Panel.FillAccel(GetHudAccelWidth());
-			Panel.Fill(GetHudSpeedWidth());
-			Panel.Value.text = GetSpeedValueString();
+			_panel.FillAccel(GetHudAccelWidth());
+			_panel.Fill(GetHudSpeedWidth());
+			_panel.Value.text = GetSpeedValueString();
 
 			if (!OptionSpeedHighlight)
 				return;
 
-			_currentSpeed = Panel.CurrentSize.x;
+			_currentSpeed = _panel.CurrentSize.x;
 			ColorSpeedComponent();
 			_previousSpeed = _currentSpeed;
 		}
@@ -98,7 +98,7 @@ namespace Streamliner
 				_speedDecreaseAnimationTimer = 0f;
 			}
 
-			Color color = Panel.Value.color;
+			Color color = _panel.Value.color;
 
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
@@ -110,19 +110,19 @@ namespace Streamliner
 
 			if (_speedIncreaseAnimationTimer > 0f)
 			{
-				color = Color.Lerp(color, Panel.GaugeColor, Time.deltaTime * AnimationSpeed);
+				color = Color.Lerp(color, _panel.GaugeColor, Time.deltaTime * AnimationSpeed);
 				_speedIncreaseAnimationTimer -= Time.deltaTime;
 			}
 			else
 				_speedIncreaseAnimationTimer = 0f;
 
-			Panel.ChangeDataPartColor(color);
+			_panel.ChangeDataPartColor(color);
 		}
 	}
 
 	public class EnergyMeter : ScriptableHud
 	{
-		internal RectTransform Panel;
+		private RectTransform _panel;
 		private Text _value;
 		private Text _delta;
 		private Image _gaugeBackground;
@@ -196,11 +196,11 @@ namespace Streamliner
 			_energyConstantlyDischarges =
 				RaceManager.CurrentGamemode.Name == "Rush Hour";
 
-			Panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
-			_value = Panel.Find("Value").GetComponent<Text>();
-			_delta = Panel.Find("Delta").GetComponent<Text>();
-			_gaugeBackground = Panel.Find("GaugeBackground").GetComponent<Image>();
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			_value = _panel.Find("Value").GetComponent<Text>();
+			_delta = _panel.Find("Delta").GetComponent<Text>();
+			_gaugeBackground = _panel.Find("GaugeBackground").GetComponent<Image>();
 			_gauge = (RectTransform)_gaugeBackground.GetComponent<RectTransform>()
 				.Find("Gauge");
 			_gaugeImage = _gauge.GetComponent<Image>();
@@ -430,7 +430,7 @@ namespace Streamliner
 
 	public class Timer : ScriptableHud
 	{
-		internal BasicPanel Panel;
+		private BasicPanel _panel;
 		private RectTransform _lapSlotTemplate;
 
 		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
@@ -501,8 +501,8 @@ namespace Streamliner
 			base.Start();
 			_totalLaps = Race.MaxLaps;
 			_totalSections = GetTotalSectionCount();
-			Panel = new BasicPanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
+			_panel = new BasicPanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 			_lapSlotTemplate = CustomComponents.GetById("LapSlot");
 			// I am hiding the components here, not on Unity,
 			// because I want to keep them visible on Unity.
@@ -589,7 +589,7 @@ namespace Streamliner
 		}
 
 		private void UpdateTotalTime() =>
-			Panel.Value.text = _bigTimeTextBuilder.ToString(TargetShip.TotalRaceTime);
+			_panel.Value.text = _bigTimeTextBuilder.ToString(TargetShip.TotalRaceTime);
 
 		private void UpdateCurrentLapTime()
 		{
@@ -611,13 +611,13 @@ namespace Streamliner
 				TargetShip.CurrentSection.index - 1 == 0
 				)
 				return;
-			Panel.Fill(GetRaceCompletionRate(TargetShip, _currentLap, _totalSections));
+			_panel.Fill(GetRaceCompletionRate(TargetShip, _currentLap, _totalSections));
 		}
 	}
 
 	public class LapTimer : ScriptableHud
 	{
-		internal BasicPanel Panel;
+		private BasicPanel _panel;
 		private Text _bestTimeText;
 		private int _totalSections;
 
@@ -634,8 +634,8 @@ namespace Streamliner
 		{
 			base.Start();
 			_totalSections = GetTotalSectionCount();
-			Panel = new BasicPanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
+			_panel = new BasicPanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 			RectTransform bestTimeSlot = CustomComponents.GetById("LapSlot");
 			_bestTimeText = bestTimeSlot.Find("Time").GetComponent<Text>();
 			bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
@@ -721,17 +721,17 @@ namespace Streamliner
 		{
 			if (_lapInvalidated)
 			{
-				Panel.Value.text = _bigTimeTextBuilder.ToString(-1f);
-				Panel.Fill(0f);
+				_panel.Value.text = _bigTimeTextBuilder.ToString(-1f);
+				_panel.Fill(0f);
 				return;
 			}
 
-			Panel.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
+			_panel.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
 
 			if (TargetShip.CurrentSection is null)
 				return;
 
-			Panel.Fill(GetLapCompletionRate(TargetShip, _totalSections));
+			_panel.Fill(GetLapCompletionRate(TargetShip, _totalSections));
 		}
 
 		public override void OnDestroy()
@@ -749,7 +749,7 @@ namespace Streamliner
 	{
 		private const string StringTimeTrial = "Time Trial";
 		private const string StringSpeedLap = "Speed Lap";
-		internal RectTransform Panel;
+		private RectTransform _panel;
 		private RectTransform _normalDisplay;
 		private Text _normalDisplayValue;
 		private DoubleGaugePanel _bigDisplay;
@@ -824,8 +824,8 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
 			_normalDisplay = CustomComponents.GetById("Normal");
 			_normalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
 			_normalDisplayValue = _normalDisplay.Find("Value").GetComponent<Text>();
@@ -840,7 +840,7 @@ namespace Streamliner
 			switch (_displayType)
 			{
 				case DisplayType.None:
-					Panel.gameObject.SetActive(false);
+					_panel.gameObject.SetActive(false);
 					break;
 				case DisplayType.Normal:
 					_bigDisplay.Base.gameObject.SetActive(false);
@@ -1113,15 +1113,15 @@ namespace Streamliner
 
 	public class ZoneTracker : ScriptableHud
 	{
-		internal DoubleGaugePanel Panel;
+		private DoubleGaugePanel _panel;
 		private Text _zoneName;
 		private Text _zoneScore;
 
 		public override void Start()
 		{
 			base.Start();
-			Panel = new DoubleGaugePanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
+			_panel = new DoubleGaugePanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 			_zoneName = CustomComponents.GetById<Text>("Name");
 			_zoneName.gameObject.SetActive(true);
 			_zoneScore = CustomComponents.GetById<Text>("Score");
@@ -1131,7 +1131,7 @@ namespace Streamliner
 			_zoneScore.color = GetTintColor(TextAlpha.NineTenths);
 
 			_zoneScore.text = "0";
-			Panel.Value.text = "0";
+			_panel.Value.text = "0";
 			_zoneName.text = "toxic";
 
 			NgUiEvents.OnZoneProgressUpdate += SetProgress;
@@ -1141,13 +1141,13 @@ namespace Streamliner
 		}
 
 		private void SetProgress(float progress) =>
-			Panel.FillBoth(progress);
+			_panel.FillBoth(progress);
 
 		private void SetScore(string score) =>
 			_zoneScore.text = score;
 
 		private void SetNumber(string number) =>
-			Panel.Value.text = number;
+			_panel.Value.text = number;
 
 		private void SetTitle(string title) =>
 			_zoneName.text = title;
@@ -1165,7 +1165,7 @@ namespace Streamliner
 
 	public class UpsurgeTracker : ScriptableHud
 	{
-		internal LayeredDoubleGaugePanel Panel;
+		private LayeredDoubleGaugePanel _panel;
 		private RectTransform _energyInfo;
 		private Text _valueZoneText;
 		private Text _valueShieldText;
@@ -1196,8 +1196,8 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = new LayeredDoubleGaugePanel(CustomComponents.GetById("Base"), true);
-			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
+			_panel = new LayeredDoubleGaugePanel(CustomComponents.GetById("Base"), true);
+			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 			_energyInfo = CustomComponents.GetById("Energy");
 			_energyInfo.gameObject.SetActive(true);
 			_valueZoneText = _energyInfo.Find("ValueZone").GetComponent<Text>();
@@ -1206,8 +1206,8 @@ namespace Streamliner
 			_barrierWarning.gameObject.SetActive(true);
 
 			_overflowZoneTimeColor = GetTintColor(tintIndex: 2, clarity: 5);
-			_currentSmallGaugeColor = Panel.SmallGaugeColor;
-			_smallGaugeAlpha = Panel.SmallGaugeColor.a;
+			_currentSmallGaugeColor = _panel.SmallGaugeColor;
+			_smallGaugeAlpha = _panel.SmallGaugeColor.a;
 
 			Color infoLabelColor = GetTintColor(TextAlpha.ThreeEighths);
 			Color infoValueColor = GetTintColor(TextAlpha.ThreeQuarters);
@@ -1270,14 +1270,14 @@ namespace Streamliner
 
 		private void SetValues()
 		{
-			Panel.Value.text = _upsurgeTargetShip.CurrentZone.ToString();
+			_panel.Value.text = _upsurgeTargetShip.CurrentZone.ToString();
 			_valueZoneText.text = "+" + _upsurgeTargetShip.BuiltZones;
 			_valueShieldText.text = "+" + _valueShield;
 
-			Panel.FillBoth(_currentZoneWidth);
-			Panel.FillSecondGauges(_currentShieldWidth);
-			Panel.FillSmallGauges(_currentZoneTimeWidth);
-			Panel.ChangeSmallGaugesColor(_currentSmallGaugeColor);
+			_panel.FillBoth(_currentZoneWidth);
+			_panel.FillSecondGauges(_currentShieldWidth);
+			_panel.FillSmallGauges(_currentZoneTimeWidth);
+			_panel.ChangeSmallGaugesColor(_currentSmallGaugeColor);
 		}
 
 		private IEnumerator ResetZoneTime()
@@ -1299,7 +1299,7 @@ namespace Streamliner
 				t -= Time.deltaTime;
 				yield return null;
 			}
-			_currentSmallGaugeColor = Panel.SmallGaugeColor;
+			_currentSmallGaugeColor = _panel.SmallGaugeColor;
 			_currentZoneTimeWidth = 0f;
 			_playingOverflowTransition = false;
 		}
@@ -1378,7 +1378,7 @@ namespace Streamliner
 
 	public class Placement : ScriptableHud
 	{
-		internal FractionPanel Panel;
+		private FractionPanel _panel;
 		private bool _warnOnLastPlace;
 		private bool _onWarning;
 		private readonly Color _highlightColor = GetTintColor(tintIndex: 1, clarity: 4);
@@ -1389,8 +1389,8 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = new FractionPanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
+			_panel = new FractionPanel(CustomComponents.GetById("Base"));
+			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 			switch (RaceManager.CurrentGamemode.Name)
 			{
 				case "Knockout":
@@ -1417,11 +1417,11 @@ namespace Streamliner
 				int place = TargetShip.CurrentPlace;
 				int maxPlace = Ships.Active.Count;
 				_onWarning = _warnOnLastPlace && place == maxPlace;
-				Panel.Value.text = IntStrDb.GetNoSingleCharNumber(place);
-				Panel.MaxValue.text = IntStrDb.GetNoSingleCharNumber(maxPlace);
-				Panel.Fill(maxPlace == 1 ?
+				_panel.Value.text = IntStrDb.GetNoSingleCharNumber(place);
+				_panel.MaxValue.text = IntStrDb.GetNoSingleCharNumber(maxPlace);
+				_panel.Fill(maxPlace == 1 ?
 					0f : (float) (maxPlace - place) / (maxPlace - 1));
-				Panel.ChangeDataPartColor(_onWarning ? _highlightColor : Panel.GaugeColor);
+				_panel.ChangeDataPartColor(_onWarning ? _highlightColor : _panel.GaugeColor);
 
 				yield return new WaitForSeconds(Position.UpdateTime);
 			}
@@ -1469,29 +1469,29 @@ namespace Streamliner
 
 	public class LapCounter : ScriptableHud
 	{
-		internal FractionPanel Panel;
+		private FractionPanel _panel;
 
 		public override void Start()
 		{
 			base.Start();
-			Panel = new FractionPanel(CustomComponents.GetById("Base"))
+			_panel = new FractionPanel(CustomComponents.GetById("Base"))
 			{
 				Value = { text = IntStrDb.GetNoSingleCharNumber(0) },
 				MaxValue = { text = IntStrDb.GetNoSingleCharNumber(Race.MaxLaps) }
 			};
-			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 
 			NgRaceEvents.OnShipLapUpdate += UpdateLap;
 		}
 
-		public void UpdateLap(ShipController ship)
+		private void UpdateLap(ShipController ship)
 		{
 			if (ship != TargetShip)
 				return;
 
 			base.Update();
-			Panel.Value.text = IntStrDb.GetNoSingleCharNumber(TargetShip.CurrentLap);
-			Panel.Fill((float) TargetShip.CurrentLap / Race.MaxLaps);
+			_panel.Value.text = IntStrDb.GetNoSingleCharNumber(TargetShip.CurrentLap);
+			_panel.Fill((float) TargetShip.CurrentLap / Race.MaxLaps);
 		}
 
 		public override void OnDestroy()
@@ -1514,7 +1514,7 @@ namespace Streamliner
 		// for game modes that don't count laps.
 		private bool _manuallyCountLaps;
 
-		internal RectTransform Panel;
+		private RectTransform _panel;
 		private ShipNode _singleNode;
 		private List<ShipNode> _nodes;
 		private int[] _racerSectionsTraversed;
@@ -1600,12 +1600,12 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
-			Panel.Find("BackgroundFill").GetComponent<Image>().color =
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			_panel.Find("BackgroundFill").GetComponent<Image>().color =
 				GetTintColor(TextAlpha.ThreeEighths);
 			ShipNode.Template = CustomComponents.GetById("Node");
-			ShipNode.MaxSize = Panel.sizeDelta.x - ShipNode.Template.sizeDelta.x;
+			ShipNode.MaxSize = _panel.sizeDelta.x - ShipNode.Template.sizeDelta.x;
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
@@ -1932,7 +1932,7 @@ namespace Streamliner
 
 	public class Pitlane : ScriptableHud
 	{
-		internal RectTransform Panel;
+		private RectTransform _panel;
 		private Animator _panelAnimator;
 		private static readonly int Active = Animator.StringToHash("Active");
 		private static readonly int PointRight = Animator.StringToHash("Point Right");
@@ -1940,12 +1940,12 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
-			_panelAnimator = Panel.GetComponent<Animator>();
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			_panelAnimator = _panel.GetComponent<Animator>();
 
-			Panel.Find("Left").Find("Text").GetComponent<Text>().color = GetTintColor();
-			Panel.Find("Right").Find("Text").GetComponent<Text>().color = GetTintColor();
+			_panel.Find("Left").Find("Text").GetComponent<Text>().color = GetTintColor();
+			_panel.Find("Right").Find("Text").GetComponent<Text>().color = GetTintColor();
 
 			/*
 			 * Using `SetActive()` is ineffective here,
@@ -1987,7 +1987,7 @@ namespace Streamliner
 
 	public class MessageLogger : ScriptableHud
 	{
-		internal RectTransform Panel;
+		private RectTransform _panel;
 		private CanvasGroup _timeGroup;
 		private Text _timeDiff;
 		private Text _lapResult;
@@ -2144,8 +2144,8 @@ namespace Streamliner
 
 		private void Initiate()
 		{
-			Panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
 			RectTransform timeGroupRT = CustomComponents.GetById("TimeGroup");
 			_timeGroup = timeGroupRT.GetComponent<CanvasGroup>();
 			_timeDiff = timeGroupRT.Find("Difference").GetComponent<Text>();
@@ -2509,7 +2509,7 @@ namespace Streamliner
 
 	public class PickupDisplay : ScriptableHud
 	{
-		internal RectTransform Panel;
+		private RectTransform _panel;
 		private PickupPanel _playerPanel;
 		private PickupPanel _warningPanel;
 		private float _warningTimer;
@@ -2518,13 +2518,13 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
 			_playerPanel = new PickupPanel(
-				Panel.Find("IconBackground").GetComponent<RectTransform>(),
-				Panel.Find("Info").GetComponent<Text>());
+				_panel.Find("IconBackground").GetComponent<RectTransform>(),
+				_panel.Find("Info").GetComponent<Text>());
 			_warningPanel = new PickupPanel(
-				Panel.Find("WarningBackground").GetComponent<RectTransform>());
+				_panel.Find("WarningBackground").GetComponent<RectTransform>());
 
 			PickupBase.OnPickupInit += ShowPickup;
 			PickupBase.OnPickupDeinit += HidePickup;
@@ -2595,15 +2595,15 @@ namespace Streamliner
 
 	public class TurboDisplay : ScriptableHud
 	{
-		internal RectTransform Panel;
+		private RectTransform _panel;
 		private PickupPanel _playerPanel;
 
 		public override void Start()
 		{
 			base.Start();
-			Panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
-			_playerPanel = new PickupPanel(Panel);
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			_playerPanel = new PickupPanel(_panel);
 
 			PickupBase.OnPickupInit += ShowPickup;
 			PickupBase.OnPickupDeinit += HidePickup;
@@ -2640,14 +2640,14 @@ namespace Streamliner
 
 	public class Leaderboard : ScriptableHud
 	{
-		internal Playerboard Panel;
+		private Playerboard _panel;
 
 		public override void Start()
 		{
 			base.Start();
-			Panel = new Playerboard(CustomComponents.GetById("Base"),
+			_panel = new Playerboard(CustomComponents.GetById("Base"),
 				RaceManager.CurrentGamemode.Name);
-			if (OptionMotion) Shifter.Add(Panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
@@ -2660,9 +2660,9 @@ namespace Streamliner
 			 * assigning it to a field can make it easy to
 			 * access common fields.
 			 */
-			Panel.InitiateLayout(RaceManager.CurrentGamemode.TargetScore);
-			Panel.InitiateSlots(Ships.Loaded);
-			StartCoroutine(Panel.Update(Ships.Loaded));
+			_panel.InitiateLayout(RaceManager.CurrentGamemode.TargetScore);
+			_panel.InitiateSlots(Ships.Loaded);
+			StartCoroutine(_panel.Update(Ships.Loaded));
 
 			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
@@ -2670,13 +2670,13 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			StopCoroutine(Panel.Update(Ships.Loaded));
+			StopCoroutine(_panel.Update(Ships.Loaded));
 		}
 	}
 
 	public class TeamScoreboard : ScriptableHud
 	{
-		internal RectTransform Panel;
+		private RectTransform _panel;
 		private PickupPanel _teammatePickupPanel;
 		private GameObject _labelFirst;
 		private Text _labelSecond;
@@ -2813,15 +2813,15 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
 			_teammatePickupPanel =
-				new PickupPanel(Panel.Find("TeammatePickup").GetComponent<RectTransform>());
-			_labelFirst = Panel.Find("LabelFirst").gameObject;
-			_labelSecond = Panel.Find("LabelSecond").GetComponent<Text>();
-			_slotLeft = Panel.Find("SlotLeft").GetComponent<RectTransform>();
-			_slotRight = Panel.Find("SlotRight").GetComponent<RectTransform>();
-			_slotMiddle = Panel.Find("SlotMiddle").GetComponent<RectTransform>();
+				new PickupPanel(_panel.Find("TeammatePickup").GetComponent<RectTransform>());
+			_labelFirst = _panel.Find("LabelFirst").gameObject;
+			_labelSecond = _panel.Find("LabelSecond").GetComponent<Text>();
+			_slotLeft = _panel.Find("SlotLeft").GetComponent<RectTransform>();
+			_slotRight = _panel.Find("SlotRight").GetComponent<RectTransform>();
+			_slotMiddle = _panel.Find("SlotMiddle").GetComponent<RectTransform>();
 
 			_labelFirst.GetComponent<Text>().color = GetTintColor();
 			_labelSecond.GetComponent<Text>().color = GetTintColor();
@@ -2983,19 +2983,19 @@ namespace Streamliner
 		private const float TemporarilyInactivePanelAlpha = 0.5f;
 		private const float InactivePanelAlpha = 0.25f;
 
-		internal RectTransform Panel;
-		internal CanvasGroup PanelPlatinum;
-		internal Image PanelPlatinumImage;
-		internal Text TextPlatinum;
-		internal CanvasGroup PanelGold;
-		internal Image PanelGoldImage;
-		internal Text TextGold;
-		internal CanvasGroup PanelSilver;
-		internal Image PanelSilverImage;
-		internal Text TextSilver;
-		internal CanvasGroup PanelBronze;
-		internal Image PanelBronzeImage;
-		internal Text TextBronze;
+		private RectTransform _panel;
+		private CanvasGroup _panelPlatinum;
+		private Image _panelPlatinumImage;
+		private Text _textPlatinum;
+		private CanvasGroup _panelGold;
+		private Image _panelGoldImage;
+		private Text _textGold;
+		private CanvasGroup _panelSilver;
+		private Image _panelSilverImage;
+		private Text _textSilver;
+		private CanvasGroup _panelBronze;
+		private Image _panelBronzeImage;
+		private Text _textBronze;
 
 		private readonly Color _activePlatinumColor =
 			GetTintColor(TextAlpha.ThreeQuarters, 7, 0);
@@ -3024,20 +3024,20 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			Panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(Panel, GetType().Name);
-			PanelPlatinum = Panel.Find("Platinum").GetComponent<CanvasGroup>();
-			PanelPlatinumImage = PanelPlatinum.GetComponent<Image>();
-			TextPlatinum = Panel.Find("Platinum").Find("Value").GetComponent<Text>();
-			PanelGold = Panel.Find("Gold").GetComponent<CanvasGroup>();
-			PanelGoldImage = PanelGold.GetComponent<Image>();
-			TextGold = Panel.Find("Gold").Find("Value").GetComponent<Text>();
-			PanelSilver = Panel.Find("Silver").GetComponent<CanvasGroup>();
-			PanelSilverImage = PanelSilver.GetComponent<Image>();
-			TextSilver = Panel.Find("Silver").Find("Value").GetComponent<Text>();
-			PanelBronze = Panel.Find("Bronze").GetComponent<CanvasGroup>();
-			PanelBronzeImage = PanelBronze.GetComponent<Image>();
-			TextBronze = Panel.Find("Bronze").Find("Value").GetComponent<Text>();
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			_panelPlatinum = _panel.Find("Platinum").GetComponent<CanvasGroup>();
+			_panelPlatinumImage = _panelPlatinum.GetComponent<Image>();
+			_textPlatinum = _panel.Find("Platinum").Find("Value").GetComponent<Text>();
+			_panelGold = _panel.Find("Gold").GetComponent<CanvasGroup>();
+			_panelGoldImage = _panelGold.GetComponent<Image>();
+			_textGold = _panel.Find("Gold").Find("Value").GetComponent<Text>();
+			_panelSilver = _panel.Find("Silver").GetComponent<CanvasGroup>();
+			_panelSilverImage = _panelSilver.GetComponent<Image>();
+			_textSilver = _panel.Find("Silver").Find("Value").GetComponent<Text>();
+			_panelBronze = _panel.Find("Bronze").GetComponent<CanvasGroup>();
+			_panelBronzeImage = _panelBronze.GetComponent<Image>();
+			_textBronze = _panel.Find("Bronze").Find("Value").GetComponent<Text>();
 
 			_platinumTarget = NgCampaign.CurrentEvent.EventProgress.PlatinumValue;
 			_goldTarget = NgCampaign.CurrentEvent.EventProgress.GoldValue;
@@ -3058,10 +3058,10 @@ namespace Streamliner
 			if (_isSpeedLap)
 			{
 				const float shiftAmount = 75f;
-				PanelPlatinum.GetComponent<RectTransform>().anchoredPosition += Vector2.left * shiftAmount;
-				PanelGold.GetComponent<RectTransform>().anchoredPosition += Vector2.left * shiftAmount;
-				PanelSilver.GetComponent<RectTransform>().anchoredPosition += Vector2.right * shiftAmount;
-				PanelBronze.GetComponent<RectTransform>().anchoredPosition += Vector2.right * shiftAmount;
+				_panelPlatinum.GetComponent<RectTransform>().anchoredPosition += Vector2.left * shiftAmount;
+				_panelGold.GetComponent<RectTransform>().anchoredPosition += Vector2.left * shiftAmount;
+				_panelSilver.GetComponent<RectTransform>().anchoredPosition += Vector2.right * shiftAmount;
+				_panelBronze.GetComponent<RectTransform>().anchoredPosition += Vector2.right * shiftAmount;
 				_missedPanelAlpha = TemporarilyInactivePanelAlpha;
 				NgUiEvents.OnGamemodeUpdateCurrentLapTime += UpdateTime;
 				NgUiEvents.OnGamemodeInvalidatedLap += InvalidateLap;
@@ -3070,17 +3070,17 @@ namespace Streamliner
 
 			if (_targetIsTime)
 			{
-				TextPlatinum.text = FloatToTime.Convert(_platinumTarget, TimeFormat);
-				TextGold.text = FloatToTime.Convert(_goldTarget, TimeFormat);
-				TextSilver.text = FloatToTime.Convert(_silverTarget, TimeFormat);
-				TextBronze.text = FloatToTime.Convert(_bronzeTarget, TimeFormat);
+				_textPlatinum.text = FloatToTime.Convert(_platinumTarget, TimeFormat);
+				_textGold.text = FloatToTime.Convert(_goldTarget, TimeFormat);
+				_textSilver.text = FloatToTime.Convert(_silverTarget, TimeFormat);
+				_textBronze.text = FloatToTime.Convert(_bronzeTarget, TimeFormat);
 			}
 			else
 			{
-				TextPlatinum.text = "Zone " + _platinumTarget;
-				TextGold.text = "Zone " + _goldTarget;
-				TextSilver.text = "Zone " + _silverTarget;
-				TextBronze.text = "Zone " + _bronzeTarget;
+				_textPlatinum.text = "Zone " + _platinumTarget;
+				_textGold.text = "Zone " + _goldTarget;
+				_textSilver.text = "Zone " + _silverTarget;
+				_textBronze.text = "Zone " + _bronzeTarget;
 				NgUiEvents.OnZoneNumberUpdate += UpdateZone;
 			}
 		}
@@ -3098,43 +3098,43 @@ namespace Streamliner
 
 			if (_progressTime <= _platinumTarget)
 			{
-				PanelPlatinum.alpha = ActivePanelAlpha;
+				_panelPlatinum.alpha = ActivePanelAlpha;
 			}
 			else if (_progressTime <= _goldTarget)
 			{
-				PanelPlatinum.alpha = _missedPanelAlpha;
-				PanelGold.alpha = ActivePanelAlpha;
+				_panelPlatinum.alpha = _missedPanelAlpha;
+				_panelGold.alpha = ActivePanelAlpha;
 			}
 			else if (_progressTime <= _silverTarget)
 			{
-				PanelGold.alpha = _missedPanelAlpha;
-				PanelSilver.alpha = ActivePanelAlpha;
+				_panelGold.alpha = _missedPanelAlpha;
+				_panelSilver.alpha = ActivePanelAlpha;
 			}
 			else if (_progressTime <= _bronzeTarget)
 			{
-				PanelSilver.alpha = _missedPanelAlpha;
-				PanelBronze.alpha = ActivePanelAlpha;
+				_panelSilver.alpha = _missedPanelAlpha;
+				_panelBronze.alpha = ActivePanelAlpha;
 			}
 			else
 			{
-				PanelBronze.alpha = _missedPanelAlpha;
+				_panelBronze.alpha = _missedPanelAlpha;
 			}
 		}
 
 		private void InvalidateLap()
 		{
-			PanelPlatinum.alpha = _missedPanelAlpha;
-			PanelGold.alpha = _missedPanelAlpha;
-			PanelSilver.alpha = _missedPanelAlpha;
-			PanelBronze.alpha = _missedPanelAlpha;
+			_panelPlatinum.alpha = _missedPanelAlpha;
+			_panelGold.alpha = _missedPanelAlpha;
+			_panelSilver.alpha = _missedPanelAlpha;
+			_panelBronze.alpha = _missedPanelAlpha;
 		}
 
 		private void ResetPanelAlpha(ShipController ship)
 		{
-			PanelPlatinum.alpha = InitialPanelAlpha;
-			PanelGold.alpha = InitialPanelAlpha;
-			PanelSilver.alpha = InitialPanelAlpha;
-			PanelBronze.alpha = InitialPanelAlpha;
+			_panelPlatinum.alpha = InitialPanelAlpha;
+			_panelGold.alpha = InitialPanelAlpha;
+			_panelSilver.alpha = InitialPanelAlpha;
+			_panelBronze.alpha = InitialPanelAlpha;
 		}
 
 		private void UpdateZone(string number)
@@ -3143,23 +3143,23 @@ namespace Streamliner
 
 			if (_progressZone >= _bronzeTarget)
 			{
-				PanelBronzeImage.color = _activeBronzeColor;
-				TextBronze.color = _activeTextColor;
+				_panelBronzeImage.color = _activeBronzeColor;
+				_textBronze.color = _activeTextColor;
 			}
 			if (_progressZone >= _silverTarget)
 			{
-				PanelSilverImage.color = _activeSilverColor;
-				TextSilver.color = _activeTextColor;
+				_panelSilverImage.color = _activeSilverColor;
+				_textSilver.color = _activeTextColor;
 			}
 			if (_progressZone >= _goldTarget)
 			{
-				PanelGoldImage.color = _activeGoldColor;
-				TextGold.color = _activeTextColor;
+				_panelGoldImage.color = _activeGoldColor;
+				_textGold.color = _activeTextColor;
 			}
 			if (_progressZone >= _platinumTarget)
 			{
-				PanelPlatinumImage.color = _activePlatinumColor;
-				TextPlatinum.color = _activeTextColor;
+				_panelPlatinumImage.color = _activePlatinumColor;
+				_textPlatinum.color = _activeTextColor;
 			}
 		}
 
