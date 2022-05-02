@@ -529,7 +529,7 @@ namespace Streamliner
 		{
 			if (ship != TargetShip)
 				return;
-			// TODO: use ShipController's CurrentLap to access just finished lap as a past lap properly
+			// I could have made it simpler by feeding ship.CurrentLap to it directly.
 			ShiftSlotData();
 			_currentLap++;
 		}
@@ -540,6 +540,15 @@ namespace Streamliner
 			NgRaceEvents.OnShipLapUpdate -= OnLapUpdate;
 		}
 
+		/*
+		 * This method is complicated because
+		 * I used a local field to update current lap, and incremented it after this is finished.
+		 *
+		 * `ShipController.CurrentLap` gets updated properly before `NgRaceEvents.OnShipLapUpdate` call starts,
+		 * so the struggle around finding the lap time for the actual current lap could be avoided,
+		 * if I knew how to properly use the field before I started working on this method,
+		 * and not a while after I finished it.
+		 */
 		private void ShiftSlotData()
 		{
 			// Don't execute when it's the end of the 0th lap or the last lap. Nothing to shift.
@@ -2080,24 +2089,24 @@ namespace Streamliner
 		public override void Start()
 		{
 			base.Start();
-			string _gamemodeName = RaceManager.CurrentGamemode.Name;
-			_facingBackwardExpected = _gamemodeName switch
+			string gamemodeName = RaceManager.CurrentGamemode.Name;
+			_facingBackwardExpected = gamemodeName switch
 			{
 				"Eliminator" => true,
 				_ => false
 			};
-			_noNewLapRecord = _gamemodeName switch
+			_noNewLapRecord = gamemodeName switch
 			{
 				"Speed Lap" => false,
 				_ => true
 			};
-			_usingThirdLine = _gamemodeName switch
+			_usingThirdLine = gamemodeName switch
 			{
 				"Team Race" => false,
 				_ => true
 			};
 
-			_textColor = new()
+			_textColor = new Dictionary<string, Color>
 			{
 				{"75", GetTintColor(TextAlpha.ThreeQuarters)},
 				{"90", GetTintColor(TextAlpha.NineTenths)},
@@ -2108,7 +2117,7 @@ namespace Streamliner
 				{"cyan", GetTintColor(TextAlpha.NineTenths, 7, 1)},
 				{"empty", GetTintColor(TextAlpha.Zero)}
 			};
-			_defaultColor = new()
+			_defaultColor = new Dictionary<string, Color>
 			{
 				{"TimeDiff", _textColor["90"]},
 				{"LapResult", _textColor["90"]},
