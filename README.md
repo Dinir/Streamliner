@@ -1,9 +1,6 @@
-﻿# Streamliner
+﻿# ![Logo Light]![Logo Dark]
 
-![Logo]
-
-**custom hud for [BallisticNG],
-made to streamline your racing process**
+custom hud for [BallisticNG], made to streamline your racing process
 
 ## Video Showcase *<sub>please open in a new tab/window</sub>*
 
@@ -97,7 +94,8 @@ When building the container you made with some components in it, the file name w
 
 [BallisticNG]: https://neognosis.games/ballisticng/
 
-[Logo]: https://via.placeholder.com/1280x160 "Streamliner Logo"
+[Logo Light]: https://user-images.githubusercontent.com/9097044/166197733-4496aa2b-60dd-41f1-9159-be6825104804.png#gh-dark-mode-only "Streamliner"
+[Logo Dark]: https://user-images.githubusercontent.com/9097044/166199831-a0aa4715-c40e-4e87-bbde-23e2b8641dd0.png#gh-light-mode-only "Streamliner"
 [Video Link]: https://youtu.be/dQw4w9WgXcQ
 [Video Link Thumbnail]: https://via.placeholder.com/1280x720 "Click to watch"
 [Download Link]: ../../releases/latest
