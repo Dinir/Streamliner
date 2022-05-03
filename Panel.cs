@@ -1128,7 +1128,11 @@ namespace Streamliner
 							valueInt < 0 ? 0 : valueInt > 100 ? 100 : valueInt);
 						break;
 					case ValueType.Score:
-						_value.text = (Math.Round(value * 100f) / 100.0).ToString("F2", CultureInfo.InvariantCulture);
+						_value.text = value switch
+						{
+							< 2000f => (Math.Round(value * 100f) / 100.0).ToString("F2", CultureInfo.InvariantCulture),
+							_       => (Math.Round(value *  10f) /  10.0).ToString("F1", CultureInfo.InvariantCulture)
+						};
 						break;
 					case ValueType.IntScore:
 					case ValueType.Position:
