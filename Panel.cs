@@ -308,11 +308,12 @@ namespace Streamliner
 				Mathf.FloorToInt(value / 60f));
 			string seconds = IntStrDb.GetNoSingleCharNumber(
 				Mathf.FloorToInt(value) % 60);
-			string hundredths = value < 600f ?
-				IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(value * 100f % 100f)) :
-				value < 1200f ?
-					IntStrDb.GetNumber(Mathf.FloorToInt(value * 10f % 10f)) :
-					"";
+			string hundredths = value switch
+			{
+				< 600f  => IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(value * 100f % 100f)),
+				< 1200f => IntStrDb.GetNumber            (Mathf.FloorToInt(value *  10f %  10f)),
+				_       => ""
+			};
 
 			_sb.Append(minutes);
 			_sb.Append(StringAfterMinute);
