@@ -6,13 +6,14 @@ using NgModding.Huds;
 using NgMp;
 using NgSettings;
 using NgSp;
+using NgUi.MenuUi;
 
 namespace Streamliner
 {
 	public class HudRegister : CodeMod
 	{
 		// This name appears at "config - game - hud - style - hud style".
-		private const string ID = "Streamliner 1.0.0";
+		private const string ID = "Streamliner 1.0.1";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
