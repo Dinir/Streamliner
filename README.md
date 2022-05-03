@@ -16,6 +16,7 @@ custom hud for [BallisticNG], made to streamline your racing process
 - Speedometer and energymeter will change their colour to help you notice the changes. Check when you are losing speed, and how much energy you got from the pit lane.
 - Position tracker shows the proximity of other ships.
 - Timer counting down from the average lap time of your best record, adding up any saves and loses at every new lap, to help you keep the pace on Time Trial.
+- Lap time slots roll over by one lap at a time, so you can actually see your 5th lap time in a longer race.
 - Motion effect to improve the *ＩＭＭＥＲＳＩＯＮ*.
 - Text colour can be set as one of 12 available hues, or greyscale.
 - All of the features above can be adjusted in the mod options.
@@ -27,8 +28,8 @@ custom hud for [BallisticNG], made to streamline your racing process
 Mods of the game can't overcome these at the moment.
 
 - Upsurge game mode will fail to properly pause the game.
-- Weapon warning is not properly available in multiplayer races. It only works when a bot gets a mines pickup.
-- The shake effect can't be triggered when the ship hits the track surface hard enough.
+- Weapon warning is, even in the vanilla hud, not properly available in multiplayer races. It only works when a bot gets a pickup.
+- The shake effect can't be triggered when the ship hits the track surface hard enough without falling from a high enough height.
 - Splitscreen mode is not supported.
 - Steamworks features are blocked when Code Mods are running. This includes submitting records to the leaderboards and Steam based multiplayer races.
 
