@@ -97,8 +97,8 @@ When building the container you made with some components in it, the file name w
 
 [Logo Light]: https://user-images.githubusercontent.com/9097044/166197733-4496aa2b-60dd-41f1-9159-be6825104804.png#gh-dark-mode-only "Streamliner"
 [Logo Dark]: https://user-images.githubusercontent.com/9097044/166199831-a0aa4715-c40e-4e87-bbde-23e2b8641dd0.png#gh-light-mode-only "Streamliner"
-[Video Link]: https://youtu.be/dQw4w9WgXcQ
-[Video Link Thumbnail]: https://via.placeholder.com/1280x720 "Click to watch"
+[Video Link]: https://youtu.be/Wec8Eni6N9M
+[Video Link Thumbnail]: https://user-images.githubusercontent.com/9097044/166496210-d628d058-d590-4cb0-a42c-51d0ff7663db.png "Click to watch"
 [Download Link]: ../../releases/latest
 
 [Sector Gamma]: https://zipangcomplex.booth.pm/items/3307757
