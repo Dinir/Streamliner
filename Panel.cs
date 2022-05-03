@@ -101,7 +101,7 @@ namespace Streamliner
 			ShiftFactor = BaseShiftFactor * OptionShiftMultiplier;
 			MaxLandingShakeAmount = BaseMaxLandingShakeAmount * OptionShakeMultiplier;
 			WallBounceShakeAmount = BaseWallBounceShakeAmount * OptionShakeMultiplier;
-			ScrapingShakeAmount = BaseScrapingShakeAmount * OptionShakeMultiplier;
+			ScrapingShakeAmount = BaseScrapingShakeAmount * OptionScrapeMultiplier;
 		}
 
 		internal static void Add(RectTransform panel, string name) => Panels.Add(new Panel(panel, name));

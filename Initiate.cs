@@ -29,6 +29,7 @@ namespace Streamliner
 		public static bool OptionMotion = true;
 		public static float OptionShiftMultiplier = 1f;
 		public static float OptionShakeMultiplier = 1f;
+		public static float OptionScrapeMultiplier = 1f;
 		public static bool OptionSpeedHighlight = true;
 		public static bool OptionEnergyChange = true;
 		public static int OptionLowEnergy = 1;
@@ -188,6 +189,14 @@ namespace Streamliner
 				10, NgSlider.RoundMode.Round
 			);
 
+			ctx.GenerateSlider(
+				"ScrapeMultiplier", "scrape intensity",
+				"Set how intense shake of the hud should be when scraping.",
+				0.0f, 2.0f, OptionScrapeMultiplier, 0.1f,
+				10, NgSlider.RoundMode.Round,
+				10, NgSlider.RoundMode.Round
+			);
+
 			ctx.GenerateHeader(OptionSectionAddition);
 
 			ctx.GenerateSelector(
@@ -245,6 +254,7 @@ namespace Streamliner
 			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
 			OptionShiftMultiplier = ctx.GetSliderValue("ShiftMultiplier");
 			OptionShakeMultiplier = ctx.GetSliderValue("ShakeMultiplier");
+			OptionScrapeMultiplier = ctx.GetSliderValue("ScrapeMultiplier");
 			OptionSpeedHighlight = ctx.GetSelectorValue("SpeedHighlight") == 1;
 			OptionEnergyChange = ctx.GetSelectorValue("EnergyChange") == 1;
 			OptionLowEnergy = ctx.GetSelectorValue("LowEnergyTransition");
@@ -266,6 +276,7 @@ namespace Streamliner
 			OptionMotion = ini.ReadValue(OptionSectionMotion, "Motion", OptionMotion);
 			OptionShiftMultiplier = (float) ini.ReadValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
 			OptionShakeMultiplier = (float) ini.ReadValue(OptionSectionMotion, "ShakeMultiplier", OptionShakeMultiplier);
+			OptionScrapeMultiplier = (float) ini.ReadValue(OptionSectionMotion, "ScrapeMultiplier", OptionScrapeMultiplier);
 			OptionSpeedHighlight = ini.ReadValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
 			OptionEnergyChange = ini.ReadValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
 			OptionLowEnergy = ini.ReadValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
@@ -287,6 +298,7 @@ namespace Streamliner
 			ini.WriteValue(OptionSectionMotion, "Motion", OptionMotion);
 			ini.WriteValue(OptionSectionMotion, "ShiftMultiplier", OptionShiftMultiplier);
 			ini.WriteValue(OptionSectionMotion, "ShakeMultiplier", OptionShakeMultiplier);
+			ini.WriteValue(OptionSectionMotion, "ScrapeMultiplier", OptionScrapeMultiplier);
 			ini.WriteValue(OptionSectionAddition, "SpeedHighlight", OptionSpeedHighlight);
 			ini.WriteValue(OptionSectionAddition, "EnergyChange", OptionEnergyChange);
 			ini.WriteValue(OptionSectionAddition, "LowEnergyTransition", OptionLowEnergy);
