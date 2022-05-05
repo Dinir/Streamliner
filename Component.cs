@@ -1842,8 +1842,8 @@ namespace Streamliner
 			int endDistance;
 
 			if (
-				orderedList.Count <= 2 ||
-				Ships.Active.Count <= 2
+				Ships.Active.Count <= 2 ||
+				orderedList.Count <= 2
 			)
 				endDistance = _halfTotalSections;
 			else
