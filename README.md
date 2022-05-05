@@ -77,7 +77,7 @@ There are not much available custom huds for this game, so it was hopeless to ge
   - `Panel.cs` contains classes used by several hud component scripts.
 
 Assets are made with **Unity 2018.3.8f1**, and scripts are built with **.NET Framework v4.7**.  
-The scripts use libraries from **version 1.2.5 of the game**, which is in the stable branch at the moment.
+The scripts use libraries from **version 1.3-d38 of the game**.
 
 ### Getting Started
 
