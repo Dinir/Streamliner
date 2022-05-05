@@ -1841,7 +1841,10 @@ namespace Streamliner
 				_racerRelativeSections.OrderByDescending(p => p.Value).ToList();
 			int endDistance;
 
-			if (orderedList.Count <= 2)
+			if (
+				orderedList.Count <= 2 ||
+				Ships.Active.Count <= 2
+			)
 				endDistance = _halfTotalSections;
 			else
 			{
