@@ -40,7 +40,7 @@ Mods of the game can't overcome these at the moment.
 The hud is made for version 1.3 of the game, and it's available in its beta branch on Steam at the moment.  
 Please switch the game to the beta version before trying this hud.
 
-Download the **7z** archive file below, then extract and copy the entire folder to the game's Code Mods folder:
+Click [here][Download Link] or *Releases* at the right side of the page to get the **7z** archive file. Then extract and copy the entire folder to the game's Code Mods folder:
 
 ```
 <Steam Library>\steamapps\common\BallisticNG\User\Mods\Code Mods\
