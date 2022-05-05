@@ -37,15 +37,20 @@ Mods of the game can't overcome these at the moment.
 
 ## How to Install
 
-The hud is made for version 1.3 of the game, and it's available in its beta branch on Steam at the moment. Please switch the game to the beta version before trying this hud.
+The hud is made for version 1.3 of the game, and it's available in its beta branch on Steam at the moment.  
+Please switch the game to the beta version before trying this hud.
 
-Click [here][Download Link] or *Releases* at the right side of the page to get the archive file. Then extract and copy the entire folder to the game's Code Mods folder:
+Download the **7z** archive file below, then extract and copy the entire folder to the game's Code Mods folder:
 
 ```
 <Steam Library>\steamapps\common\BallisticNG\User\Mods\Code Mods\
 ```
 
-Run the game and go to *mod - manage mods* to *activate* Streamliner. Keep *always recompile* off. Restart the game to get it properly loaded.
+The archive file contains WeaponSprites folder, an `nga`, a readme `txt`, and a `dll`.
+
+Run the game and go to *mod - manage mods* to *activate* Streamliner. Keep *always recompile* off.
+
+Restart the game to get it properly loaded.
 
 - - -
 
