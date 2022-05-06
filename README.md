@@ -30,14 +30,18 @@ Mods of the game can't overcome these at the moment.
 - Upsurge game mode will fail to properly pause the game.
 - Weapon warning is, even in the vanilla hud, not properly available in multiplayer races. It only works when a bot gets a pickup.
 - The shake effect can't be triggered when the ship hits the track surface hard enough without falling from a high enough height.
+- Steamworks features are blocked when Code Mods are running. This includes submitting records to the leaderboards and Steam based multiplayer races.
+
+I couldn't overcome this at the moment.  
+Will be dealt next time I can work on the hud.
+
 - Splitscreen mode is not properly supported.  
   Some of the features not working properly:
   - P1 position tracker
   - WRONG WAY indicator
   - Hud motion effect (affected by both ships and applied to both sides)
   - Leaderboard (not hiding when not necessary for the current game mode)
-  - Vertical splitscreen mode (Hori one can have the original components scaled, but Vert one needs separately made component assets)
-- Steamworks features are blocked when Code Mods are running. This includes submitting records to the leaderboards and Steam based multiplayer races.
+  - Vertical splitscreen mode (current hud components can't support vertical mode, the hud should tell the game to load the default hud)
 
 - - -
 
