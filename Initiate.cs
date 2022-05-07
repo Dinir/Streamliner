@@ -13,7 +13,7 @@ namespace Streamliner
 	public class HudRegister : CodeMod
 	{
 		// This name appears at "config - game - hud - style - hud style".
-		private const string ID = "Streamliner 1.0.2";
+		private const string ID = "Streamliner 1.0.3";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
@@ -285,6 +285,8 @@ namespace Streamliner
 			OptionBestTime = ini.ReadValue(OptionSectionAddition, "BestTime", OptionBestTime);
 
 			ini.Close();
+
+			Shifter.ApplySettings();
 		}
 
 		private void OnSaveSettings()
