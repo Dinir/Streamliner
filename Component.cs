@@ -220,10 +220,8 @@ namespace Streamliner
 			_value.color = _defaultColor;
 			_gaugeImage.color = _defaultColor;
 			_deltaColor = _delta.color;
-			_deltaFinalColor = _delta.color;
-			_deltaInactiveColor = _delta.color;
-			_deltaFinalColor.a = DeltaFinalAlpha;
-			_deltaInactiveColor.a = DeltaInactiveAlpha;
+			_deltaFinalColor = _delta.color with { a = DeltaFinalAlpha };
+			_deltaInactiveColor = _delta.color with { a = DeltaInactiveAlpha };
 			_delta.color = _deltaInactiveColor;
 		}
 
@@ -248,6 +246,11 @@ namespace Streamliner
 
 			if (_isRecharging)
 			{
+				/*
+				 * `_wasRecharging` could be set to true the first time the routine enters here,
+				 * and recharging time can be too short for it to update `_valueBeforeCharging`.
+				 * The text need to be flushed before.
+				 */
 				if (_wasRecharging)
 					_delta.text = ValueCharged();
 				else
@@ -255,6 +258,11 @@ namespace Streamliner
 			}
 			else if (_energyRegained)
 				_delta.text = ValueGained();
+
+			/*
+			 * `_delta.text` will be flushed in this method
+			 * when the whole sequence is done and the text is set to its inactive color.
+			 */
 			ColorEnergyComponent();
 
 			_previousEnergy = _currentEnergy;
@@ -401,7 +409,12 @@ namespace Streamliner
 					deltaColor = _deltaInactiveColor;
 			}
 			else
+			{
+				// the whole sequence displaying the recharged amount is done.
+				// flush `_delta.text`.
+				_delta.text = "0";
 				_rechargeDisplayTimer = 0f;
+			}
 
 			// damage flash (process after getting `_currentColor` set)
 			if (_damageAnimationTimer > 0f)
