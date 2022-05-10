@@ -2676,6 +2676,7 @@ namespace Streamliner
 	public class Leaderboard : ScriptableHud
 	{
 		private Playerboard _panel;
+		private bool _hideLastSlotOnExplosion;
 
 		public override void Start()
 		{
@@ -2684,6 +2685,10 @@ namespace Streamliner
 				RaceManager.CurrentGamemode.Name);
 			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 
+			// Data in `RaceManager.CurrentGamemode` are lost when `OnDestroy()` is called.
+			_hideLastSlotOnExplosion = RaceManager.CurrentGamemode.Name == "Knockout";
+			if (_hideLastSlotOnExplosion)
+				NgRaceEvents.OnShipExploded += _panel.HideLastSlot;
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
 
@@ -2706,6 +2711,8 @@ namespace Streamliner
 		{
 			base.OnDestroy();
 			StopCoroutine(_panel.Update(Ships.Loaded));
+			if (_hideLastSlotOnExplosion)
+				NgRaceEvents.OnShipExploded -= _panel.HideLastSlot;
 		}
 	}
 

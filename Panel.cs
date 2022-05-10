@@ -1077,6 +1077,7 @@ namespace Streamliner
 
 		private class EntrySlot
 		{
+			private readonly GameObject _templateInstance;
 			private readonly CanvasGroup _baseCanvasGroup;
 			private readonly Text _name;
 			private readonly Text _value;
@@ -1089,7 +1090,8 @@ namespace Streamliner
 
 			public EntrySlot(RectTransform template)
 			{
-				template.gameObject.SetActive(true);
+				_templateInstance = template.gameObject;
+				_templateInstance.SetActive(true);
 				_baseCanvasGroup = template.GetComponent<CanvasGroup>();
 				_name = template.Find("Name").GetComponent<Text>();
 				_value = template.Find("Plate").Find("Value").GetComponent<Text>();
@@ -1104,6 +1106,8 @@ namespace Streamliner
 				SetDisplayValue(ValueType.Position, 0);
 				FillByPercentage(100f);
 			}
+
+			public void Hide() => _templateInstance.SetActive(false);
 
 			private void ChangeColor()
 			{
@@ -1264,6 +1268,19 @@ namespace Streamliner
 				_rawValueList.Add(new RawValuePair(
 					loadedShip.ShipId, loadedShip.ShipName, float.NegativeInfinity));
 			}
+		}
+
+		/// <summary>
+		///		Locate the last `EntrySlot` in the list and hide its game object.
+		/// </summary>
+		/// <param name="ship">
+		///		The ship that just exploded. Keeps data even in gamemodes that don't allow respawn.
+		/// </param>
+		public void HideLastSlot(ShipController ship)
+		{
+			if (ship is null)
+				return;
+			_visibleList[_visibleList.Count - 1].Hide();
 		}
 
 		public IEnumerator Update(List<ShipController> loadedShips)
