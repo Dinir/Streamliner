@@ -406,15 +406,15 @@ namespace Streamliner
 
 				_rechargeDisplayTimer -= Time.deltaTime;
 				if (_rechargeDisplayTimer <= 0f)
+				{
 					deltaColor = _deltaInactiveColor;
+					// the whole sequence displaying the recharged amount is done.
+					// flush `_delta.text`.
+					_delta.text = "0";
+				}
 			}
 			else
-			{
-				// the whole sequence displaying the recharged amount is done.
-				// flush `_delta.text`.
-				_delta.text = "0";
 				_rechargeDisplayTimer = 0f;
-			}
 
 			// damage flash (process after getting `_currentColor` set)
 			if (_damageAnimationTimer > 0f)
