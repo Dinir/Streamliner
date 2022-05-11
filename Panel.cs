@@ -556,13 +556,10 @@ namespace Streamliner
 
 		private void ChangeColor()
 		{
-			Color gaugeBackgroundColor = GaugeColor;
-			gaugeBackgroundColor.a = GetTransparency(TextAlpha.ThreeEighths);
-
 			Label.color = GaugeColor;
 			Value.color = GaugeColor;
 			GaugeImage.color = GaugeColor;
-			GaugeBackgroundImage.color = gaugeBackgroundColor;
+			GaugeBackgroundImage.color = GaugeColor with { a = GetTransparency(TextAlpha.ThreeEighths) };
 		}
 
 		// Identical to the method with no parameters,
@@ -570,13 +567,10 @@ namespace Streamliner
 		// it will be used in the constructor.
 		protected virtual void ChangeColor(Color color)
 		{
-			Color gaugeBackgroundColor = color;
-			gaugeBackgroundColor.a = GetTransparency(TextAlpha.ThreeEighths);
-
 			Label.color = color;
 			Value.color = color;
 			GaugeImage.color = color;
-			GaugeBackgroundImage.color = gaugeBackgroundColor;
+			GaugeBackgroundImage.color = color with { a = GetTransparency(TextAlpha.ThreeEighths) };
 		}
 
 		public virtual void ChangeDataPartColor(Color color)

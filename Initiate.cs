@@ -24,7 +24,6 @@ namespace Streamliner
 		private const string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint;
 		public static int OptionTimeDiffColour;
-		public static bool OptionTargetTimer = true;
 		public static bool OptionPositionBoard = true;
 		public static bool OptionMotion = true;
 		public static float OptionShiftMultiplier = 1f;
@@ -34,6 +33,7 @@ namespace Streamliner
 		public static bool OptionEnergyChange = true;
 		public static int OptionLowEnergy = 1;
 		public static bool OptionRechargeAmount = true;
+		public static bool OptionTargetTimer = true;
 		public static int OptionBestTime = 1;
 
 		public override void OnRegistered(string modPath)
