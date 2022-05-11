@@ -1149,6 +1149,7 @@ namespace Streamliner
 		private DoubleGaugePanel _panel;
 		private Text _zoneName;
 		private Text _zoneScore;
+		private ZonePalleteSettings _palleteSettings;
 
 		public override void Start()
 		{
@@ -1167,6 +1168,13 @@ namespace Streamliner
 			_panel.Value.text = "0";
 			_zoneName.text = "toxic";
 
+			/*
+			 * When `OnZoneNumberUpdate` is called,
+			 * publicly accessible `ZonePalleteSettings.CurrentColors` is NOT updated!
+			 * So the palette settings should be manually fetched to get the next set.
+			 */
+			_palleteSettings = ZonePalleteSettings.LoadPaletteSettingsFinal();
+
 			NgUiEvents.OnZoneProgressUpdate += SetProgress;
 			NgUiEvents.OnZoneScoreUpdate += SetScore;
 			NgUiEvents.OnZoneNumberUpdate += SetNumber;
@@ -1182,12 +1190,19 @@ namespace Streamliner
 		private void SetNumber(string number)
 		{
 			_panel.Value.text = number;
+			int zoneNumber = Convert.ToInt32(number);
 
-			if (OptionSurvivalTintOverride && Convert.ToInt32(number) % 5 == 0)
+			if (OptionZoneTintOverride && zoneNumber % 5 == 0)
 			{
-				Color currentEnvDetColor = 
-					ZonePalleteSettings.CurrentColors.GetColor(EZoneColorTarget.EnvironmentDetail);
+				int zoneColorIndex = zoneNumber / 5 + 1; // add one to fetch the next color set
+				zoneColorIndex = zoneColorIndex > _palleteSettings.Pallete.Length - 1 ?
+					0 : zoneColorIndex;
+
+				Color currentEnvDetColor =
+					_palleteSettings.Pallete[zoneColorIndex].GetColor(EZoneColorTarget.EnvironmentDetail);
 				_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
+				_zoneName.color = GetTintFromColor(TextAlpha.ThreeEighths, currentEnvDetColor);
+				_zoneScore.color = GetTintFromColor(TextAlpha.NineTenths, currentEnvDetColor);
 			}
 		}
 
@@ -1212,6 +1227,8 @@ namespace Streamliner
 		private Text _valueZoneText;
 		private Text _valueShieldText;
 		private Animator _barrierWarning;
+		private ZonePalleteSettings _palleteSettings;
+		private Color _currentZoneColor;
 		private static readonly int WarnLeft = Animator.StringToHash("Left");
 		private static readonly int WarnMiddle = Animator.StringToHash("Middle");
 		private static readonly int WarnRight = Animator.StringToHash("Right");
@@ -1259,10 +1276,12 @@ namespace Streamliner
 			_energyInfo.Find("ValueShield").GetComponent<Text>().color = infoValueColor;
 
 			_gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
+			_palleteSettings = _gamemode.LoadZonePallete();
 
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
 			UpsurgeShip.OnShieldActivated += StartTransition;
+			NgRaceEvents.OnShipScoreChanged += UpdateColor;
 			Barrier.OnPlayerBarrierWarned += WarnBarrier;
 		}
 
@@ -1346,6 +1365,22 @@ namespace Streamliner
 			_playingOverflowTransition = false;
 		}
 
+		private void UpdateColor(ShipController ship, float oldScore, float newScore)
+		{
+			if (!OptionZoneTintOverride || ship != _upsurgeTargetShip.TargetShip)
+				return;
+
+			int zoneColorIndex = Convert.ToInt32(newScore) / 5;
+			zoneColorIndex = zoneColorIndex > _palleteSettings.Pallete.Length - 1 ?
+				0 : zoneColorIndex;
+
+			Color currentEnvDetColor =
+				_palleteSettings.Pallete[zoneColorIndex].GetColor(EZoneColorTarget.EnvironmentDetail);
+			_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
+			// this field is referenced at `Update()` and the transition
+			_panel.SmallGaugeColor = GetTintFromColor(color: currentEnvDetColor, clarity: 1);
+		}
+
 		public override void Update()
 		{
 			base.Update();
@@ -1414,6 +1449,7 @@ namespace Streamliner
 			UpsurgeShip.OnDeployedBarrier -= StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease -= StartTransition;
 			UpsurgeShip.OnShieldActivated -= StartTransition;
+			NgRaceEvents.OnShipScoreChanged -= UpdateColor;
 			Barrier.OnPlayerBarrierWarned -= WarnBarrier;
 		}
 	}

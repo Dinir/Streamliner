@@ -764,7 +764,7 @@ namespace Streamliner
 		protected readonly bool UsingSmallGauges;
 		internal readonly Color SecondGaugeColor;
 		internal Vector2 CurrentSecondSize;
-		internal readonly Color SmallGaugeColor;
+		internal Color SmallGaugeColor;
 		internal readonly Vector2 SmallMaxSize;
 		internal Vector2 CurrentSmallSize;
 
@@ -808,13 +808,13 @@ namespace Streamliner
 			SecondRightGaugeImage.color = SecondGaugeColor;
 		}
 
-		private void ChangeSmallGaugesColor()
+		internal void ChangeSmallGaugesColor()
 		{
 			SmallGaugeImage.color = SmallGaugeColor;
 			SmallRightGaugeImage.color = SmallGaugeColor;
 		}
 
-		public void ChangeSmallGaugesColor(Color color)
+		internal void ChangeSmallGaugesColor(Color color)
 		{
 			SmallGaugeImage.color = color;
 			SmallRightGaugeImage.color = color;
