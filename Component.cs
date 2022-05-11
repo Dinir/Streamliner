@@ -2227,7 +2227,6 @@ namespace Streamliner
 		private void Initiate()
 		{
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
 			RectTransform timeGroupRT = CustomComponents.GetById("TimeGroup");
 			_timeGroup = timeGroupRT.GetComponent<CanvasGroup>();
 			_timeDiff = timeGroupRT.Find("Difference").GetComponent<Text>();
@@ -2237,6 +2236,12 @@ namespace Streamliner
 			Text lineTemplateText = _lineTemplate.GetComponent<Text>();
 			_nowPlaying = CustomComponents.GetById<Text>("NowPlaying");
 			_wrongWay = CustomComponents.GetById<Text>("WrongWay");
+			if (OptionMotion)
+			{
+				Shifter.Add(_panel, GetType().Name);
+				Shifter.Add(_nowPlaying.GetComponent<RectTransform>(), GetType().Name);
+				Shifter.Add(_wrongWay.GetComponent<RectTransform>(), GetType().Name);
+			}
 
 			_timeDiff.color = _defaultColor["TimeDiff"];
 			_lapResult.color = _defaultColor["LapResult"];

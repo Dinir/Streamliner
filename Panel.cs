@@ -21,7 +21,7 @@ namespace Streamliner
 {
 	internal static class Shifter
 	{
-		internal const int MaxPanelCount = 18;
+		internal const int MaxPanelCount = 20;
 
 		internal const float DampTime = 0.2f;
 		internal const float BaseShiftFactor = 3f;
