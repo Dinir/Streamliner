@@ -260,6 +260,24 @@ namespace Streamliner
 				};
 		}
 
+		internal static Color GetTintFromColor(
+			TextAlpha transparencyIndex = TextAlpha.Full,
+			Color? color = null,
+			int clarity = 3
+		)
+		{
+			Color.RGBToHSV(color ?? Color.white, out float hue, out float saturation, out _);
+
+			return Color.HSVToRGB(
+				hue,
+				Mathf.Approximately(saturation, 0f) ? 0 : StandardSV[clarity][0],
+				StandardSV[clarity][1]
+			) with
+			{
+				a = TintAlphaList[(int) transparencyIndex]
+			};
+		}
+
 		internal static Color GetPanelColor(
 			int tintIndex = 0
 		) =>
@@ -565,7 +583,7 @@ namespace Streamliner
 		// Identical to the method with no parameters,
 		// but you don't want to make that one virtual since
 		// it will be used in the constructor.
-		protected virtual void ChangeColor(Color color)
+		internal virtual void ChangeColor(Color color)
 		{
 			Label.color = color;
 			Value.color = color;
@@ -693,7 +711,7 @@ namespace Streamliner
 			if (UsingSmallValue) SmallValue.color = color;
 		}
 
-		protected override void ChangeColor(Color color)
+		internal override void ChangeColor(Color color)
 		{
 			base.ChangeColor(color);
 			ChangeAdditionalPartsColor(color);
@@ -802,7 +820,7 @@ namespace Streamliner
 			SmallRightGaugeImage.color = color;
 		}
 
-		protected override void ChangeColor(Color color)
+		internal override void ChangeColor(Color color)
 		{
 			base.ChangeColor(color);
 			color.a = GetTransparency(TextAlpha.ThreeEighths);

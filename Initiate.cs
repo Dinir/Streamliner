@@ -23,6 +23,7 @@ namespace Streamliner
 		private const string OptionSectionMotion = "Motion Effect";
 		private const string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint;
+		public static bool OptionSurvivalTintOverride = true;
 		public static int OptionTimeDiffColour;
 		public static bool OptionPositionBoard = true;
 		public static bool OptionMotion = true;
@@ -149,6 +150,13 @@ namespace Streamliner
 			);
 
 			ctx.GenerateSelector(
+				"SurvivalTintOverride", "survival mode tint",
+				"Set Survival mode text tint.",
+				OptionSurvivalTintOverride ? 1 : 0,
+				"text tint", "tint from survival palette"
+			);
+
+			ctx.GenerateSelector(
 				"TimeDiffColour", "time text colour",
 				"Set the colour pair to use for the time difference text.",
 				OptionTimeDiffColour,
@@ -249,6 +257,7 @@ namespace Streamliner
 		private void ModUiToCode(ModOptionsUiContext ctx)
 		{
 			OptionValueTint = ctx.GetSelectorValue("TextTint");
+			OptionSurvivalTintOverride = ctx.GetSelectorValue("SurvivalTintOverride") == 1;
 			OptionTimeDiffColour = ctx.GetSelectorValue("TimeDiffColour");
 			OptionPositionBoard = ctx.GetSelectorValue("PositionBoard") == 1;
 			OptionMotion = ctx.GetSelectorValue("Motion") == 1;
@@ -271,6 +280,7 @@ namespace Streamliner
 			ini.Open(_settingsPath);
 
 			OptionValueTint = ini.ReadValue(OptionSectionDisplay, "TextTint", OptionValueTint);
+			OptionSurvivalTintOverride = ini.ReadValue(OptionSectionDisplay, "SurvivalTintOverride", OptionSurvivalTintOverride);
 			OptionTimeDiffColour = ini.ReadValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
 			OptionPositionBoard = ini.ReadValue(OptionSectionDisplay, "PositionBoard", OptionPositionBoard);
 			OptionMotion = ini.ReadValue(OptionSectionMotion, "Motion", OptionMotion);
@@ -295,6 +305,7 @@ namespace Streamliner
 			ini.Open(_settingsPath);
 
 			ini.WriteValue(OptionSectionDisplay, "TextTint", OptionValueTint);
+			ini.WriteValue(OptionSectionDisplay, "SurvivalTintOverride", OptionSurvivalTintOverride);
 			ini.WriteValue(OptionSectionDisplay, "TimeDiffColour", OptionTimeDiffColour);
 			ini.WriteValue(OptionSectionDisplay, "PositionBoard", OptionPositionBoard);
 			ini.WriteValue(OptionSectionMotion, "Motion", OptionMotion);

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using BallisticUnityTools.Placeholders;
 using NgAudio;
 using NgData;
 using NgEvents;
@@ -21,6 +22,7 @@ using NgSp;
 using NgTrackData.Triggers;
 using NgUi.RaceUi;
 using NgUi.RaceUi.HUD;
+using NgVirtual;
 using UnityEngine;
 using UnityEngine.UI;
 using static Streamliner.HudRegister;
@@ -1177,8 +1179,17 @@ namespace Streamliner
 		private void SetScore(string score) =>
 			_zoneScore.text = score;
 
-		private void SetNumber(string number) =>
+		private void SetNumber(string number)
+		{
 			_panel.Value.text = number;
+
+			if (OptionSurvivalTintOverride && Convert.ToInt32(number) % 5 == 0)
+			{
+				Color currentEnvDetColor = 
+					ZonePalleteSettings.CurrentColors.GetColor(EZoneColorTarget.EnvironmentDetail);
+				_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
+			}
+		}
 
 		private void SetTitle(string title) =>
 			_zoneName.text = title;
