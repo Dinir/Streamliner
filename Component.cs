@@ -2105,6 +2105,8 @@ namespace Streamliner
 		private RectTransform _lineTemplate;
 		private Text _nowPlaying;
 		private Text _wrongWay;
+		private ZonePalleteSettings _palleteSettings;
+		private Color _currentZoneColor;
 		private bool _initiated;
 
 		private const int LineMax = 3;
@@ -2183,28 +2185,36 @@ namespace Streamliner
 		private float _wrongWayFadeTimeRemaining;
 		private bool _wasWrongWay;
 
+		private string _gamemodeName;
 		private bool _facingBackwardExpected;
 		private bool _noNewLapRecord;
 		private bool _usingThirdLine;
+		private bool _usingZoneColors;
 
 		public override void Start()
 		{
 			base.Start();
-			string gamemodeName = RaceManager.CurrentGamemode.Name;
-			_facingBackwardExpected = gamemodeName switch
+			_gamemodeName = RaceManager.CurrentGamemode.Name;
+			_facingBackwardExpected = _gamemodeName switch
 			{
 				"Eliminator" => true,
 				_ => false
 			};
-			_noNewLapRecord = gamemodeName switch
+			_noNewLapRecord = _gamemodeName switch
 			{
 				"Speed Lap" => false,
 				_ => true
 			};
-			_usingThirdLine = gamemodeName switch
+			_usingThirdLine = _gamemodeName switch
 			{
 				"Team Race" => false,
 				_ => true
+			};
+			_usingZoneColors = _gamemodeName switch
+			{
+				"Survival" when OptionZoneTintOverride => true,
+				"Upsurge" when OptionZoneTintOverride => true,
+				_ => false
 			};
 
 			_textColor = new Dictionary<string, Color>
@@ -2228,6 +2238,12 @@ namespace Streamliner
 				{"WrongWay", _textColor["100"]}
 			};
 
+			if (_usingZoneColors)
+			{
+				GetZonePalleteSettings(out _palleteSettings);
+				UpdateColor(GetZoneColor(_palleteSettings, 0));
+			}
+
 			Initiate();
 
 			/*
@@ -2240,6 +2256,46 @@ namespace Streamliner
 			NgUiEvents.OnTriggerMessage += AddMessage;
 			NgRaceEvents.OnShipExploded += AddEliminationMessage;
 			NgUiEvents.OnNewSongPlaying += AddSong;
+			if (_usingZoneColors)
+			{
+				switch (_gamemodeName)
+				{
+					case "Survival":
+						NgUiEvents.OnZoneNumberUpdate += UpdateColor;
+						break;
+					case "Upsurge":
+						NgRaceEvents.OnShipScoreChanged += UpdateColor;
+						break;
+				}
+			}
+		}
+
+		private void UpdateColor(Color color)
+		{
+			if (_currentZoneColor == color)
+				return;
+
+			_currentZoneColor = color;
+			_textColor["75"] = GetTintFromColor(TextAlpha.ThreeQuarters, color);
+			_textColor["90"] = GetTintFromColor(TextAlpha.NineTenths, color);
+			_textColor["100"] = GetTintFromColor(color: color);
+
+			// oh no I can't iterate over a Dictionary
+			foreach (string text in new List<string>(_defaultColor.Keys))
+				_defaultColor[text] = text != "WrongWay" ? _textColor["90"] : _textColor["100"];
+		}
+		private void UpdateColor(string number)
+		{
+			int zoneNumber = Convert.ToInt32(number);
+			if (zoneNumber % 5 != 0)
+				return;
+			UpdateColor(GetZoneColor(_palleteSettings, zoneNumber));
+		}
+		private void UpdateColor(ShipController ship, float oldScore, float newScore)
+		{
+			if (ship != TargetShip)
+				return;
+			UpdateColor(GetZoneColor(_palleteSettings, (int) newScore));
 		}
 
 		private void FlushTimeGroupTexts(ShipController ship)
@@ -2598,8 +2654,10 @@ namespace Streamliner
 					break;
 				}
 
-				color.a = Mathf.Lerp(color.a, 0f, Time.deltaTime * FadeOutSpeed);
-				_nowPlaying.color = color;
+				_nowPlaying.color = color with
+				{
+					a = Mathf.Lerp(color.a, 0f, Time.deltaTime * FadeOutSpeed)
+				};
 
 				_npFadeOutTimeRemaining -= Time.deltaTime;
 				yield return null;
@@ -2616,6 +2674,18 @@ namespace Streamliner
 			NgUiEvents.OnTriggerMessage -= AddMessage;
 			NgRaceEvents.OnShipExploded -= AddEliminationMessage;
 			NgUiEvents.OnNewSongPlaying -= AddSong;
+			if (_usingZoneColors)
+			{
+				switch (_gamemodeName)
+				{
+					case "Survival":
+						NgUiEvents.OnZoneNumberUpdate -= UpdateColor;
+						break;
+					case "Upsurge":
+						NgRaceEvents.OnShipScoreChanged -= UpdateColor;
+						break;
+				}
+			}
 		}
 	}
 
