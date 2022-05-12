@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using UnityEngine;
+using UnityEngine.UI;
 using BallisticUnityTools.Placeholders;
 using NgAudio;
 using NgData;
@@ -23,8 +25,6 @@ using NgTrackData.Triggers;
 using NgUi.RaceUi;
 using NgUi.RaceUi.HUD;
 using NgVirtual;
-using UnityEngine;
-using UnityEngine.UI;
 using static Streamliner.HudRegister;
 using static Streamliner.PresetColorPicker;
 using static Streamliner.SectionManager;
@@ -1287,7 +1287,7 @@ namespace Streamliner
 
 		private void StartTransition(ShipController ship)
 		{
-			if (_upsurgeTargetShip == null || ship != _upsurgeTargetShip.TargetShip)
+			if (ship != _upsurgeTargetShip?.TargetShip)
 				return;
 
 			_transitionTimer = TransitionTimerMax;
@@ -1367,7 +1367,7 @@ namespace Streamliner
 
 		private void UpdateColor(ShipController ship, float oldScore, float newScore)
 		{
-			if (!OptionZoneTintOverride || ship != _upsurgeTargetShip.TargetShip)
+			if (!OptionZoneTintOverride || ship != _upsurgeTargetShip?.TargetShip)
 				return;
 
 			int zoneColorIndex = Convert.ToInt32(newScore) / 5;
