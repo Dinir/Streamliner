@@ -1172,7 +1172,8 @@ namespace Streamliner
 			 * publicly accessible `ZonePalleteSettings.CurrentColors` is NOT updated!
 			 * So the palette settings should be manually fetched to get the next set.
 			 */
-			GetZonePalleteSettings(out _palleteSettings);
+			if (OptionZoneTintOverride)
+				GetZonePalleteSettings(out _palleteSettings);
 
 			NgUiEvents.OnZoneProgressUpdate += SetProgress;
 			NgUiEvents.OnZoneScoreUpdate += SetScore;
@@ -1270,7 +1271,8 @@ namespace Streamliner
 			_energyInfo.Find("ValueShield").GetComponent<Text>().color = infoValueColor;
 
 			_gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
-			GetZonePalleteSettings(out _palleteSettings, _gamemode);
+			if (OptionZoneTintOverride)
+				GetZonePalleteSettings(out _palleteSettings, _gamemode);
 
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
@@ -1381,6 +1383,8 @@ namespace Streamliner
 			if (_upsurgeTargetShip == null)
 			{
 				_upsurgeTargetShip = _gamemode.Ships.Find(ship => ship.TargetShip == TargetShip);
+				if (OptionZoneTintOverride)
+					UpdateColor(_upsurgeTargetShip.TargetShip, 0f, 0f);
 				return;
 			}
 
