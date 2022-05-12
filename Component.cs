@@ -1162,17 +1162,19 @@ namespace Streamliner
 
 			ChangeModeSpecificPartsColor();
 
-			_zoneScore.text = "0";
-			_panel.Value.text = "0";
-			_zoneName.text = "toxic";
-
 			/*
 			 * When `OnZoneNumberUpdate` is called,
 			 * publicly accessible `ZonePalleteSettings.CurrentColors` is NOT updated!
 			 * So the palette settings should be manually fetched to get the next set.
 			 */
 			if (OptionZoneTintOverride)
+			{
 				GetZonePalleteSettings(out _palleteSettings);
+			}
+
+			SetScore("0");
+			SetNumber("0");
+			SetTitle("toxic");
 
 			NgUiEvents.OnZoneProgressUpdate += SetProgress;
 			NgUiEvents.OnZoneScoreUpdate += SetScore;
