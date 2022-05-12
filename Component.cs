@@ -1160,8 +1160,7 @@ namespace Streamliner
 			_zoneScore = CustomComponents.GetById<Text>("Score");
 			_zoneScore.gameObject.SetActive(true);
 
-			_zoneName.color = GetTintColor(TextAlpha.ThreeEighths);
-			_zoneScore.color = GetTintColor(TextAlpha.NineTenths);
+			ChangeModeSpecificPartsColor();
 
 			_zoneScore.text = "0";
 			_panel.Value.text = "0";
@@ -1181,6 +1180,17 @@ namespace Streamliner
 			NgUiEvents.OnZoneTitleUpdate += SetTitle;
 		}
 
+		private void ChangeModeSpecificPartsColor()
+		{
+			_zoneName.color = GetTintColor(TextAlpha.ThreeEighths);
+			_zoneScore.color = GetTintColor(TextAlpha.NineTenths);
+		}
+		private void ChangeModeSpecificPartsColor(Color color)
+		{
+			_zoneName.color = GetTintFromColor(TextAlpha.ThreeEighths, color);
+			_zoneScore.color = GetTintFromColor(TextAlpha.NineTenths, color);
+		}
+
 		private void SetProgress(float progress) =>
 			_panel.FillBoth(progress);
 
@@ -1196,8 +1206,7 @@ namespace Streamliner
 			{
 				Color currentEnvDetColor = GetNextZoneColor(_palleteSettings, zoneNumber);
 				_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
-				_zoneName.color = GetTintFromColor(TextAlpha.ThreeEighths, currentEnvDetColor);
-				_zoneScore.color = GetTintFromColor(TextAlpha.NineTenths, currentEnvDetColor);
+				ChangeModeSpecificPartsColor(currentEnvDetColor);
 			}
 		}
 
@@ -1219,6 +1228,8 @@ namespace Streamliner
 	{
 		private LayeredDoubleGaugePanel _panel;
 		private RectTransform _energyInfo;
+		private Text _labelZoneText;
+		private Text _labelShieldText;
 		private Text _valueZoneText;
 		private Text _valueShieldText;
 		private Animator _barrierWarning;
@@ -1254,6 +1265,8 @@ namespace Streamliner
 			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 			_energyInfo = CustomComponents.GetById("Energy");
 			_energyInfo.gameObject.SetActive(true);
+			_labelZoneText = _energyInfo.Find("LabelZone").GetComponent<Text>();
+			_labelShieldText = _energyInfo.Find("LabelShield").GetComponent<Text>();
 			_valueZoneText = _energyInfo.Find("ValueZone").GetComponent<Text>();
 			_valueShieldText = _energyInfo.Find("ValueShield").GetComponent<Text>();
 			_barrierWarning = CustomComponents.GetById<Animator>("Barrier");
@@ -1263,12 +1276,7 @@ namespace Streamliner
 			_currentSmallGaugeColor = _panel.SmallGaugeColor;
 			_smallGaugeAlpha = _panel.SmallGaugeColor.a;
 
-			Color infoLabelColor = GetTintColor(TextAlpha.ThreeEighths);
-			Color infoValueColor = GetTintColor(TextAlpha.ThreeQuarters);
-			_energyInfo.Find("LabelZone").GetComponent<Text>().color = infoLabelColor;
-			_energyInfo.Find("LabelShield").GetComponent<Text>().color = infoLabelColor;
-			_energyInfo.Find("ValueZone").GetComponent<Text>().color = infoValueColor;
-			_energyInfo.Find("ValueShield").GetComponent<Text>().color = infoValueColor;
+			ChangeModeSpecificPartsColor();
 
 			_gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
 			if (OptionZoneTintOverride)
@@ -1279,6 +1287,25 @@ namespace Streamliner
 			UpsurgeShip.OnShieldActivated += StartTransition;
 			NgRaceEvents.OnShipScoreChanged += UpdateColor;
 			Barrier.OnPlayerBarrierWarned += WarnBarrier;
+		}
+
+		private void ChangeModeSpecificPartsColor()
+		{
+			Color infoLabelColor = GetTintColor(TextAlpha.ThreeEighths);
+			Color infoValueColor = GetTintColor(TextAlpha.ThreeQuarters);
+			_labelZoneText.color = infoLabelColor;
+			_labelShieldText.color = infoLabelColor;
+			_valueZoneText.color = infoValueColor;
+			_valueShieldText.color = infoValueColor;
+		}
+		private void ChangeModeSpecificPartsColor(Color color)
+		{
+			Color infoLabelColor = GetTintFromColor(TextAlpha.ThreeEighths, color);
+			Color infoValueColor = GetTintFromColor(TextAlpha.ThreeQuarters, color);
+			_labelZoneText.color = infoLabelColor;
+			_labelShieldText.color = infoLabelColor;
+			_valueZoneText.color = infoValueColor;
+			_valueShieldText.color = infoValueColor;
 		}
 
 		private void StartTransition(ShipController ship)
@@ -1375,6 +1402,7 @@ namespace Streamliner
 			_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
 			// this field is referenced at `Update()` and the transition
 			_panel.SmallGaugeColor = GetTintFromColor(color: currentEnvDetColor, clarity: 1);
+			ChangeModeSpecificPartsColor(currentEnvDetColor);
 		}
 
 		public override void Update()
