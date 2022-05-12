@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
-using BallisticUnityTools.Placeholders;
 using NgAudio;
 using NgData;
 using NgEvents;
@@ -1173,7 +1172,7 @@ namespace Streamliner
 			 * publicly accessible `ZonePalleteSettings.CurrentColors` is NOT updated!
 			 * So the palette settings should be manually fetched to get the next set.
 			 */
-			_palleteSettings = ZonePalleteSettings.LoadPaletteSettingsFinal();
+			GetZonePalleteSettings(out _palleteSettings);
 
 			NgUiEvents.OnZoneProgressUpdate += SetProgress;
 			NgUiEvents.OnZoneScoreUpdate += SetScore;
@@ -1194,12 +1193,7 @@ namespace Streamliner
 
 			if (OptionZoneTintOverride && zoneNumber % 5 == 0)
 			{
-				int zoneColorIndex = zoneNumber / 5 + 1; // add one to fetch the next color set
-				zoneColorIndex = zoneColorIndex > _palleteSettings.Pallete.Length - 1 ?
-					0 : zoneColorIndex;
-
-				Color currentEnvDetColor =
-					_palleteSettings.Pallete[zoneColorIndex].GetColor(EZoneColorTarget.EnvironmentDetail);
+				Color currentEnvDetColor = GetNextZoneColor(_palleteSettings, zoneNumber);
 				_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
 				_zoneName.color = GetTintFromColor(TextAlpha.ThreeEighths, currentEnvDetColor);
 				_zoneScore.color = GetTintFromColor(TextAlpha.NineTenths, currentEnvDetColor);
@@ -1228,7 +1222,7 @@ namespace Streamliner
 		private Text _valueShieldText;
 		private Animator _barrierWarning;
 		private ZonePalleteSettings _palleteSettings;
-		private Color _currentZoneColor;
+		private Color _currentZoneEnvDetColor;
 		private static readonly int WarnLeft = Animator.StringToHash("Left");
 		private static readonly int WarnMiddle = Animator.StringToHash("Middle");
 		private static readonly int WarnRight = Animator.StringToHash("Right");
@@ -1276,7 +1270,7 @@ namespace Streamliner
 			_energyInfo.Find("ValueShield").GetComponent<Text>().color = infoValueColor;
 
 			_gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
-			_palleteSettings = _gamemode.LoadZonePallete();
+			GetZonePalleteSettings(out _palleteSettings, _gamemode);
 
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
@@ -1370,12 +1364,12 @@ namespace Streamliner
 			if (!OptionZoneTintOverride || ship != _upsurgeTargetShip?.TargetShip)
 				return;
 
-			int zoneColorIndex = Convert.ToInt32(newScore) / 5;
-			zoneColorIndex = zoneColorIndex > _palleteSettings.Pallete.Length - 1 ?
-				0 : zoneColorIndex;
+			Color currentEnvDetColor = GetZoneColor(_palleteSettings, newScore);
 
-			Color currentEnvDetColor =
-				_palleteSettings.Pallete[zoneColorIndex].GetColor(EZoneColorTarget.EnvironmentDetail);
+			if (_currentZoneEnvDetColor == currentEnvDetColor)
+				return;
+
+			_currentZoneEnvDetColor = currentEnvDetColor;
 			_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
 			// this field is referenced at `Update()` and the transition
 			_panel.SmallGaugeColor = GetTintFromColor(color: currentEnvDetColor, clarity: 1);
