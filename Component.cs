@@ -1204,7 +1204,7 @@ namespace Streamliner
 
 			if (OptionZoneTintOverride && zoneNumber % 5 == 0)
 			{
-				Color currentEnvDetColor = GetNextZoneColor(_palleteSettings, zoneNumber);
+				Color currentEnvDetColor = GetZoneColor(_palleteSettings, zoneNumber);
 				_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
 				ChangeModeSpecificPartsColor(currentEnvDetColor);
 			}
@@ -1393,7 +1393,7 @@ namespace Streamliner
 			if (!OptionZoneTintOverride || ship != _upsurgeTargetShip?.TargetShip)
 				return;
 
-			Color currentEnvDetColor = GetZoneColor(_palleteSettings, newScore);
+			Color currentEnvDetColor = GetZoneColor(_palleteSettings, (int) newScore);
 
 			if (_currentZoneEnvDetColor == currentEnvDetColor)
 				return;

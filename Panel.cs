@@ -291,25 +291,12 @@ namespace Streamliner
 		) =>
 			palleteSettings = gamemode.LoadZonePallete();
 
-		internal static Color GetNextZoneColor(ZonePalleteSettings palleteSettings, int zoneNumber)
+		internal static Color GetZoneColor(ZonePalleteSettings palleteSettings, int zoneNumber)
 		{
 			if (!OptionZoneTintOverride)
 				return GetTintColor();
 
-			int zoneColorIndex = zoneNumber / 5 + 1; // add one to fetch the next color set
-			zoneColorIndex = zoneColorIndex > palleteSettings.Pallete.Length - 1 ?
-				0 : zoneColorIndex;
-
-			return 
-				palleteSettings.Pallete[zoneColorIndex].GetColor(EZoneColorTarget.EnvironmentDetail);
-		}
-
-		internal static Color GetZoneColor(ZonePalleteSettings palleteSettings,  float newScore)
-		{
-			if (!OptionZoneTintOverride)
-				return GetTintColor();
-
-			int zoneColorIndex = Convert.ToInt32(newScore) / 5;
+			int zoneColorIndex = zoneNumber / 5;
 			zoneColorIndex = zoneColorIndex > palleteSettings.Pallete.Length - 1 ?
 				0 : zoneColorIndex;
 
