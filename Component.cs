@@ -2319,14 +2319,11 @@ namespace Streamliner
 			_initiated = true;
 		}
 
-		private static Color GetAdaptedColor(Color inputColor)
-		{
-			return inputColor == Color.green ?
-				_textColor["green"] :
-				inputColor == Color.red ?
-					_textColor["red"] :
-					_defaultColor["Line"];
-		}
+		private static Color GetAdaptedColor(Color inputColor) =>
+			inputColor == Color.green ? _textColor["green"] :
+			inputColor == Color.red ? _textColor["red"] :
+			inputColor == BnGAccent ? _defaultColor["Line"] :
+			GetTintFromColor(TextAlpha.NineTenths, inputColor);
 
 		private void AddMessage(string message, ShipController ship, Color color)
 		{
