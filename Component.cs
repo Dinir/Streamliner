@@ -250,6 +250,10 @@ namespace Streamliner
 		private float _deltaAnimationTimer;
 		private float _rechargeDisplayTimer;
 
+		private string _gamemodeName;
+		private Color? _currentZoneColor = null;
+		private bool _usingZoneColors;
+
 		public override void Start()
 		{
 			base.Start();
@@ -272,9 +276,25 @@ namespace Streamliner
 			_currentSize = _maxSize;
 			_gauge.sizeDelta = _currentSize;
 
+			_gamemodeName = RaceManager.CurrentGamemode.Name;
+			_usingZoneColors = _gamemodeName switch
+			{
+				"Survival" when OptionZoneTintOverride => true,
+				"Upsurge" when OptionZoneTintOverride => true,
+				_ => false
+			};
+
+			if (_usingZoneColors)
+			{
+				switch (_gamemodeName)
+				{
+					case "Survival": NgUiEvents.OnZoneNumberUpdate += UpdateToZoneColor; break;
+					case "Upsurge": NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor; break;
+				}
+			}
+
 			// Coloring
-			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
-			_gaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
+			UpdateColor();
 			_currentColor = _defaultColor;
 			_currentDamageColor = _damageColor;
 			_value.color = _defaultColor;
@@ -285,9 +305,23 @@ namespace Streamliner
 			_delta.color = _deltaInactiveColor;
 		}
 
+		private void UpdateColor()
+		{
+			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
+			_gaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
+		}
+		private void UpdateColor(Color color)
+		{
+			_defaultColor = color with { a = GetTransparency(TextAlpha.ThreeQuarters) };
+			_gaugeBackground.color = color with { a = GetTransparency(TextAlpha.ThreeEighths) };
+		}
+
 		public override void Update()
 		{
 			base.Update();
+			if (_usingZoneColors && _currentZoneColor is null && PalleteSettingsLoaded())
+				UpdateToZoneColor(0);
+
 			_currentEnergy = TargetShip.ShieldIntegrity;
 			_isRecharging = TargetShip.IsRecharging;
 			_energyRegained =
@@ -367,6 +401,30 @@ namespace Streamliner
 				IntStrDb.GetNumber(Mathf.RoundToInt(_computedValue));
 		}
 
+		/// <summary>
+		/// # Energymeter Color
+		/// 
+		/// Take `_value.color` and label it as just `color`,
+		/// then set `_currentColor` and apply a color inbetween to `color`.
+		/// When damage is received, set `_currentDamageColor` and
+		/// apply a color inbetween to `color`.
+		/// 
+		/// `_currentColor` can be any of those:
+		/// `_rechargeColor`, `_lowColor`, `_criticalColor`, `_defaultColor`
+		/// `_currentDamageColor` can be any of those:
+		/// `_damageColor`, `_damageLowColor`
+		/// 
+		/// After `color` is set, apply it to `_value` and `_gaugeImage`.
+		/// 
+		/// # Recharge Value Color
+		/// 
+		/// Take `_delta.color` and label it as `deltaColor`.
+		/// When recharge is going, set it as a color between it and `_deltaColor`.
+		/// When not recharging, set it as `_deltaInactiveColor`.
+		/// When recharging is over, set it as `_deltaFinalColor` then finally as `_deltaInactiveColor`.
+		/// 
+		/// After `deltaColor` is set, apply it to `_delta`.
+		/// </summary>
 		private void ColorEnergyComponent()
 		{
 			// Set timer during which the coloring transition can run
@@ -498,6 +556,42 @@ namespace Streamliner
 			_value.color = color;
 			_gaugeImage.color = color;
 			_delta.color = deltaColor;
+		}
+
+		private void UpdateToZoneColor(int zoneNumber)
+		{
+			Color color = GetZoneColor(zoneNumber);
+			if (_currentZoneColor == color)
+				return;
+
+			_currentZoneColor = color;
+			UpdateColor(color);
+		}
+		private void UpdateToZoneColor(string number)
+		{
+			int zoneNumber = Convert.ToInt32(number);
+			if (zoneNumber % 5 != 0)
+				return;
+			UpdateToZoneColor(zoneNumber);
+		}
+		private void UpdateToZoneColor(ShipController ship, float oldScore, float newScore)
+		{
+			if (ship != TargetShip)
+				return;
+			UpdateToZoneColor((int)newScore);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			if (_usingZoneColors)
+			{
+				switch (_gamemodeName)
+				{
+					case "Survival": NgUiEvents.OnZoneNumberUpdate -= UpdateToZoneColor; break;
+					case "Upsurge": NgRaceEvents.OnShipScoreChanged -= UpdateToZoneColor; break;
+				}
+			}
 		}
 	}
 
