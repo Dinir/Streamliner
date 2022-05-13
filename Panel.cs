@@ -282,6 +282,21 @@ namespace Streamliner
 			};
 		}
 
+		internal static Color GetPanelColor(
+			int tintIndex = 0
+		) =>
+			Color.HSVToRGB(
+					StandardH[tintIndex],
+					tintIndex == 0 ? 0 : StandardSV[0][0],
+					tintIndex == 0 ? 0.16f : 0.30f
+				) with
+				{
+					a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
+				};
+
+		internal static float GetTransparency(TextAlpha transparencyIndex) =>
+			TintAlphaList[(int) transparencyIndex];
+
 		internal static void UpdateZonePalleteSettings() =>
 			PalleteSettings = ZonePalleteSettings.LoadPaletteSettingsFinal();
 
@@ -306,21 +321,6 @@ namespace Streamliner
 			return
 				PalleteSettings.Pallete[zoneColorIndex].GetColor(EZoneColorTarget.EnvironmentDetail);
 		}
-
-		internal static Color GetPanelColor(
-			int tintIndex = 0
-		) =>
-			Color.HSVToRGB(
-					StandardH[tintIndex],
-					tintIndex == 0 ? 0 : StandardSV[0][0],
-					tintIndex == 0 ? 0.16f : 0.30f
-				) with
-				{
-					a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
-				};
-
-		internal static float GetTransparency(TextAlpha transparencyIndex) =>
-			TintAlphaList[(int) transparencyIndex];
 	}
 
 	internal class BigTimeTextBuilder

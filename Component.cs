@@ -143,6 +143,12 @@ namespace Streamliner
 			_panel.ChangeDataPartColor(color);
 		}
 
+		/*
+		 * Some fields and the three `UpdateToZoneColor` methods will appear exactly same in
+		 * other hud components except the part where the color is applied to the component.
+		 * I want to extract them into `Streamliner.PresetColorPicker`,
+		 * but I don't know how to do it so I am leaving these duplicates.
+		 */
 		private void UpdateToZoneColor(int zoneNumber)
 		{
 			Color color = GetZoneColor(zoneNumber);
@@ -2414,35 +2420,6 @@ namespace Streamliner
 			}
 		}
 
-		private void UpdateToZoneColor(int zoneNumber)
-		{
-			Color color = GetZoneColor(zoneNumber);
-			if (_currentZoneColor == color)
-				return;
-
-			_currentZoneColor = color;
-			_textColor["75"] = GetTintFromColor(TextAlpha.ThreeQuarters, color);
-			_textColor["90"] = GetTintFromColor(TextAlpha.NineTenths, color);
-			_textColor["100"] = GetTintFromColor(color: color);
-
-			// oh no I can't iterate over a Dictionary
-			foreach (string text in new List<string>(_defaultColor.Keys))
-				_defaultColor[text] = text != "WrongWay" ? _textColor["90"] : _textColor["100"];
-		}
-		private void UpdateToZoneColor(string number)
-		{
-			int zoneNumber = Convert.ToInt32(number);
-			if (zoneNumber % 5 != 0)
-				return;
-			UpdateToZoneColor(zoneNumber);
-		}
-		private void UpdateToZoneColor(ShipController ship, float oldScore, float newScore)
-		{
-			if (ship != TargetShip)
-				return;
-			UpdateToZoneColor((int) newScore);
-		}
-
 		private void FlushTimeGroupTexts(ShipController ship)
 		{
 			if (ship != TargetShip)
@@ -2813,6 +2790,35 @@ namespace Streamliner
 
 			_npFadeOutTimeRemaining = 0f;
 			_npFadeOutInProgress = false;
+		}
+
+		private void UpdateToZoneColor(int zoneNumber)
+		{
+			Color color = GetZoneColor(zoneNumber);
+			if (_currentZoneColor == color)
+				return;
+
+			_currentZoneColor = color;
+			_textColor["75"] = GetTintFromColor(TextAlpha.ThreeQuarters, color);
+			_textColor["90"] = GetTintFromColor(TextAlpha.NineTenths, color);
+			_textColor["100"] = GetTintFromColor(color: color);
+
+			// oh no I can't iterate over a Dictionary
+			foreach (string text in new List<string>(_defaultColor.Keys))
+				_defaultColor[text] = text != "WrongWay" ? _textColor["90"] : _textColor["100"];
+		}
+		private void UpdateToZoneColor(string number)
+		{
+			int zoneNumber = Convert.ToInt32(number);
+			if (zoneNumber % 5 != 0)
+				return;
+			UpdateToZoneColor(zoneNumber);
+		}
+		private void UpdateToZoneColor(ShipController ship, float oldScore, float newScore)
+		{
+			if (ship != TargetShip)
+				return;
+			UpdateToZoneColor((int) newScore);
 		}
 
 		public override void OnDestroy()
