@@ -1137,7 +1137,7 @@ namespace Streamliner
 			internal int RefId;
 			private readonly Vector2 _maxSize;
 			private Vector2 _currentSize;
-			private readonly Color _slotColor;
+			private Color _slotColor;
 
 			public EntrySlot(RectTransform template)
 			{
@@ -1150,9 +1150,7 @@ namespace Streamliner
 				_gaugeImage = _gauge.GetComponent<Image>();
 				_maxSize = _gauge.sizeDelta;
 
-				_slotColor = GetTintColor(TextAlpha.ThreeQuarters);
-
-				ChangeColor();
+				UpdateColor();
 				SetName("");
 				SetDisplayValue(ValueType.Position, 0);
 				FillByPercentage(100f);
@@ -1160,11 +1158,19 @@ namespace Streamliner
 
 			public void Hide() => _templateInstance.SetActive(false);
 
-			private void ChangeColor()
+			public void UpdateColor()
 			{
+				_slotColor = GetTintColor(TextAlpha.ThreeQuarters);
 				_name.color = _slotColor;
 				_gaugeImage.color = _slotColor;
-				_value.color = GetTintColor(TextAlpha.NineTenths);
+				_value.color = _slotColor with { a = GetTransparency(TextAlpha.NineTenths) };
+			}
+			public void UpdateColor(Color color)
+			{
+				_slotColor = color with { a = GetTransparency(TextAlpha.ThreeQuarters) };
+				_name.color = _slotColor;
+				_gaugeImage.color = _slotColor;
+				_value.color = _slotColor with { a = GetTransparency(TextAlpha.NineTenths) };
 			}
 
 			public void ChangeOverallAlpha(TextAlpha transparencyIndex) =>
@@ -1332,6 +1338,12 @@ namespace Streamliner
 			if (ship is null)
 				return;
 			_visibleList[_visibleList.Count - 1].Hide();
+		}
+
+		public void UpdateColor(Color color)
+		{
+			foreach (EntrySlot slot in _visibleList)
+				slot.UpdateColor(color);
 		}
 
 		public IEnumerator Update(List<ShipController> loadedShips)

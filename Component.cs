@@ -23,7 +23,6 @@ using NgSp;
 using NgTrackData.Triggers;
 using NgUi.RaceUi;
 using NgUi.RaceUi.HUD;
-using NgVirtual;
 using static Streamliner.HudRegister;
 using static Streamliner.PresetColorPicker;
 using static Streamliner.SectionManager;
@@ -144,7 +143,7 @@ namespace Streamliner
 		}
 
 		/*
-		 * Some fields and the three `UpdateToZoneColor` methods will appear exactly same in
+		 * Some fields and the three `UpdateToZoneColor` methods will appear almost same in
 		 * other hud components except the part where the color is applied to the component.
 		 * I want to extract them into `Streamliner.PresetColorPicker`,
 		 * but I don't know how to do it so I am leaving these duplicates.
@@ -2975,6 +2974,9 @@ namespace Streamliner
 		private Playerboard _panel;
 		private bool _hideLastSlotOnExplosion;
 
+		private Color? _currentZoneColor = null;
+		private bool _usingZoneColors;
+
 		public override void Start()
 		{
 			base.Start();
@@ -2982,11 +2984,16 @@ namespace Streamliner
 				RaceManager.CurrentGamemode.Name);
 			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 
+			_usingZoneColors = 
+				RaceManager.CurrentGamemode.Name == "Upsurge" && OptionZoneTintOverride;
+
 			// Data in `RaceManager.CurrentGamemode` are lost when `OnDestroy()` is called.
 			_hideLastSlotOnExplosion = RaceManager.CurrentGamemode.Name == "Knockout";
 			if (_hideLastSlotOnExplosion)
 				NgRaceEvents.OnShipExploded += _panel.HideLastSlot;
 			NgRaceEvents.OnCountdownStart += Initiate;
+			if (_usingZoneColors)
+				NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor;
 		}
 
 		private void Initiate()
@@ -3001,7 +3008,26 @@ namespace Streamliner
 			_panel.InitiateSlots(Ships.Loaded);
 			StartCoroutine(_panel.Update(Ships.Loaded));
 
+			if (_usingZoneColors)
+				UpdateToZoneColor(0);
+
 			NgRaceEvents.OnCountdownStart -= Initiate;
+		}
+
+		private void UpdateToZoneColor(int zoneNumber)
+		{
+			Color color = GetZoneColor(zoneNumber);
+			if (_currentZoneColor == color)
+				return;
+
+			_currentZoneColor = color;
+			_panel.UpdateColor(color);
+		}
+		private void UpdateToZoneColor(ShipController ship, float oldScore, float newScore)
+		{
+			if (ship != TargetShip)
+				return;
+			UpdateToZoneColor((int) newScore);
 		}
 
 		public override void OnDestroy()
@@ -3010,6 +3036,8 @@ namespace Streamliner
 			StopCoroutine(_panel.Update(Ships.Loaded));
 			if (_hideLastSlotOnExplosion)
 				NgRaceEvents.OnShipExploded -= _panel.HideLastSlot;
+			if (_usingZoneColors)
+				NgRaceEvents.OnShipScoreChanged -= UpdateToZoneColor;
 		}
 	}
 
