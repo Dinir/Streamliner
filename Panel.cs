@@ -578,7 +578,7 @@ namespace Streamliner
 		protected readonly Image GaugeBackgroundImage;
 		protected readonly RectTransform Gauge;
 		protected readonly Image GaugeImage;
-		internal readonly Color GaugeColor;
+		internal Color GaugeColor;
 		internal readonly Vector2 MaxSize;
 		internal Vector2 CurrentSize;
 
@@ -594,11 +594,11 @@ namespace Streamliner
 			MaxSize = Gauge.sizeDelta;
 			GaugeColor = GetTintColor();
 
-			ChangeColor();
+			UpdateColor();
 			Fill(0f);
 		}
 
-		private void ChangeColor()
+		private void UpdateColor()
 		{
 			Label.color = GaugeColor;
 			Value.color = GaugeColor;
@@ -609,12 +609,10 @@ namespace Streamliner
 		// Identical to the method with no parameters,
 		// but you don't want to make that one virtual since
 		// it will be used in the constructor.
-		internal virtual void ChangeColor(Color color)
+		internal virtual void UpdateColor(Color color)
 		{
-			Label.color = color;
-			Value.color = color;
-			GaugeImage.color = color;
-			GaugeBackgroundImage.color = color with { a = GetTransparency(TextAlpha.ThreeEighths) };
+			GaugeColor = color;
+			UpdateColor();
 		}
 
 		public virtual void ChangeDataPartColor(Color color)
@@ -655,12 +653,18 @@ namespace Streamliner
 			AccelGauge = (RectTransform)GaugeBackground.Find("AccelGauge");
 			AccelGaugeImage = AccelGauge.GetComponent<Image>();
 
-			ChangeAccelColor();
+			UpdateAccelColor();
 			FillAccel(0f);
 		}
 
-		private void ChangeAccelColor() =>
-			AccelGaugeImage.color = GetTintColor(TextAlpha.ThreeEighths);
+		private void UpdateAccelColor() =>
+			AccelGaugeImage.color = GaugeColor with { a = GetTransparency(TextAlpha.ThreeEighths) };
+
+		internal override void UpdateColor(Color color)
+		{
+			base.UpdateColor(color);
+			UpdateAccelColor();
+		}
 
 		public void FillAccel(float amount)
 		{
@@ -682,13 +686,19 @@ namespace Streamliner
 			MaxValue = panelElement.Find("MaxValue").GetComponent<Text>();
 			Separator = Base.Find("Separator").GetComponent<Text>();
 
-			ChangeFractionPartColor();
+			UpdateFractionPartColor();
 		}
 
-		private void ChangeFractionPartColor()
+		private void UpdateFractionPartColor()
 		{
 			MaxValue.color = GaugeColor;
 			Separator.color = GaugeColor;
+		}
+
+		internal override void UpdateColor(Color color)
+		{
+			base.UpdateColor(color);
+			UpdateFractionPartColor();
 		}
 
 		public override void ChangeDataPartColor(Color color)
@@ -721,11 +731,11 @@ namespace Streamliner
 			if (usingSmallValue)
 				SmallValue = panelElement.Find("SmallValue").GetComponent<Text>();
 
-			ChangeAdditionalPartsColor();
+			UpdateAdditionalPartsColor();
 			FillBoth(0f);
 		}
 
-		private void ChangeAdditionalPartsColor()
+		private void UpdateAdditionalPartsColor()
 		{
 			RightGaugeImage.color = GaugeColor;
 			if (UsingSmallValue) SmallValue.color = GaugeColor;
@@ -737,10 +747,10 @@ namespace Streamliner
 			if (UsingSmallValue) SmallValue.color = color;
 		}
 
-		internal override void ChangeColor(Color color)
+		internal override void UpdateColor(Color color)
 		{
-			base.ChangeColor(color);
-			ChangeAdditionalPartsColor(color);
+			base.UpdateColor(color);
+			UpdateAdditionalPartsColor();
 		}
 
 		public override void ChangeDataPartColor(Color color)
@@ -788,7 +798,7 @@ namespace Streamliner
 		protected readonly RectTransform SmallRightGauge;
 		protected readonly Image SmallRightGaugeImage;
 		protected readonly bool UsingSmallGauges;
-		internal readonly Color SecondGaugeColor;
+		internal Color SecondGaugeColor;
 		internal Vector2 CurrentSecondSize;
 		internal Color SmallGaugeColor;
 		internal readonly Vector2 SmallMaxSize;
@@ -810,7 +820,7 @@ namespace Streamliner
 			SecondGaugeColor = GetTintColor(TextAlpha.ThreeEighths);
 			SmallGaugeColor = GetTintColor(clarity: 1);
 
-			ChangeSecondGaugesColor();
+			UpdateSecondGaugesColor();
 			FillSecondGauges(0f);
 
 			if (!UsingSmallGauges) return;
@@ -824,18 +834,20 @@ namespace Streamliner
 			SmallMaxSize = SmallGauge.sizeDelta;
 			CurrentSmallSize.y = SmallMaxSize.y;
 
-			ChangeSmallGaugesColor();
+			UpdateSmallGaugesColor();
 			FillSmallGauges(0f);
 		}
 
-		private void ChangeSecondGaugesColor()
+		private void UpdateSecondGaugesColor()
 		{
+			SecondGaugeColor = GaugeColor with { a = GetTransparency(TextAlpha.ThreeEighths) };
 			SecondGaugeImage.color = SecondGaugeColor;
 			SecondRightGaugeImage.color = SecondGaugeColor;
 		}
 
-		internal void ChangeSmallGaugesColor()
+		internal void UpdateSmallGaugesColor()
 		{
+			SmallGaugeColor = GetTintFromColor(color: GaugeColor, clarity: 1);
 			SmallGaugeImage.color = SmallGaugeColor;
 			SmallRightGaugeImage.color = SmallGaugeColor;
 		}
@@ -846,12 +858,10 @@ namespace Streamliner
 			SmallRightGaugeImage.color = color;
 		}
 
-		internal override void ChangeColor(Color color)
+		internal override void UpdateColor(Color color)
 		{
-			base.ChangeColor(color);
-			color.a = GetTransparency(TextAlpha.ThreeEighths);
-			SecondGaugeImage.color = color;
-			SecondRightGaugeImage.color = color;
+			base.UpdateColor(color);
+			UpdateSecondGaugesColor();
 		}
 
 		public override void ChangeDataPartColor(Color color)

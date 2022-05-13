@@ -1207,7 +1207,7 @@ namespace Streamliner
 			if (OptionZoneTintOverride && zoneNumber % 5 == 0)
 			{
 				Color currentEnvDetColor = GetZoneColor(_palleteSettings, zoneNumber);
-				_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
+				_panel.UpdateColor(GetTintFromColor(color: currentEnvDetColor));
 				ChangeModeSpecificPartsColor(currentEnvDetColor);
 			}
 		}
@@ -1401,7 +1401,7 @@ namespace Streamliner
 				return;
 
 			_currentZoneEnvDetColor = currentEnvDetColor;
-			_panel.ChangeColor(GetTintFromColor(color: currentEnvDetColor));
+			_panel.UpdateColor(GetTintFromColor(color: currentEnvDetColor));
 			// this field is referenced at `Update()` and the transition
 			_panel.SmallGaugeColor = GetTintFromColor(color: currentEnvDetColor, clarity: 1);
 			ChangeModeSpecificPartsColor(currentEnvDetColor);
