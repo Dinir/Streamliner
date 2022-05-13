@@ -45,17 +45,40 @@ namespace Streamliner
 		private float _speedDecreaseAnimationTimer;
 		private float _speedIncreaseAnimationTimer;
 
+		private string _gamemodeName;
+		private Color? _currentZoneColor = null;
+		private bool _usingZoneColors;
+
 		public override void Start()
 		{
 			base.Start();
 			_panel = new SpeedPanel(CustomComponents.GetById("Base"));
 			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
 
+			_gamemodeName = RaceManager.CurrentGamemode.Name;
+			_usingZoneColors = _gamemodeName switch
+			{
+				"Survival" when OptionZoneTintOverride => true,
+				"Upsurge" when OptionZoneTintOverride => true,
+				_ => false
+			};
+
+			if (_usingZoneColors)
+			{
+				switch (_gamemodeName)
+				{
+					case "Survival": NgUiEvents.OnZoneNumberUpdate += UpdateToZoneColor; break;
+					case "Upsurge": NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor; break;
+				}
+			}
 		}
 
 		public override void Update()
 		{
 			base.Update();
+			if (_usingZoneColors && _currentZoneColor is null && PalleteSettingsLoaded())
+				UpdateToZoneColor(0);
+
 			_panel.FillAccel(GetHudAccelWidth());
 			_panel.Fill(GetHudSpeedWidth());
 			_panel.Value.text = GetSpeedValueString();
@@ -118,6 +141,42 @@ namespace Streamliner
 				_speedIncreaseAnimationTimer = 0f;
 
 			_panel.ChangeDataPartColor(color);
+		}
+
+		private void UpdateToZoneColor(int zoneNumber)
+		{
+			Color color = GetZoneColor(zoneNumber);
+			if (_currentZoneColor == color)
+				return;
+
+			_currentZoneColor = color;
+			_panel.UpdateColor(color);
+		}
+		private void UpdateToZoneColor(string number)
+		{
+			int zoneNumber = Convert.ToInt32(number);
+			if (zoneNumber % 5 != 0)
+				return;
+			UpdateToZoneColor(zoneNumber);
+		}
+		private void UpdateToZoneColor(ShipController ship, float oldScore, float newScore)
+		{
+			if (ship != TargetShip)
+				return;
+			UpdateToZoneColor((int) newScore);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			if (_usingZoneColors)
+			{
+				switch (_gamemodeName)
+				{
+					case "Survival": NgUiEvents.OnZoneNumberUpdate -= UpdateToZoneColor; break;
+					case "Upsurge": NgRaceEvents.OnShipScoreChanged -= UpdateToZoneColor; break;
+				}
+			}
 		}
 	}
 
@@ -1190,6 +1249,13 @@ namespace Streamliner
 			_zoneScore.color = GetTintFromColor(TextAlpha.NineTenths, color);
 		}
 
+		private void UpdateToZoneColor(int zoneNumber)
+		{
+			Color currentEnvDetColor = GetZoneColor(zoneNumber);
+			_panel.UpdateColor(GetTintFromColor(color: currentEnvDetColor));
+			ChangeModeSpecificPartsColor(currentEnvDetColor);
+		}
+
 		private void SetProgress(float progress) =>
 			_panel.FillBoth(progress);
 
@@ -1202,11 +1268,7 @@ namespace Streamliner
 			int zoneNumber = Convert.ToInt32(number);
 
 			if (OptionZoneTintOverride && zoneNumber % 5 == 0)
-			{
-				Color currentEnvDetColor = GetZoneColor(zoneNumber);
-				_panel.UpdateColor(GetTintFromColor(color: currentEnvDetColor));
-				ChangeModeSpecificPartsColor(currentEnvDetColor);
-			}
+				UpdateToZoneColor(zoneNumber);
 		}
 
 		private void SetTitle(string title) =>
@@ -1215,6 +1277,7 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
+			FlushZonePalleteSettings();
 
 			NgUiEvents.OnZoneProgressUpdate -= SetProgress;
 			NgUiEvents.OnZoneScoreUpdate -= SetScore;
@@ -1283,7 +1346,7 @@ namespace Streamliner
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
 			UpsurgeShip.OnShieldActivated += StartTransition;
-			NgRaceEvents.OnShipScoreChanged += UpdateColor;
+			NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor;
 			Barrier.OnPlayerBarrierWarned += WarnBarrier;
 		}
 
@@ -1386,7 +1449,7 @@ namespace Streamliner
 			_playingOverflowTransition = false;
 		}
 
-		private void UpdateColor(ShipController ship, float oldScore, float newScore)
+		private void UpdateToZoneColor(ShipController ship, float oldScore, float newScore)
 		{
 			if (!OptionZoneTintOverride || ship != TargetShip)
 				return;
@@ -1410,7 +1473,7 @@ namespace Streamliner
 			{
 				_upsurgeTargetShip = _gamemode.Ships.Find(ship => ship.TargetShip == TargetShip);
 				if (OptionZoneTintOverride)
-					UpdateColor(TargetShip, 0f, 0f);
+					UpdateToZoneColor(TargetShip, 0f, 0f);
 				return;
 			}
 
@@ -1470,10 +1533,12 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
+			FlushZonePalleteSettings();
+
 			UpsurgeShip.OnDeployedBarrier -= StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease -= StartTransition;
 			UpsurgeShip.OnShieldActivated -= StartTransition;
-			NgRaceEvents.OnShipScoreChanged -= UpdateColor;
+			NgRaceEvents.OnShipScoreChanged -= UpdateToZoneColor;
 			Barrier.OnPlayerBarrierWarned -= WarnBarrier;
 		}
 	}
@@ -2101,8 +2166,7 @@ namespace Streamliner
 		private RectTransform _lineTemplate;
 		private Text _nowPlaying;
 		private Text _wrongWay;
-		private ZonePalleteSettings _palleteSettings;
-		private Color _currentZoneColor;
+		private Color? _currentZoneColor = null;
 		private bool _initiated;
 
 		private const int LineMax = 3;
@@ -2234,12 +2298,6 @@ namespace Streamliner
 				{"WrongWay", _textColor["100"]}
 			};
 
-			if (_usingZoneColors)
-			{
-				UpdateZonePalleteSettings();
-				UpdateColor(GetZoneColor(0));
-			}
-
 			Initiate();
 
 			/*
@@ -2256,18 +2314,15 @@ namespace Streamliner
 			{
 				switch (_gamemodeName)
 				{
-					case "Survival":
-						NgUiEvents.OnZoneNumberUpdate += UpdateColor;
-						break;
-					case "Upsurge":
-						NgRaceEvents.OnShipScoreChanged += UpdateColor;
-						break;
+					case "Survival": NgUiEvents.OnZoneNumberUpdate += UpdateToZoneColor; break;
+					case "Upsurge": NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor; break;
 				}
 			}
 		}
 
-		private void UpdateColor(Color color)
+		private void UpdateToZoneColor(int zoneNumber)
 		{
+			Color color = GetZoneColor(zoneNumber);
 			if (_currentZoneColor == color)
 				return;
 
@@ -2280,18 +2335,18 @@ namespace Streamliner
 			foreach (string text in new List<string>(_defaultColor.Keys))
 				_defaultColor[text] = text != "WrongWay" ? _textColor["90"] : _textColor["100"];
 		}
-		private void UpdateColor(string number)
+		private void UpdateToZoneColor(string number)
 		{
 			int zoneNumber = Convert.ToInt32(number);
 			if (zoneNumber % 5 != 0)
 				return;
-			UpdateColor(GetZoneColor(_palleteSettings, zoneNumber));
+			UpdateToZoneColor(zoneNumber);
 		}
-		private void UpdateColor(ShipController ship, float oldScore, float newScore)
+		private void UpdateToZoneColor(ShipController ship, float oldScore, float newScore)
 		{
 			if (ship != TargetShip)
 				return;
-			UpdateColor(GetZoneColor(_palleteSettings, (int) newScore));
+			UpdateToZoneColor((int) newScore);
 		}
 
 		private void FlushTimeGroupTexts(ShipController ship)
@@ -2489,6 +2544,9 @@ namespace Streamliner
 			if (!_initiated)
 				return;
 
+			if (_usingZoneColors && _currentZoneColor is null && PalleteSettingsLoaded())
+				UpdateToZoneColor(0);
+
 			// general messages
 			for (int i = 0; i < _lines.Count; i++)
 			{
@@ -2674,12 +2732,8 @@ namespace Streamliner
 			{
 				switch (_gamemodeName)
 				{
-					case "Survival":
-						NgUiEvents.OnZoneNumberUpdate -= UpdateColor;
-						break;
-					case "Upsurge":
-						NgRaceEvents.OnShipScoreChanged -= UpdateColor;
-						break;
+					case "Survival": NgUiEvents.OnZoneNumberUpdate -= UpdateToZoneColor; break;
+					case "Upsurge": NgRaceEvents.OnShipScoreChanged -= UpdateToZoneColor; break;
 				}
 			}
 		}

@@ -288,6 +288,12 @@ namespace Streamliner
 		internal static void UpdateZonePalleteSettings(GmUpsurge gamemode) =>
 			PalleteSettings = gamemode.LoadZonePallete();
 
+		internal static void FlushZonePalleteSettings() =>
+			PalleteSettings = null;
+
+		internal static bool PalleteSettingsLoaded() =>
+			PalleteSettings is not null;
+
 		internal static Color GetZoneColor(int zoneNumber)
 		{
 			if (!OptionZoneTintOverride || PalleteSettings is null)
