@@ -244,6 +244,7 @@ namespace Streamliner
 		{
 			Full, NineTenths, ThreeQuarters, Half, ThreeEighths, Quarter, Zero
 		}
+		internal static ZonePalleteSettings PalleteSettings;
 
 		internal static Color GetTintColor(
 			TextAlpha transparencyIndex = TextAlpha.Full,
@@ -281,27 +282,23 @@ namespace Streamliner
 			};
 		}
 
-		internal static void GetZonePalleteSettings(
-			out ZonePalleteSettings palleteSettings
-		) =>
-			palleteSettings = ZonePalleteSettings.LoadPaletteSettingsFinal();
+		internal static void UpdateZonePalleteSettings() =>
+			PalleteSettings = ZonePalleteSettings.LoadPaletteSettingsFinal();
 
-		internal static void GetZonePalleteSettings(
-			out ZonePalleteSettings palleteSettings, GmUpsurge gamemode
-		) =>
-			palleteSettings = gamemode.LoadZonePallete();
+		internal static void UpdateZonePalleteSettings(GmUpsurge gamemode) =>
+			PalleteSettings = gamemode.LoadZonePallete();
 
-		internal static Color GetZoneColor(ZonePalleteSettings palleteSettings, int zoneNumber)
+		internal static Color GetZoneColor(int zoneNumber)
 		{
-			if (!OptionZoneTintOverride)
+			if (!OptionZoneTintOverride || PalleteSettings is null)
 				return GetTintColor();
 
 			int zoneColorIndex = zoneNumber / 5;
-			zoneColorIndex = zoneColorIndex > palleteSettings.Pallete.Length - 1 ?
+			zoneColorIndex = zoneColorIndex > PalleteSettings.Pallete.Length - 1 ?
 				0 : zoneColorIndex;
 
 			return
-				palleteSettings.Pallete[zoneColorIndex].GetColor(EZoneColorTarget.EnvironmentDetail);
+				PalleteSettings.Pallete[zoneColorIndex].GetColor(EZoneColorTarget.EnvironmentDetail);
 		}
 
 		internal static Color GetPanelColor(

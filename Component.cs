@@ -1148,7 +1148,6 @@ namespace Streamliner
 		private DoubleGaugePanel _panel;
 		private Text _zoneName;
 		private Text _zoneScore;
-		private ZonePalleteSettings _palleteSettings;
 
 		public override void Start()
 		{
@@ -1168,9 +1167,7 @@ namespace Streamliner
 			 * So the palette settings should be manually fetched to get the next set.
 			 */
 			if (OptionZoneTintOverride)
-			{
-				GetZonePalleteSettings(out _palleteSettings);
-			}
+				UpdateZonePalleteSettings();
 
 			SetScore("0");
 			SetNumber("0");
@@ -1206,7 +1203,7 @@ namespace Streamliner
 
 			if (OptionZoneTintOverride && zoneNumber % 5 == 0)
 			{
-				Color currentEnvDetColor = GetZoneColor(_palleteSettings, zoneNumber);
+				Color currentEnvDetColor = GetZoneColor(zoneNumber);
 				_panel.UpdateColor(GetTintFromColor(color: currentEnvDetColor));
 				ChangeModeSpecificPartsColor(currentEnvDetColor);
 			}
@@ -1235,7 +1232,6 @@ namespace Streamliner
 		private Text _valueZoneText;
 		private Text _valueShieldText;
 		private Animator _barrierWarning;
-		private ZonePalleteSettings _palleteSettings;
 		private Color _currentZoneEnvDetColor;
 		private static readonly int WarnLeft = Animator.StringToHash("Left");
 		private static readonly int WarnMiddle = Animator.StringToHash("Middle");
@@ -1282,7 +1278,7 @@ namespace Streamliner
 
 			_gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
 			if (OptionZoneTintOverride)
-				GetZonePalleteSettings(out _palleteSettings, _gamemode);
+				UpdateZonePalleteSettings(_gamemode);
 
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
@@ -1392,17 +1388,17 @@ namespace Streamliner
 
 		private void UpdateColor(ShipController ship, float oldScore, float newScore)
 		{
-			if (!OptionZoneTintOverride || ship != _upsurgeTargetShip?.TargetShip)
+			if (!OptionZoneTintOverride || ship != TargetShip)
 				return;
 
-			Color currentEnvDetColor = GetZoneColor(_palleteSettings, (int) newScore);
+			Color currentEnvDetColor = GetZoneColor((int) newScore);
 
 			if (_currentZoneEnvDetColor == currentEnvDetColor)
 				return;
 
 			_currentZoneEnvDetColor = currentEnvDetColor;
 			_panel.UpdateColor(GetTintFromColor(color: currentEnvDetColor));
-			// this field is referenced at `Update()` and the transition
+			// instead of doing `UpdateSmallGaugesColor()`, just update the field
 			_panel.SmallGaugeColor = GetTintFromColor(color: currentEnvDetColor, clarity: 1);
 			ChangeModeSpecificPartsColor(currentEnvDetColor);
 		}
@@ -1414,7 +1410,7 @@ namespace Streamliner
 			{
 				_upsurgeTargetShip = _gamemode.Ships.Find(ship => ship.TargetShip == TargetShip);
 				if (OptionZoneTintOverride)
-					UpdateColor(_upsurgeTargetShip.TargetShip, 0f, 0f);
+					UpdateColor(TargetShip, 0f, 0f);
 				return;
 			}
 
@@ -2240,8 +2236,8 @@ namespace Streamliner
 
 			if (_usingZoneColors)
 			{
-				GetZonePalleteSettings(out _palleteSettings);
-				UpdateColor(GetZoneColor(_palleteSettings, 0));
+				UpdateZonePalleteSettings();
+				UpdateColor(GetZoneColor(0));
 			}
 
 			Initiate();

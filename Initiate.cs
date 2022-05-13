@@ -432,9 +432,10 @@ namespace Streamliner
 	{
 		public override void OnCreateHuds()
 		{
+			RegisterHud<ZoneTracker>(HudRegister.Assets.GetComponent<HudComponents>("Zone", false));
+
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
-			RegisterHud<ZoneTracker>(HudRegister.Assets.GetComponent<HudComponents>("Zone", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			if (NgCampaign.Enabled)
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
@@ -482,9 +483,10 @@ namespace Streamliner
 	{
 		public override void OnCreateHuds()
 		{
+			RegisterHud<UpsurgeTracker>(HudRegister.Assets.GetComponent<HudComponents>("Zone", false));
+
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
-			RegisterHud<UpsurgeTracker>(HudRegister.Assets.GetComponent<HudComponents>("Zone", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 
