@@ -52,7 +52,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = new SpeedPanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.ShipId, GetType().Name);
 
 			_gamemodeName = RaceManager.CurrentGamemode.Name;
 			_usingZoneColors = _gamemodeName switch
@@ -266,7 +266,7 @@ namespace Streamliner
 				RaceManager.CurrentGamemode.Name == "Rush Hour";
 
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
 			_value = _panel.Find("Value").GetComponent<Text>();
 			_delta = _panel.Find("Delta").GetComponent<Text>();
 			_gaugeBackground = _panel.Find("GaugeBackground").GetComponent<Image>();
@@ -674,7 +674,7 @@ namespace Streamliner
 			_totalLaps = Race.MaxLaps;
 			_totalSections = GetTotalSectionCount();
 			_panel = new BasicPanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.ShipId, GetType().Name);
 			_lapSlotTemplate = CustomComponents.GetById("LapSlot");
 			// I am hiding the components here, not on Unity,
 			// because I want to keep them visible on Unity.
@@ -816,7 +816,7 @@ namespace Streamliner
 			base.Start();
 			_totalSections = GetTotalSectionCount();
 			_panel = new BasicPanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.ShipId, GetType().Name);
 			RectTransform bestTimeSlot = CustomComponents.GetById("LapSlot");
 			_bestTimeText = bestTimeSlot.Find("Time").GetComponent<Text>();
 			bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
@@ -1007,7 +1007,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
 			_normalDisplay = CustomComponents.GetById("Normal");
 			_normalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
 			_normalDisplayValue = _normalDisplay.Find("Value").GetComponent<Text>();
@@ -1311,7 +1311,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = new DoubleGaugePanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.ShipId, GetType().Name);
 			_zoneName = CustomComponents.GetById<Text>("Name");
 			_zoneName.gameObject.SetActive(true);
 			_zoneScore = CustomComponents.GetById<Text>("Score");
@@ -1422,7 +1422,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = new LayeredDoubleGaugePanel(CustomComponents.GetById("Base"), true);
-			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.ShipId, GetType().Name);
 			_energyInfo = CustomComponents.GetById("Energy");
 			_energyInfo.gameObject.SetActive(true);
 			_labelZoneText = _energyInfo.Find("LabelZone").GetComponent<Text>();
@@ -1656,7 +1656,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = new FractionPanel(CustomComponents.GetById("Base"));
-			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.ShipId, GetType().Name);
 			switch (RaceManager.CurrentGamemode.Name)
 			{
 				case "Knockout":
@@ -1745,7 +1745,7 @@ namespace Streamliner
 				Value = { text = IntStrDb.GetNoSingleCharNumber(0) },
 				MaxValue = { text = IntStrDb.GetNoSingleCharNumber(Race.MaxLaps) }
 			};
-			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.ShipId, GetType().Name);
 
 			NgRaceEvents.OnShipLapUpdate += UpdateLap;
 		}
@@ -1867,7 +1867,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
 			_panel.Find("BackgroundFill").GetComponent<Image>().color =
 				GetTintColor(TextAlpha.ThreeEighths);
 			ShipNode.Template = CustomComponents.GetById("Node");
@@ -2211,7 +2211,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
 			_panelAnimator = _panel.GetComponent<Animator>();
 
 			_panel.Find("Left").Find("Text").GetComponent<Text>().color = GetTintColor();
@@ -2443,9 +2443,9 @@ namespace Streamliner
 			_wrongWay = CustomComponents.GetById<Text>("WrongWay");
 			if (OptionMotion)
 			{
-				Shifter.Add(_panel, GetType().Name);
-				Shifter.Add(_nowPlaying.GetComponent<RectTransform>(), GetType().Name);
-				Shifter.Add(_wrongWay.GetComponent<RectTransform>(), GetType().Name);
+				Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
+				Shifter.Add(_nowPlaying.GetComponent<RectTransform>(), TargetShip.ShipId, GetType().Name);
+				Shifter.Add(_wrongWay.GetComponent<RectTransform>(), TargetShip.ShipId, GetType().Name);
 			}
 
 			_timeDiff.color = _defaultColor["TimeDiff"];
@@ -2850,7 +2850,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
 			_playerPanel = new PickupPanel(
 				_panel.Find("IconBackground").GetComponent<RectTransform>(),
 				_panel.Find("Info").GetComponent<Text>());
@@ -2933,7 +2933,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
 			_playerPanel = new PickupPanel(_panel);
 
 			PickupBase.OnPickupInit += ShowPickup;
@@ -2982,7 +2982,7 @@ namespace Streamliner
 			base.Start();
 			_panel = new Playerboard(CustomComponents.GetById("Base"),
 				RaceManager.CurrentGamemode.Name);
-			if (OptionMotion) Shifter.Add(_panel.Base, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.ShipId, GetType().Name);
 
 			_usingZoneColors = 
 				RaceManager.CurrentGamemode.Name == "Upsurge" && OptionZoneTintOverride;
@@ -3184,7 +3184,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
 			_teammatePickupPanel =
 				new PickupPanel(_panel.Find("TeammatePickup").GetComponent<RectTransform>());
 			_labelFirst = _panel.Find("LabelFirst").gameObject;
@@ -3395,7 +3395,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
 			_panelPlatinum = _panel.Find("Platinum").GetComponent<CanvasGroup>();
 			_panelPlatinumImage = _panelPlatinum.GetComponent<Image>();
 			_textPlatinum = _panel.Find("Platinum").Find("Value").GetComponent<Text>();
@@ -3560,7 +3560,7 @@ namespace Streamliner
 		{
 			base.Start();
 			_panel = CustomComponents.GetById("Base");
-			if (OptionMotion) Shifter.Add(_panel, GetType().Name);
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.ShipId, GetType().Name);
 			_label = _panel.Find("Label").GetComponent<Text>();
 			_value = _panel.Find("Value").GetComponent<Text>();
 			_label.color = GetTintColor(TextAlpha.ThreeQuarters);
@@ -3609,11 +3609,17 @@ namespace Streamliner
 
 	public class ShifterHud : ScriptableHud
 	{
+		private int _shipId;
+		private bool _isPlayerOne;
+
 		public override void Start()
 		{
 			base.Start();
-			Shifter.TargetShip = TargetShip;
-			StartCoroutine(Shifter.Shift());
+			_shipId = TargetShip.ShipId;
+			_isPlayerOne = TargetShip.ShipId == 0;
+
+			Shifter.TargetShips[_shipId] = TargetShip;
+			StartCoroutine(Shifter.Shift(_shipId));
 
 			NgRaceEvents.OnShipExploded += Shifter.HideHud;
 			NgRaceEvents.OnShipRespawn += Shifter.ShowHud;
@@ -3628,9 +3634,10 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			StopCoroutine(Shifter.Shift());
-			Shifter.TargetShip = null;
-			Shifter.Panels.Clear();
+			StopCoroutine(Shifter.Shift(_shipId));
+
+			if (_isPlayerOne)
+				Shifter.Flush();
 
 			NgRaceEvents.OnShipExploded -= Shifter.HideHud;
 			NgRaceEvents.OnShipRespawn -= Shifter.ShowHud;

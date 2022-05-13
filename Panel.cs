@@ -25,6 +25,7 @@ namespace Streamliner
 	internal static class Shifter
 	{
 		internal const int MaxPanelCount = 20;
+		internal const int MaxPlayer = 2;
 
 		internal const float DampTime = 0.2f;
 		internal const float BaseShiftFactor = 3f;
@@ -48,15 +49,38 @@ namespace Streamliner
 		internal static float WallBounceShakeAmount = 30f;
 		internal static float ScrapingShakeAmount = 6f;
 
-		private static Vector2 _shiftTarget;
-		private static float _shakeAmount;
-		private static Vector2 _shakeVector;
-		private static float _shakeDuration;
-		private static float _previousVerticalSpeed;
+		private class AmountData
+		{
+			internal Vector2 ShiftTarget;
+			internal float ShakeAmount;
+			internal Vector2 ShakeVector;
+			internal float ShakeDuration;
+			internal float PreviousVerticalSpeed;
+		}
 
-		internal static ShipController TargetShip;
+		internal static readonly List<ShipController> TargetShips = new(MaxPlayer);
+		private static readonly List<AmountData> _amountData = new(MaxPlayer);
+		internal static readonly List<List<Panel>> Panels = new(MaxPlayer);
+		
+		internal static void Flush()
+		{
+			for (int i = 0; i < MaxPlayer; i++)
+			{
+				TargetShips[i] = null;
+				_amountData[i] = new AmountData();
+				Panels[i].Clear();
+			}
+		}
 
-		internal static readonly List<Panel> Panels = new(MaxPanelCount);
+		static Shifter()
+		{
+			for (int i = 0; i < MaxPlayer; i++)
+			{
+				TargetShips.Add(null);
+				_amountData.Add(new AmountData());
+				Panels.Add(new(MaxPanelCount));
+			}
+		}
 
 		internal class Panel
 		{
@@ -107,31 +131,33 @@ namespace Streamliner
 			ScrapingShakeAmount = BaseScrapingShakeAmount * OptionScrapeMultiplier;
 		}
 
-		internal static void Add(RectTransform panel, string name) => Panels.Add(new Panel(panel, name));
+		internal static void Add(RectTransform panel, int shipId, string name) =>
+			Panels[shipId].Add(new Panel(panel, name));
 
 		internal static void UpdateAmount(ShipController ship)
 		{
+			AmountData amountData = _amountData[ship.ShipId];
 			ShipSim sim = ship.PysSim;
 			Vector2 localVelocity =
 				ship.InverseTransformDirection(ship.RBody.velocity);
 			float currentVerticalVelocity = localVelocity.y;
 
 			// update shift amount
-			_shiftTarget = localVelocity * ShiftFactor;
+			amountData.ShiftTarget = localVelocity * ShiftFactor;
 			// limit vertical amount from getting too big
-			float verticalShiftAmount = _shiftTarget.y * VerticalShiftEmphasis;
+			float verticalShiftAmount = amountData.ShiftTarget.y * VerticalShiftEmphasis;
 			verticalShiftAmount = verticalShiftAmount > MaxVerticalShiftAmount ?
 				MaxVerticalShiftAmount : verticalShiftAmount < -MaxVerticalShiftAmount ?
 					-MaxVerticalShiftAmount : verticalShiftAmount;
-			_shiftTarget.y = verticalShiftAmount;
+			amountData.ShiftTarget = amountData.ShiftTarget with { y = verticalShiftAmount };
 
 			// update shake amount
-			float verticalSpeedDiff = currentVerticalVelocity - _previousVerticalSpeed;
+			float verticalSpeedDiff = currentVerticalVelocity - amountData.PreviousVerticalSpeed;
 
 			if (ship.OnMaglock)
 			{
-				_shakeAmount = 0;
-				_shakeDuration = _shakeAmount;
+				amountData.ShakeAmount = 0;
+				amountData.ShakeDuration = amountData.ShakeAmount;
 			}
 			else if (verticalSpeedDiff > MinVerticalSpeedDiff)
 			{
@@ -140,46 +166,49 @@ namespace Streamliner
 				verticalSpeedDiff = verticalSpeedDiff < 0 ?
 					0 : verticalSpeedDiff > 1f ?
 						1f : verticalSpeedDiff;
-				_shakeAmount = verticalSpeedDiff / 1f * MaxLandingShakeAmount;
-				_shakeDuration = ShakeDuration;
+				amountData.ShakeAmount = verticalSpeedDiff / 1f * MaxLandingShakeAmount;
+				amountData.ShakeDuration = ShakeDuration;
 			}
-			else if (sim.touchingWall && _shakeAmount < WallBounceShakeAmount)
+			else if (sim.touchingWall && amountData.ShakeAmount < WallBounceShakeAmount)
 			{
-				_shakeAmount = WallBounceShakeAmount;
-				_shakeDuration = ShakeDuration;
+				amountData.ShakeAmount = WallBounceShakeAmount;
+				amountData.ShakeDuration = ShakeDuration;
 			}
 			else if (
 				(sim.isShipScraping || sim.ScrapingShip) &&
-				_shakeAmount < ScrapingShakeAmount
+				amountData.ShakeAmount < ScrapingShakeAmount
 			)
 			{
-				_shakeAmount = ScrapingShakeAmount;
-				_shakeDuration = ShakeDuration;
+				amountData.ShakeAmount = ScrapingShakeAmount;
+				amountData.ShakeDuration = ShakeDuration;
 			}
 
-			if (_shakeDuration > 0)
+			if (amountData.ShakeDuration > 0)
 			{
-				_shakeDuration -= Time.deltaTime * ShakeDurationDecaySpeed;
+				amountData.ShakeDuration -= Time.deltaTime * ShakeDurationDecaySpeed;
 			}
 			else
 			{
-				_shakeAmount = 0;
-				_shakeDuration = 0;
+				amountData.ShakeAmount = 0;
+				amountData.ShakeDuration = 0;
 			}
 
-			_previousVerticalSpeed = currentVerticalVelocity;
+			amountData.PreviousVerticalSpeed = currentVerticalVelocity;
 		}
 
-		internal static IEnumerator Shift()
+		internal static IEnumerator Shift(int shipId)
 		{
+			AmountData amountData = _amountData[shipId];
+			List<Panel> panels = Panels[shipId];
+
 			while (true)
 			{
-				if (_shakeDuration > 0)
-					_shakeVector = Random.insideUnitCircle.normalized * _shakeAmount;
-				foreach (Panel p in Panels)
+				if (amountData.ShakeDuration > 0)
+					amountData.ShakeVector = Random.insideUnitCircle.normalized * amountData.ShakeAmount;
+				foreach (Panel p in panels)
 				{
-					p.SetTargetPosition(_shiftTarget);
-					if (p.Position == p.TargetPosition && _shakeDuration == 0)
+					p.SetTargetPosition(amountData.ShiftTarget);
+					if (p.Position == p.TargetPosition && amountData.ShakeDuration == 0)
 						continue;
 
 					// always update position that's only affected by shifting
@@ -189,9 +218,9 @@ namespace Streamliner
 
 					// if shake is in effect, force apply the shake to the shifted position,
 					// but don't actually change the stored variable.
-					if (_shakeDuration > 0)
+					if (amountData.ShakeDuration > 0)
 					{
-						p.SetShakingPosition(_shakeVector);
+						p.SetShakingPosition(amountData.ShakeVector);
 						p.SetPositionToShaking();
 					}
 					else
@@ -207,14 +236,14 @@ namespace Streamliner
 
 		internal static void HideHud(ShipController ship)
 		{
-			if (ship != TargetShip) return;
-			foreach (Panel p in Panels) p.Hide();
+			if (!TargetShips.Contains(ship)) return;
+			foreach (Panel p in Panels[ship.ShipId]) p.Hide();
 		}
 
 		internal static void ShowHud(ShipController ship)
 		{
-			if (ship != TargetShip) return;
-			foreach (Panel p in Panels) p.Show();
+			if (!TargetShips.Contains(ship)) return;
+			foreach (Panel p in Panels[ship.ShipId]) p.Show();
 		}
 	}
 
