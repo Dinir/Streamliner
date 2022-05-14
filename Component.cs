@@ -59,17 +59,17 @@ namespace Streamliner
 			 *
 			 *            CanvasScaler.referenceResolution.x
 			 * ├────────────────────┤
-			 * ┏━━━━━━━━━━━━━━━━━━━━┓ ┬
+			 * ┏━━━━━━━━━━━━━━━━┯━━━┓ ┬
 			 * ┃                ↑   ┃ │
 			 * ┃                4   ┃ │
 			 * ┃                ↑   ┃ │
-			 * ┃   ┌────────────┐→3→┃ │
+			 * ┃   ┌────────────┼→3→┨ │
 			 * ┃   │HudContainer│   ┃ │ CanvasScaler.referenceResolution.y
-			 * ┃···└────────────┘   ┃ │
+			 * ┞···└────────────┘   ┃ │
 			 * ↑   ·                ┃ │
 			 * 2   ·                ┃ │
 			 * ↑   ·                ┃ │
-			 * ┗→1→━━━━━━━━━━━━━━━━━┛ ┴
+			 * └→1→┶━━━━━━━━━━━━━━━━┛ ┴
 			 * 1: HudContainer.offsetMin.x
 			 * 2: HudContainer.offsetMin.y
 			 * 3: HudContainer.offsetMax.x
@@ -80,14 +80,21 @@ namespace Streamliner
 			 * HudContainer fills up the entire CanvasScaler area.
 			 */
 
+			float verticalSplitscreenHeightGap =
+				(component2.referenceResolution.y - component2.referenceResolution.x * 3f / 8f ) * 0.5f;
+
 			// `NgSettings.Gameplay.InHorizontalSplitscreen` always returns false.
 			if (playerIndex == 0)
 			{
 				if (Gameplay.InVerticalSplitscreen)
 				{
+					HudContainer.offsetMin = new Vector2(
+						0f,
+						verticalSplitscreenHeightGap
+					);
 					HudContainer.offsetMax = new Vector2(
 						(0f - component2.referenceResolution.x) * 0.5f,
-						0f
+						-verticalSplitscreenHeightGap
 					);
 				}
 				else
@@ -105,7 +112,11 @@ namespace Streamliner
 				{
 					HudContainer.offsetMin = new Vector2(
 						component2.referenceResolution.x * 0.5f,
-						0f
+						verticalSplitscreenHeightGap
+					);
+					HudContainer.offsetMax = new Vector2(
+						0f,
+						-verticalSplitscreenHeightGap
 					);
 				}
 				else
