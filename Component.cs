@@ -1803,6 +1803,7 @@ namespace Streamliner
 		private bool _manuallyCountLaps;
 
 		private RectTransform _panel;
+		private RectTransform _nodeTemplate;
 		private ShipNode _singleNode;
 		private List<ShipNode> _nodes;
 		private int[] _racerSectionsTraversed;
@@ -1812,7 +1813,6 @@ namespace Streamliner
 
 		private class ShipNode
 		{
-			internal static RectTransform Template;
 			internal static float MaxSize;
 			// speed of 4 makes it nearly in sync with the placement component
 			private const int TransitionSpeed = 4;
@@ -1845,6 +1845,8 @@ namespace Streamliner
 				_node.anchoredPosition = _position;
 			}
 
+			/*public float GetPosition() => _position.x;*/
+
 			public float Alpha
 			{
 				set
@@ -1862,12 +1864,12 @@ namespace Streamliner
 				set => _nodeImage.enabled = value;
 			}
 
-			public ShipNode(Color color, int id = -1)
+			public ShipNode(RectTransform template, Color color, int id = -1)
 			{
 				Id = id;
-				_node = Instantiate(Template, Template.parent);
-				_node.localScale = Template.localScale;
-				_node.anchoredPosition = Template.anchoredPosition;
+				_node = Instantiate(template, template.parent);
+				_node.localScale = template.localScale;
+				_node.anchoredPosition = template.anchoredPosition;
 				_nodeImage = _node.GetComponent<Image>();
 				_nodeImage.color = color;
 				SetPosition(0.5f, true);
@@ -1894,8 +1896,9 @@ namespace Streamliner
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
 			_panel.Find("BackgroundFill").GetComponent<Image>().color =
 				GetTintColor(TextAlpha.ThreeEighths);
-			ShipNode.Template = CustomComponents.GetById("Node");
-			ShipNode.MaxSize = _panel.sizeDelta.x - ShipNode.Template.sizeDelta.x;
+
+			_nodeTemplate = CustomComponents.GetById("Node");
+			ShipNode.MaxSize = _panel.sizeDelta.x - _nodeTemplate.sizeDelta.x;
 
 			_isPlayerOne = TargetShip.playerIndex == 0;
 
@@ -1911,7 +1914,7 @@ namespace Streamliner
 				_ => false
 			};
 
-			_singleNode = new ShipNode(GetTintColor(tintIndex: 2, clarity: 1));
+			_singleNode = new ShipNode(_nodeTemplate, GetTintColor(tintIndex: 2, clarity: 1));
 
 			int totalShips = Ships.Loaded.Count;
 			_nodes = new List<ShipNode>(totalShips);
@@ -1922,7 +1925,7 @@ namespace Streamliner
 			{
 				if (ship == TargetShip)
 				{
-					_nodes.Add(new ShipNode(GetTintColor(clarity: 1), ship.ShipId));
+					_nodes.Add(new ShipNode(_nodeTemplate, GetTintColor(clarity: 1), ship.ShipId));
 				}
 				else
 				{
@@ -1937,7 +1940,7 @@ namespace Streamliner
 					);
 					s *= 1.1f;
 
-					_nodes.Add(new ShipNode(Color.HSVToRGB(h, s, v), ship.ShipId));
+					_nodes.Add(new ShipNode(_nodeTemplate, Color.HSVToRGB(h, s, v), ship.ShipId));
 				}
 				_racerSectionsTraversed[ship.ShipId] = 0;
 				_racerRelativeSections.Add(new RawValuePair(ship.ShipId, 0));
@@ -1953,8 +1956,8 @@ namespace Streamliner
 			 * every ship from the race plus the single node
 			 * and the template exist.
 			 */
-			ShipNode.Template.SetSiblingIndex(totalShips + 1);
-			ShipNode.Template.gameObject.SetActive(false);
+			_nodeTemplate.SetSiblingIndex(totalShips + 1);
+			_nodeTemplate.gameObject.SetActive(false);
 			_nodes[TargetShip.ShipId].SiblingIndex = totalShips;
 			_singleNode.SiblingIndex = totalShips - 1;
 			if (_isPlayerOne)
@@ -2212,6 +2215,24 @@ namespace Streamliner
 					) + 1
 				) / 2
 			);
+
+		/*private string Dump()
+		{
+			StringBuilder[] sb = { new(), new(), new(), new(), new() };
+			sb[0].AppendLine($"Relative Sections for {(_isPlayerOne ? "P1" : "P2")}: ");
+			foreach (RacerRelativeSectionData d in _racerRelativeSections)
+			{
+				sb[1].Append($" {d.Id}");
+				sb[2].Append($" {d.Value}");
+				sb[3].Append($" {_nodes[d.Id].GetPosition()}");
+				sb[4].Append($" {Ships.Loaded[d.Id].ShipName}");
+			}
+			for (int i = 1; i < sb.Length; i++)
+			{
+				sb[0].AppendLine(sb[i].ToString());
+			}
+			return sb[0].ToString();
+		}*/
 
 		public override void OnDestroy()
 		{
