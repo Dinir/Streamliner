@@ -1794,22 +1794,23 @@ namespace Streamliner
 		private const float AlphaEliminated = 0.5f;
 		private static int _totalSections;
 		private const int MinimumEndDistance = 16;
-		private EPosHudMode _previousMode;
+		private static EPosHudMode _previousMode;
 		private bool _canShipRespawn;
 		private bool _initiated;
 		private bool _modeChanged;
 
 		// for game modes that don't count laps.
-		private bool _manuallyCountLaps;
+		private static bool _manuallyCountLaps;
 
 		private RectTransform _panel;
 		private RectTransform _nodeTemplate;
 		private ShipNode _singleNode;
 		private List<ShipNode> _nodes;
-		private int[] _racerSectionsTraversed;
-		private List<RawValuePair> _racerRelativeSections;
+		private static int[] _racerSectionsTraversed;
+		private List<RacerRelativeSectionData> _racerRelativeSections;
 
 		private bool _isPlayerOne;
+		private static bool _sectionsTraversedUpdated;
 
 		private class ShipNode
 		{
@@ -1876,13 +1877,12 @@ namespace Streamliner
 			}
 		}
 
-		// is this really the best way for a list of int pairs updating frequently?
-		private class RawValuePair
+		private class RacerRelativeSectionData
 		{
 			public readonly int Id;
 			public int Value;
 
-			public RawValuePair(int id, int value)
+			public RacerRelativeSectionData(int id, int value)
 			{
 				Id = id;
 				Value = value;
@@ -1918,8 +1918,8 @@ namespace Streamliner
 
 			int totalShips = Ships.Loaded.Count;
 			_nodes = new List<ShipNode>(totalShips);
-			_racerSectionsTraversed = new int[totalShips];
-			_racerRelativeSections = new List<RawValuePair>(totalShips);
+			if (_isPlayerOne) _racerSectionsTraversed = new int[totalShips];
+			_racerRelativeSections = new List<RacerRelativeSectionData>(totalShips);
 
 			foreach (ShipController ship in Ships.Loaded)
 			{
@@ -1942,8 +1942,8 @@ namespace Streamliner
 
 					_nodes.Add(new ShipNode(_nodeTemplate, Color.HSVToRGB(h, s, v), ship.ShipId));
 				}
-				_racerSectionsTraversed[ship.ShipId] = 0;
-				_racerRelativeSections.Add(new RawValuePair(ship.ShipId, 0));
+				if (_isPlayerOne) _racerSectionsTraversed[ship.ShipId] = 0;
+				_racerRelativeSections.Add(new RacerRelativeSectionData(ship.ShipId, 0));
 			}
 
 			/*
@@ -1992,7 +1992,7 @@ namespace Streamliner
 				UpdateMode();
 			if (_previousMode != Hud.PositionTrackerHudMode)
 			{
-				_previousMode = Hud.PositionTrackerHudMode;
+				if (_isPlayerOne) _previousMode = Hud.PositionTrackerHudMode;
 				_modeChanged = true;
 			}
 
@@ -2026,32 +2026,38 @@ namespace Streamliner
 		{
 			while (true)
 			{
-				for (int id = 0; id < _racerSectionsTraversed.Length; id++)
+				if (_isPlayerOne)
 				{
-					ShipController ship = Ships.Loaded[id];
-					if (
-						!ship.CurrentSection ||
-						ship.CurrentSection.index - 1 == 0
-					)
-						continue;
-
-					_racerSectionsTraversed[id] =
-						GetPassingSectionIndex(
-							ship,
-							_manuallyCountLaps ?
-								_nodes[id].ManuallyCountedCurrentLap : ship.CurrentLap,
-							_totalSections
-						);
-					if (
-						_manuallyCountLaps &&
-						_nodes[id].ManuallySetMiddleSection is not null &&
-						ship.CurrentSection.index >= _nodes[id].ManuallySetMiddleSection &&
-						!_nodes[id].ManuallySetLapValidated
-					)
+					for (int id = 0; id < _racerSectionsTraversed.Length; id++)
 					{
-						_racerSectionsTraversed[id] -= _totalSections;
+						ShipController ship = Ships.Loaded[id];
+						if (
+							!ship.CurrentSection ||
+							ship.CurrentSection.index - 1 == 0
+						)
+							continue;
+
+						_racerSectionsTraversed[id] =
+							GetPassingSectionIndex(
+								ship,
+								_manuallyCountLaps ?
+									_nodes[id].ManuallyCountedCurrentLap : ship.CurrentLap,
+								_totalSections
+							);
+						if (
+							_manuallyCountLaps &&
+							_nodes[id].ManuallySetMiddleSection is not null &&
+							ship.CurrentSection.index >= _nodes[id].ManuallySetMiddleSection &&
+							!_nodes[id].ManuallySetLapValidated
+						)
+						{
+							_racerSectionsTraversed[id] -= _totalSections;
+						}
 					}
+					_sectionsTraversedUpdated = true;
 				}
+
+				yield return new WaitUntil(() => _sectionsTraversedUpdated);
 
 				int playerSection = _racerSectionsTraversed[TargetShip.ShipId];
 				for (int id = 0; id < _racerSectionsTraversed.Length; id++)
@@ -2059,6 +2065,8 @@ namespace Streamliner
 					_racerRelativeSections[id].Value =
 						_racerSectionsTraversed[id] - playerSection;
 				}
+
+				if (_isPlayerOne) _sectionsTraversedUpdated = false;
 
 				yield return new WaitForSeconds(Position.UpdateTime);
 			}
@@ -2114,7 +2122,7 @@ namespace Streamliner
 
 		private void SetMultipleNodes()
 		{
-			List<RawValuePair> orderedList =
+			List<RacerRelativeSectionData> orderedList =
 				_racerRelativeSections.OrderByDescending(p => p.Value).ToList();
 			int endDistance;
 
@@ -2155,7 +2163,7 @@ namespace Streamliner
 
 			int siblingIndex = 0;
 			bool siblingIndexUpdateFromTop = true;
-			foreach (RawValuePair p in orderedList)
+			foreach (RacerRelativeSectionData p in orderedList)
 			{
 				/*
 				 * Assign from the top position, starting from top index,
