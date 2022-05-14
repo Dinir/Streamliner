@@ -66,7 +66,7 @@ namespace Streamliner
 		{
 			for (int i = 0; i < MaxPlayer; i++)
 			{
-				TargetShips[i] = null;
+				TargetShips.Clear();
 				_amountData[i] = new AmountData();
 				Panels[i].Clear();
 			}
@@ -76,7 +76,6 @@ namespace Streamliner
 		{
 			for (int i = 0; i < MaxPlayer; i++)
 			{
-				TargetShips.Add(null);
 				_amountData.Add(new AmountData());
 				Panels.Add(new(MaxPanelCount));
 			}
@@ -131,8 +130,8 @@ namespace Streamliner
 			ScrapingShakeAmount = BaseScrapingShakeAmount * OptionScrapeMultiplier;
 		}
 
-		internal static void Add(RectTransform panel, int shipId, string name) =>
-			Panels[shipId].Add(new Panel(panel, name));
+		internal static void Add(RectTransform panel, int playerIndex, string name) =>
+			Panels[playerIndex].Add(new Panel(panel, name));
 
 		internal static void UpdateAmount(ShipController ship)
 		{
@@ -196,10 +195,10 @@ namespace Streamliner
 			amountData.PreviousVerticalSpeed = currentVerticalVelocity;
 		}
 
-		internal static IEnumerator Shift(int shipId)
+		internal static IEnumerator Shift(int playerIndex)
 		{
-			AmountData amountData = _amountData[shipId];
-			List<Panel> panels = Panels[shipId];
+			AmountData amountData = _amountData[playerIndex];
+			List<Panel> panels = Panels[playerIndex];
 
 			while (true)
 			{
@@ -237,14 +236,52 @@ namespace Streamliner
 		internal static void HideHud(ShipController ship)
 		{
 			if (!TargetShips.Contains(ship)) return;
-			foreach (Panel p in Panels[ship.ShipId]) p.Hide();
+			foreach (Panel p in Panels[ship.playerIndex]) p.Hide();
 		}
 
 		internal static void ShowHud(ShipController ship)
 		{
 			if (!TargetShips.Contains(ship)) return;
-			foreach (Panel p in Panels[ship.ShipId]) p.Show();
+			foreach (Panel p in Panels[ship.playerIndex]) p.Show();
 		}
+
+		/*internal static string Dump()
+		{
+			StringBuilder sb = new();
+			sb.AppendLine("# Shifter.Dump()");
+			sb.Append("## TargetShips: ");
+			for (int i = 0; i < MaxPlayer; i++)
+			{
+				if (i != 0)
+					sb.Append(", ");
+				sb.Append(TargetShips[i]?.GetType().Name ?? "null");
+				sb.Append(" ");
+				sb.Append(TargetShips[i]?.ShipName ?? "null");
+			}
+			sb.AppendLine();
+
+			sb.Append("## AmountData: ");
+			for (int i = 0; i < MaxPlayer; i++)
+			{
+				if (i != 0)
+					sb.Append(", ");
+				sb.Append(_amountData[i]?.GetType().Name ?? "null");
+				sb.Append(" ");
+				sb.Append(_amountData[i]?.ShiftTarget.ToString() ?? "null");
+			}
+			sb.AppendLine();
+
+			sb.AppendLine("## Panels: ");
+			for (int i = 0; i < MaxPlayer; i++)
+			{
+				sb.Append("Player ");
+				sb.Append(i);
+				sb.Append(": ");
+				sb.AppendLine(Panels[i].Count.ToString());
+			}
+
+			return sb.ToString();
+		}*/
 	}
 
 	internal static class PresetColorPicker
