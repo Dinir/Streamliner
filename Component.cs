@@ -2997,8 +2997,6 @@ namespace Streamliner
 			if (_hideLastSlotOnExplosion)
 				NgRaceEvents.OnShipExploded += _panel.HideLastSlot;
 			NgRaceEvents.OnCountdownStart += Initiate;
-			if (_usingZoneColors)
-				NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor;
 		}
 
 		private void Initiate()
@@ -3017,6 +3015,9 @@ namespace Streamliner
 				UpdateToZoneColor(0);
 
 			NgRaceEvents.OnCountdownStart -= Initiate;
+
+			if (_usingZoneColors)
+				NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor;
 		}
 
 		private void UpdateToZoneColor(int zoneNumber)
