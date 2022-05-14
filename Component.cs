@@ -1376,7 +1376,8 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			FlushZonePalleteSettings();
+			if (OptionZoneTintOverride)
+				FlushZonePalleteSettings();
 
 			NgUiEvents.OnZoneProgressUpdate -= SetProgress;
 			NgUiEvents.OnZoneScoreUpdate -= SetScore;
@@ -1400,6 +1401,7 @@ namespace Streamliner
 		private static readonly int WarnRight = Animator.StringToHash("Right");
 		private GmUpsurge _gamemode;
 		private UpsurgeShip _upsurgeTargetShip;
+		private bool _isPlayerOne;
 		private int _valueShield;
 		private float _valueZoneTime;
 		private const float TransitionSpeed = 8f;
@@ -1438,8 +1440,10 @@ namespace Streamliner
 
 			ChangeModeSpecificPartsColor();
 
+			_isPlayerOne = TargetShip.ShipId == 0;
+
 			_gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
-			if (OptionZoneTintOverride)
+			if (OptionZoneTintOverride && _isPlayerOne)
 				UpdateZonePalleteSettings(_gamemode);
 
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
@@ -1632,7 +1636,8 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			FlushZonePalleteSettings();
+			if (OptionZoneTintOverride && _isPlayerOne)
+				FlushZonePalleteSettings();
 
 			UpsurgeShip.OnDeployedBarrier -= StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease -= StartTransition;
