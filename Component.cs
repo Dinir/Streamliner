@@ -1394,7 +1394,7 @@ namespace Streamliner
 		private Text _valueZoneText;
 		private Text _valueShieldText;
 		private Animator _barrierWarning;
-		private Color _currentZoneEnvDetColor;
+		private Color _currentZoneColor;
 		private static readonly int WarnLeft = Animator.StringToHash("Left");
 		private static readonly int WarnMiddle = Animator.StringToHash("Middle");
 		private static readonly int WarnRight = Animator.StringToHash("Right");
@@ -1553,16 +1553,16 @@ namespace Streamliner
 			if (!OptionZoneTintOverride || ship != TargetShip)
 				return;
 
-			Color currentEnvDetColor = GetZoneColor((int) newScore);
+			Color currentZoneColor = GetZoneColor((int) newScore);
 
-			if (_currentZoneEnvDetColor == currentEnvDetColor)
+			if (_currentZoneColor == currentZoneColor)
 				return;
 
-			_currentZoneEnvDetColor = currentEnvDetColor;
-			_panel.UpdateColor(GetTintFromColor(color: currentEnvDetColor));
+			_currentZoneColor = currentZoneColor;
+			_panel.UpdateColor(GetTintFromColor(color: currentZoneColor));
 			// instead of doing `UpdateSmallGaugesColor()`, just update the field
-			_panel.SmallGaugeColor = GetTintFromColor(color: currentEnvDetColor, clarity: 1);
-			ChangeModeSpecificPartsColor(currentEnvDetColor);
+			_panel.SmallGaugeColor = GetTintFromColor(color: currentZoneColor, clarity: 1);
+			ChangeModeSpecificPartsColor(currentZoneColor);
 		}
 
 		public override void Update()
