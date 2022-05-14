@@ -1894,13 +1894,8 @@ namespace Streamliner
 	{
 		private const float AlphaEliminated = 0.5f;
 		private static int _totalSections;
-		/* 
-		 * A ship 16 sections away is barely visible in horizontal splitscreen.
-		 * By multiplying this by third, half of one side of the tracker bar
-		 * can cover visible distance, and the outer half can cover
-		 * twice the distance beyond the visible one.
-		 */
-		private const int MinimumEndDistance = 16 * 3;
+		// A ship 16 sections away is barely visible in horizontal splitscreen.
+		private const int MinimumEndDistance = 16 * 5;
 		private static EPosHudMode _previousMode;
 		private bool _canShipRespawn;
 		private bool _initiated;
