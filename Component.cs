@@ -1792,8 +1792,8 @@ namespace Streamliner
 	public class PositionTracker : ScriptableHud
 	{
 		private const float AlphaEliminated = 0.5f;
-		private int _totalSections;
-		private int _halfTotalSections;
+		private static int _totalSections;
+		private const int MinimumEndDistance = 16;
 		private EPosHudMode _previousMode;
 		private bool _canShipRespawn;
 		private bool _initiated;
@@ -1807,6 +1807,8 @@ namespace Streamliner
 		private List<ShipNode> _nodes;
 		private int[] _racerSectionsTraversed;
 		private List<RawValuePair> _racerRelativeSections;
+
+		private bool _isPlayerOne;
 
 		private class ShipNode
 		{
@@ -1895,6 +1897,8 @@ namespace Streamliner
 			ShipNode.Template = CustomComponents.GetById("Node");
 			ShipNode.MaxSize = _panel.sizeDelta.x - ShipNode.Template.sizeDelta.x;
 
+			_isPlayerOne = TargetShip.playerIndex == 0;
+
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
 
@@ -1953,8 +1957,8 @@ namespace Streamliner
 			ShipNode.Template.gameObject.SetActive(false);
 			_nodes[TargetShip.ShipId].SiblingIndex = totalShips;
 			_singleNode.SiblingIndex = totalShips - 1;
-			_totalSections = GetTotalSectionCount();
-			_halfTotalSections = _totalSections / 2;
+			if (_isPlayerOne)
+				_totalSections = GetTotalSectionCount();
 
 			StartCoroutine(UpdateSectionsTraversed());
 
@@ -2101,7 +2105,7 @@ namespace Streamliner
 				Ships.FindShipInPlace(TargetShip.CurrentPlace == 1 ? 2 : 1).ShipId;
 
 			_singleNode.SetPosition(ConvertDistanceRate(
-				(float) _racerRelativeSections[_singleNode.Id].Value / _halfTotalSections
+				(float) _racerRelativeSections[_singleNode.Id].Value / MinimumEndDistance
 			), previousId != _singleNode.Id);
 		}
 
@@ -2115,7 +2119,7 @@ namespace Streamliner
 				Ships.Active.Count <= 2 ||
 				orderedList.Count <= 2
 			)
-				endDistance = _halfTotalSections;
+				endDistance = MinimumEndDistance;
 			else
 			{
 				int indexFirstShipAlive = 0;
@@ -2143,7 +2147,7 @@ namespace Streamliner
 						Math.Abs(orderedList[indexLastShipAlive].Value) :
 						1 // Value <= 0
 				);
-				endDistance = endDistance < 1 ? 1 : endDistance;
+				endDistance = endDistance < MinimumEndDistance ? MinimumEndDistance : endDistance;
 			}
 
 			int siblingIndex = 0;
