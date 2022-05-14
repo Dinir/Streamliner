@@ -34,7 +34,7 @@ namespace Streamliner
 		private SpeedPanel _panel;
 		private float _computedValue;
 
-		private readonly Color _highlightColor = GetTintColor(clarity: 0);
+		private Color _highlightColor;
 
 		private float _currentSpeed;
 		private float _previousSpeed;
@@ -53,6 +53,7 @@ namespace Streamliner
 			base.Start();
 			_panel = new SpeedPanel(CustomComponents.GetById("Base"));
 			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.ShipId, GetType().Name);
+			_highlightColor = GetTintColor(clarity: 0);
 
 			_gamemodeName = RaceManager.CurrentGamemode.Name;
 			_usingZoneColors = _gamemodeName switch
@@ -155,7 +156,8 @@ namespace Streamliner
 				return;
 
 			_currentZoneColor = color;
-			_panel.UpdateColor(color);
+			_panel.UpdateColor(GetTintFromColor(color: color));
+			_highlightColor = GetTintFromColor(color: color, clarity: 0);
 		}
 		private void UpdateToZoneColor(string number)
 		{
@@ -300,6 +302,7 @@ namespace Streamliner
 
 			// Coloring
 			UpdateColor();
+			// assigning to `_defaultColor` here is to ensure the colors are set at `Start()`.
 			_currentColor = _defaultColor;
 			_currentDamageColor = _damageColor;
 			_value.color = _defaultColor;
@@ -314,11 +317,25 @@ namespace Streamliner
 		{
 			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
 			_gaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
+			
+			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0)
+				return;
+
+			_currentColor = _defaultColor;
+			_value.color = _defaultColor;
+			_gaugeImage.color = _defaultColor;
 		}
 		private void UpdateColor(Color color)
 		{
 			_defaultColor = color with { a = GetTransparency(TextAlpha.ThreeQuarters) };
 			_gaugeBackground.color = color with { a = GetTransparency(TextAlpha.ThreeEighths) };
+
+			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0)
+				return;
+
+			_currentColor = _defaultColor;
+			_value.color = _defaultColor;
+			_gaugeImage.color = _defaultColor;
 		}
 
 		public override void Update()
@@ -570,7 +587,7 @@ namespace Streamliner
 				return;
 
 			_currentZoneColor = color;
-			UpdateColor(color);
+			UpdateColor(GetTintFromColor(color: color));
 		}
 		private void UpdateToZoneColor(string number)
 		{
@@ -3027,7 +3044,7 @@ namespace Streamliner
 				return;
 
 			_currentZoneColor = color;
-			_panel.UpdateColor(color);
+			_panel.UpdateColor(GetTintFromColor(color: color));
 		}
 		private void UpdateToZoneColor(ShipController ship, float oldScore, float newScore)
 		{
