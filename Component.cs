@@ -29,7 +29,97 @@ using static Streamliner.SectionManager;
 
 namespace Streamliner
 {
-	public class Speedometer : ScriptableHud
+	public class CustomScaleScriptableHud : ScriptableHud
+	{
+		public override void ConfigureForSplitscreen(int playerIndex)
+		{
+			base.ConfigureForSplitscreen(playerIndex);
+
+			if (!Gameplay.SplitscreenEnabled || !CanBeAdjustedForSplitscreen)
+			{
+				return;
+			}
+			if (playerIndex > 1)
+			{
+				Debug.LogWarning("Provided player index is above 1!");
+				return;
+			}
+			CanvasScaler component2 = GetComponent<CanvasScaler>();
+			if (!component2)
+			{
+				Debug.LogError("Cannot scale HUD!");
+				return;
+			}
+
+			// base method multiplies it by 1.2.
+			component2.referenceResolution *= 1.25f;
+
+			/*
+			 * HudContainer Offset Values
+			 *
+			 *            CanvasScaler.referenceResolution.x
+			 * ├────────────────────┤
+			 * ┏━━━━━━━━━━━━━━━━━━━━┓ ┬
+			 * ┃                ↑   ┃ │
+			 * ┃                4   ┃ │
+			 * ┃                ↑   ┃ │
+			 * ┃   ┌────────────┐→3→┃ │
+			 * ┃   │HudContainer│   ┃ │ CanvasScaler.referenceResolution.y
+			 * ┃···└────────────┘   ┃ │
+			 * ↑   ·                ┃ │
+			 * 2   ·                ┃ │
+			 * ↑   ·                ┃ │
+			 * ┗→1→━━━━━━━━━━━━━━━━━┛ ┴
+			 * 1: HudContainer.offsetMin.x
+			 * 2: HudContainer.offsetMin.y
+			 * 3: HudContainer.offsetMax.x
+			 * 4: HudContainer.offsetMax.y
+			 * Arrows indicate the direction of a positive value.
+			 *
+			 * When all the offset values are set to zero,
+			 * HudContainer fills up the entire CanvasScaler area.
+			 */
+
+			// `NgSettings.Gameplay.InHorizontalSplitscreen` always returns false.
+			if (playerIndex == 0)
+			{
+				if (Gameplay.InVerticalSplitscreen)
+				{
+					HudContainer.offsetMax = new Vector2(
+						(0f - component2.referenceResolution.x) * 0.5f,
+						0f
+					);
+				}
+				else
+				{
+					HudContainer.offsetMin = new Vector2(
+						0f,
+						component2.referenceResolution.y * 0.5f
+					);
+				}
+			}
+
+			if (playerIndex == 1)
+			{
+				if (Gameplay.InVerticalSplitscreen)
+				{
+					HudContainer.offsetMin = new Vector2(
+						component2.referenceResolution.x * 0.5f,
+						0f
+					);
+				}
+				else
+				{
+					HudContainer.offsetMax = new Vector2(
+						0f,
+						(0f - component2.referenceResolution.y) * 0.5f
+					);
+				}
+			}
+		}
+	}
+
+	public class Speedometer : CustomScaleScriptableHud
 	{
 		private SpeedPanel _panel;
 		private float _computedValue;
@@ -187,7 +277,7 @@ namespace Streamliner
 		}
 	}
 
-	public class EnergyMeter : ScriptableHud
+	public class EnergyMeter : CustomScaleScriptableHud
 	{
 		private RectTransform _panel;
 		private Text _value;
@@ -617,7 +707,7 @@ namespace Streamliner
 		}
 	}
 
-	public class Timer : ScriptableHud
+	public class Timer : CustomScaleScriptableHud
 	{
 		private BasicPanel _panel;
 		private RectTransform _lapSlotTemplate;
@@ -813,7 +903,7 @@ namespace Streamliner
 		}
 	}
 
-	public class LapTimer : ScriptableHud
+	public class LapTimer : CustomScaleScriptableHud
 	{
 		private BasicPanel _panel;
 		private Text _bestTimeText;
@@ -943,7 +1033,7 @@ namespace Streamliner
 		}
 	}
 
-	public class TargetTime : ScriptableHud
+	public class TargetTime : CustomScaleScriptableHud
 	{
 		private const string StringTimeTrial = "Time Trial";
 		private const string StringSpeedLap = "Speed Lap";
@@ -1318,7 +1408,7 @@ namespace Streamliner
 		}
 	}
 
-	public class ZoneTracker : ScriptableHud
+	public class ZoneTracker : CustomScaleScriptableHud
 	{
 		private DoubleGaugePanel _panel;
 		private Text _zoneName;
@@ -1403,7 +1493,7 @@ namespace Streamliner
 		}
 	}
 
-	public class UpsurgeTracker : ScriptableHud
+	public class UpsurgeTracker : CustomScaleScriptableHud
 	{
 		private LayeredDoubleGaugePanel _panel;
 		private RectTransform _energyInfo;
@@ -1664,7 +1754,7 @@ namespace Streamliner
 		}
 	}
 
-	public class Placement : ScriptableHud
+	public class Placement : CustomScaleScriptableHud
 	{
 		private FractionPanel _panel;
 		private bool _warnOnLastPlace;
@@ -1755,7 +1845,7 @@ namespace Streamliner
 		}
 	}
 
-	public class LapCounter : ScriptableHud
+	public class LapCounter : CustomScaleScriptableHud
 	{
 		private FractionPanel _panel;
 
@@ -1789,7 +1879,7 @@ namespace Streamliner
 		}
 	}
 
-	public class PositionTracker : ScriptableHud
+	public class PositionTracker : CustomScaleScriptableHud
 	{
 		private const float AlphaEliminated = 0.5f;
 		private static int _totalSections;
@@ -2255,7 +2345,7 @@ namespace Streamliner
 		}
 	}
 
-	public class Pitlane : ScriptableHud
+	public class Pitlane : CustomScaleScriptableHud
 	{
 		private RectTransform _panel;
 		private Animator _panelAnimator;
@@ -2310,7 +2400,7 @@ namespace Streamliner
 		}
 	}
 
-	public class MessageLogger : ScriptableHud
+	public class MessageLogger : CustomScaleScriptableHud
 	{
 		private RectTransform _panel;
 		private CanvasGroup _timeGroup;
@@ -2893,7 +2983,7 @@ namespace Streamliner
 		}
 	}
 
-	public class PickupDisplay : ScriptableHud
+	public class PickupDisplay : CustomScaleScriptableHud
 	{
 		private RectTransform _panel;
 		private PickupPanel _playerPanel;
@@ -2979,7 +3069,7 @@ namespace Streamliner
 		}
 	}
 
-	public class TurboDisplay : ScriptableHud
+	public class TurboDisplay : CustomScaleScriptableHud
 	{
 		private RectTransform _panel;
 		private PickupPanel _playerPanel;
@@ -3024,7 +3114,7 @@ namespace Streamliner
 		}
 	}
 
-	public class Leaderboard : ScriptableHud
+	public class Leaderboard : CustomScaleScriptableHud
 	{
 		private Playerboard _panel;
 		private bool _hideLastSlotOnExplosion;
@@ -3097,7 +3187,7 @@ namespace Streamliner
 		}
 	}
 
-	public class TeamScoreboard : ScriptableHud
+	public class TeamScoreboard : CustomScaleScriptableHud
 	{
 		private RectTransform _panel;
 		private PickupPanel _teammatePickupPanel;
@@ -3402,7 +3492,7 @@ namespace Streamliner
 		}
 	}
 
-	public class Awards : ScriptableHud
+	public class Awards : CustomScaleScriptableHud
 	{
 		private const float InitialPanelAlpha = 0.9f;
 		private const float ActivePanelAlpha = 1f;
@@ -3605,7 +3695,7 @@ namespace Streamliner
 		}
 	}
 
-	public class RaceFinishCountdown : ScriptableHud
+	public class RaceFinishCountdown : CustomScaleScriptableHud
 	{
 		private RectTransform _panel;
 		private Text _label;
