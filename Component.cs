@@ -2054,11 +2054,8 @@ namespace Streamliner
 				{
 					Color.RGBToHSV(
 						Color.Lerp(
-								ship.Settings.REF_ENGINECOL_BRIGHT, ship.Settings.REF_ENGINECOL, 0.5f
-							) with
-							{
-								a = 1f
-							},
+							ship.Settings.REF_ENGINECOL_BRIGHT, ship.Settings.REF_ENGINECOL, 0.5f
+						) with { a = 1f },
 						out float h, out float s, out float v
 					);
 					s *= 1.1f;
@@ -3561,7 +3558,7 @@ namespace Streamliner
 		private readonly Color _activeBronzeColor =
 			GetTintColor(TextAlpha.ThreeQuarters, 2, 0);
 		private readonly Color _activeTextColor =
-			GetPanelColor() with {a = GetTransparency(TextAlpha.Full)};
+			GetPanelColor() with { a = GetTransparency(TextAlpha.Full) };
 
 		private string _gamemodeName;
 		private float _missedPanelAlpha = InactivePanelAlpha;
