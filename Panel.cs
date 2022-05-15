@@ -43,8 +43,6 @@ namespace Streamliner
 		// single cannon hit roughly decreases the speed by 9.5%
 		internal const float SpeedChangeIntensityThreshold = 1 / 0.095f;
 		internal const float MinSpeedChangeIntensity = 1f;
-		internal const float MaxSpeedChangeIntensity =
-			BaseMaxLandingShakeAmount / BaseWallBounceShakeAmount;
 
 		// duration / decay speed == total lasting time in seconds
 		internal const float ShakeDuration = 60f;
@@ -232,13 +230,12 @@ namespace Streamliner
 			// speed loss
 			else if (
 				amountData.SpeedChangeIntensity >= MinSpeedChangeIntensity &&
-				amountData.PreviousVelocity.z > amountData.CurrentVelocity.z
+				amountData.PreviousVelocity.z > amountData.CurrentVelocity.z &&
+				amountData.ShakeAmount < WallBounceShakeAmount
 			)
 			{
 				float intensity = amountData.SpeedChangeIntensity - MinSpeedChangeIntensity;
-				amountData.ShakeAmount =
-					(intensity >= MaxSpeedChangeIntensity ? MaxSpeedChangeIntensity : intensity)
-					* WallBounceShakeAmount;
+				amountData.ShakeAmount = (intensity >= 1f ? 1f : intensity) * WallBounceShakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
 
