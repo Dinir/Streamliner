@@ -42,6 +42,7 @@ namespace Streamliner
 
 		// single cannon hit roughly decreases the speed by 9.5%
 		internal const float SpeedChangeIntensityThreshold = 1 / 0.095f;
+		internal const float MinSpeedChangeIntensity = 1f;
 		internal const float MaxSpeedChangeIntensity =
 			BaseMaxLandingShakeAmount / BaseWallBounceShakeAmount;
 
@@ -199,15 +200,15 @@ namespace Streamliner
 
 			float verticalSpeedDiff = amountData.CurrentVelocity.y - amountData.PreviousVelocity.y;
 
+			// nullify shock on maglock landing
 			if (ship.OnMaglock)
 			{
-				// nullify shock on maglock landing
 				amountData.ShakeAmount = 0;
 				amountData.ShakeDuration = 0;
 			}
+			// big landing
 			else if (verticalSpeedDiff > MinVerticalSpeedDiff)
 			{
-				// big landing
 				verticalSpeedDiff =
 					(verticalSpeedDiff - MinVerticalSpeedDiff) / VerticalSpeedDiffRange;
 				verticalSpeedDiff = verticalSpeedDiff < 0 ?
@@ -216,31 +217,31 @@ namespace Streamliner
 				amountData.ShakeAmount = verticalSpeedDiff * MaxLandingShakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
-			else if (
-				amountData.SpeedChangeIntensity >= 1 &&
-				amountData.PreviousVelocity.z > amountData.CurrentVelocity.z
-			)
-			{
-				float intensity = amountData.SpeedChangeIntensity;
-				// speed loss
-				amountData.ShakeAmount =
-					(intensity >= MaxSpeedChangeIntensity ? MaxSpeedChangeIntensity : intensity)
-					* WallBounceShakeAmount;
-				amountData.ShakeDuration = ShakeDuration;
-			}
+			// wall crash
 			else if (sim.touchingWall && amountData.ShakeAmount < WallBounceShakeAmount)
 			{
-				// wall crash
 				amountData.ShakeAmount = WallBounceShakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
+			// scraping
 			else if (
 				(sim.isShipScraping || sim.ScrapingShip) &&
 				amountData.ShakeAmount < ScrapingShakeAmount
 			)
 			{
-				// scraping
 				amountData.ShakeAmount = ScrapingShakeAmount;
+				amountData.ShakeDuration = ShakeDuration;
+			}
+			// speed loss
+			else if (
+				amountData.SpeedChangeIntensity >= MinSpeedChangeIntensity &&
+				amountData.PreviousVelocity.z > amountData.CurrentVelocity.z
+			)
+			{
+				float intensity = amountData.SpeedChangeIntensity - MinSpeedChangeIntensity;
+				amountData.ShakeAmount =
+					(intensity >= MaxSpeedChangeIntensity ? MaxSpeedChangeIntensity : intensity)
+					* WallBounceShakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
 
