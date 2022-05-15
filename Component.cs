@@ -210,8 +210,16 @@ namespace Streamliner
 
 			return _computedValue;
 		}
-		private string GetSpeedValueString() =>
-			IntStrDb.GetNumber(Mathf.Abs(Mathf.RoundToInt(TargetShip.HudSpeed)));
+		private string GetSpeedValueString()
+		{
+			/* 
+			 * `Mathf.RoundToInt(TargetShip.HudSpeed)` can hit `Int32.MinValue`,
+			 * around the time the player ship is about to respawn.
+			 * This value should be not passed to `Math.Abs()`.
+			 */
+			int value = Mathf.RoundToInt(TargetShip.HudSpeed);
+			return IntStrDb.GetNumber(value < 0 ? 0 : value);
+		}
 
 		private void ColorSpeedComponent()
 		{
