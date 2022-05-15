@@ -139,9 +139,23 @@ namespace Streamliner
 
 		private float _currentSpeed;
 		private float _previousSpeed;
+		// single cannon hit roughly decreases the speed by 9.5%
+		private const float _instantColorChangeThreshold = 1 / 0.095f;
+		private static float _maxAnimationSpeedModifier = 4f;
+		private float _animationSpeedModifier = 1f;
+		private void UpdateAnimationSpeedModifier(bool speedDecreased)
+		{
+			_animationSpeedModifier = 
+				(speedDecreased ? _previousSpeed - _currentSpeed : _currentSpeed - _previousSpeed) /
+				(_previousSpeed < 1f ? 1f : _previousSpeed) * _instantColorChangeThreshold * _maxAnimationSpeedModifier;
 
-		private const float AnimationSpeed = 8f;
-		private const float AnimationTimerMax = 1.5f;
+			_animationSpeedModifier = _animationSpeedModifier < 1f ?
+				1f : _animationSpeedModifier > _maxAnimationSpeedModifier ?
+				_maxAnimationSpeedModifier : _animationSpeedModifier;
+		}
+
+		private const float _animationSpeed = 5f;
+		private const float _animationTimerMax = 2.25f;
 		private float _speedDecreaseAnimationTimer;
 		private float _speedIncreaseAnimationTimer;
 
@@ -212,14 +226,15 @@ namespace Streamliner
 
 		private void ColorSpeedComponent()
 		{
-			if (_currentSpeed < _previousSpeed)
+			bool speedDecreased = _currentSpeed < _previousSpeed;
+			if (speedDecreased)
 			{
-				_speedDecreaseAnimationTimer = AnimationTimerMax;
+				_speedDecreaseAnimationTimer = _animationTimerMax;
 				_speedIncreaseAnimationTimer = 0f;
 			}
 			else
 			{
-				_speedIncreaseAnimationTimer = AnimationTimerMax;
+				_speedIncreaseAnimationTimer = _animationTimerMax;
 				_speedDecreaseAnimationTimer = 0f;
 			}
 
@@ -227,7 +242,12 @@ namespace Streamliner
 
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
-				color = Color.Lerp(color, _highlightColor, Time.deltaTime * AnimationSpeed);
+				UpdateAnimationSpeedModifier(speedDecreased);
+				if (_animationSpeedModifier == _maxAnimationSpeedModifier)
+					color = _highlightColor;
+				if (color != _highlightColor)
+					color = Color.Lerp(
+						color, _highlightColor, Time.deltaTime * _animationSpeed * _animationSpeedModifier);
 				_speedDecreaseAnimationTimer -= Time.deltaTime;
 			}
 			else
@@ -235,7 +255,10 @@ namespace Streamliner
 
 			if (_speedIncreaseAnimationTimer > 0f)
 			{
-				color = Color.Lerp(color, _panel.GaugeColor, Time.deltaTime * AnimationSpeed);
+				UpdateAnimationSpeedModifier(speedDecreased);
+				if (color != _panel.GaugeColor)
+					color = Color.Lerp(
+						color, _panel.GaugeColor, Time.deltaTime * _animationSpeed * _animationSpeedModifier);
 				_speedIncreaseAnimationTimer -= Time.deltaTime;
 			}
 			else
@@ -351,7 +374,7 @@ namespace Streamliner
 		private const float FastTransitionSpeed = 8f;
 		private const float SlowTransitionSpeed = 5f;
 		private const float FastTransitionTimerMax = 1.5f;
-		private const float SlowTransitionTimerMax = 2.2f;
+		private const float SlowTransitionTimerMax = 2.25f;
 		private const float RechargeDisplayTimerMax = 3.0f;
 		private float _damageAnimationTimer;
 		private float _transitionAnimationTimer;
