@@ -3147,6 +3147,8 @@ namespace Streamliner
 		private Color? _currentZoneColor = null;
 		private bool _usingZoneColors;
 
+		private const int splitscreenSlotScaleThreshold = 10;
+
 		public override void Start()
 		{
 			base.Start();
@@ -3166,6 +3168,12 @@ namespace Streamliner
 
 		private void Initiate()
 		{
+			if (
+				Gameplay.SplitscreenEnabled && !Gameplay.InVerticalSplitscreen &&
+				Ships.Loaded.Count > splitscreenSlotScaleThreshold
+			)
+				_panel.ScaleSlot((float) splitscreenSlotScaleThreshold / Ships.Loaded.Count);
+
 			/*
 			 * CurrentGamemode can be Gamemode or inheritances of it.
 			 * Accessing it through RaceManager instead of

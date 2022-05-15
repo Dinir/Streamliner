@@ -1366,6 +1366,9 @@ namespace Streamliner
 			EntrySlotTemplate.gameObject.SetActive(false);
 		}
 
+		public void ScaleSlot(float rate) => EntrySlotTemplate.sizeDelta =
+				Vector2.Scale(EntrySlotTemplate.sizeDelta, new Vector2(1f, rate));
+
 		public void InitiateLayout(float targetScore)
 		{
 			// Disable components that are irrelevant to the game mode.
