@@ -418,11 +418,12 @@ namespace Streamliner
 		{
 			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
 			_gaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
-			
+
+			_currentColor = _defaultColor;
+
 			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0)
 				return;
 
-			_currentColor = _defaultColor;
 			_value.color = _defaultColor;
 			_gaugeImage.color = _defaultColor;
 		}
@@ -431,10 +432,11 @@ namespace Streamliner
 			_defaultColor = color with { a = GetTransparency(TextAlpha.ThreeQuarters) };
 			_gaugeBackground.color = color with { a = GetTransparency(TextAlpha.ThreeEighths) };
 
+			_currentColor = _defaultColor;
+
 			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0)
 				return;
 
-			_currentColor = _defaultColor;
 			_value.color = _defaultColor;
 			_gaugeImage.color = _defaultColor;
 		}
