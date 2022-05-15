@@ -132,10 +132,13 @@ namespace Streamliner
 
 		internal static void ApplySettings()
 		{
-			ShiftFactor = BaseShiftFactor * OptionShiftMultiplier;
-			MaxLandingShakeAmount = BaseMaxLandingShakeAmount * OptionShakeMultiplier;
-			WallBounceShakeAmount = BaseWallBounceShakeAmount * OptionShakeMultiplier;
-			ScrapingShakeAmount = BaseScrapingShakeAmount * OptionScrapeMultiplier;
+			float splitscreenAdjustment = NgSettings.Gameplay.SplitscreenEnabled ?
+				1f / CustomScaleScriptableHud.finalResolutionMultiplier : 1f;
+
+			ShiftFactor = BaseShiftFactor * OptionShiftMultiplier * splitscreenAdjustment;
+			MaxLandingShakeAmount = BaseMaxLandingShakeAmount * OptionShakeMultiplier * splitscreenAdjustment;
+			WallBounceShakeAmount = BaseWallBounceShakeAmount * OptionShakeMultiplier * splitscreenAdjustment;
+			ScrapingShakeAmount = BaseScrapingShakeAmount * OptionScrapeMultiplier * splitscreenAdjustment;
 		}
 
 		internal static void Add(RectTransform panel, int playerIndex, string name) =>
