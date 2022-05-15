@@ -59,17 +59,17 @@ namespace Streamliner
 			 *
 			 *            CanvasScaler.referenceResolution.x
 			 * ├────────────────────┤
-			 * ┏━━━━━━━━━━━━━━━━┯━━━┓ ┬
-			 * ┃                ↑   ┃ │
-			 * ┃                4   ┃ │
-			 * ┃                ↑   ┃ │
-			 * ┃   ┌────────────┼→3→┨ │
-			 * ┃   │HudContainer│   ┃ │ CanvasScaler.referenceResolution.y
-			 * ┞···└────────────┘   ┃ │
-			 * ↑   ·                ┃ │
-			 * 2   ·                ┃ │
-			 * ↑   ·                ┃ │
-			 * └→1→┶━━━━━━━━━━━━━━━━┛ ┴
+			 * ┏━━━━━━━━━━━━━━━━┯━━━┓┬
+			 * ┃                ↑   ┃│
+			 * ┃                4   ┃│
+			 * ┃                ↑   ┃│
+			 * ┃   ┌────────────┼→3→┨│
+			 * ┃   │HudContainer│   ┃│CanvasScaler.referenceResolution.y
+			 * ┞···└────────────┘   ┃│
+			 * ↑   ·                ┃│
+			 * 2   ·                ┃│
+			 * ↑   ·                ┃│
+			 * └→1→┶━━━━━━━━━━━━━━━━┛┴
 			 * 1: HudContainer.offsetMin.x
 			 * 2: HudContainer.offsetMin.y
 			 * 3: HudContainer.offsetMax.x
