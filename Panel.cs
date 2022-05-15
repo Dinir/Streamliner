@@ -180,7 +180,10 @@ namespace Streamliner
 
 		internal static void UpdateAmount(ShipController ship)
 		{
-			AmountData amountData = _amountData[ship.ShipId];
+			if (ship.T is null)
+				return;
+
+			AmountData amountData = _amountData[ship.playerIndex];
 			ShipSim sim = ship.PysSim;
 			amountData.CurrentVelocity = ship.T.InverseTransformDirection(ship.RBody.velocity);
 			UpdateSpeedChangeIntensity(amountData);
