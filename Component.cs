@@ -249,7 +249,7 @@ namespace Streamliner
 			{
 				if (color != _panel.GaugeColor)
 					color = Color.Lerp(
-						color, _panel.GaugeColor, Time.deltaTime * _animationSpeed * _animationSpeedModifier);
+						color, _panel.GaugeColor, Time.deltaTime * _animationSpeed);
 				_speedIncreaseAnimationTimer -= Time.deltaTime;
 			}
 			else
