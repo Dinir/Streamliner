@@ -2951,10 +2951,8 @@ namespace Streamliner
 					break;
 				}
 
-				_nowPlaying.color = color with
-				{
-					a = Mathf.Lerp(color.a, 0f, Time.deltaTime * FadeOutSpeed)
-				};
+				color.a = Mathf.Lerp(color.a, 0f, Time.deltaTime * FadeOutSpeed);
+				_nowPlaying.color = color;
 
 				_npFadeOutTimeRemaining -= Time.deltaTime;
 				yield return null;
