@@ -139,20 +139,9 @@ namespace Streamliner
 
 		private float _currentSpeed;
 		private float _previousSpeed;
-		// single cannon hit roughly decreases the speed by 9.5%
-		private const float _instantColorChangeThreshold = 1 / 0.095f;
-		private static float _maxAnimationSpeedModifier = 4f;
-		private float _animationSpeedModifier = 1f;
-		private void UpdateAnimationSpeedModifier(bool speedDecreased)
-		{
-			_animationSpeedModifier = 
-				(speedDecreased ? _previousSpeed - _currentSpeed : _currentSpeed - _previousSpeed) /
-				(_previousSpeed < 1f ? 1f : _previousSpeed) * _instantColorChangeThreshold * _maxAnimationSpeedModifier;
-
-			_animationSpeedModifier = _animationSpeedModifier < 1f ?
-				1f : _animationSpeedModifier > _maxAnimationSpeedModifier ?
-				_maxAnimationSpeedModifier : _animationSpeedModifier;
-		}
+		private const float _minAnimationSpeedModifier = 1f;
+		private const float _maxAnimationSpeedModifier = 4f;
+		private float _animationSpeedModifier = _minAnimationSpeedModifier;
 
 		private const float _animationSpeed = 5f;
 		private const float _animationTimerMax = 2.25f;
@@ -226,8 +215,7 @@ namespace Streamliner
 
 		private void ColorSpeedComponent()
 		{
-			bool speedDecreased = _currentSpeed < _previousSpeed;
-			if (speedDecreased)
+			if (_previousSpeed > _currentSpeed)
 			{
 				_speedDecreaseAnimationTimer = _animationTimerMax;
 				_speedIncreaseAnimationTimer = 0f;
@@ -239,10 +227,11 @@ namespace Streamliner
 			}
 
 			Color color = _panel.Value.color;
+			_animationSpeedModifier = Shifter.GetClampedSpeedChangeIntensity(
+				TargetShip.ShipId, _minAnimationSpeedModifier, _maxAnimationSpeedModifier);
 
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
-				UpdateAnimationSpeedModifier(speedDecreased);
 				if (_animationSpeedModifier == _maxAnimationSpeedModifier)
 					color = _highlightColor;
 				if (color != _highlightColor)
@@ -255,7 +244,6 @@ namespace Streamliner
 
 			if (_speedIncreaseAnimationTimer > 0f)
 			{
-				UpdateAnimationSpeedModifier(speedDecreased);
 				if (color != _panel.GaugeColor)
 					color = Color.Lerp(
 						color, _panel.GaugeColor, Time.deltaTime * _animationSpeed * _animationSpeedModifier);

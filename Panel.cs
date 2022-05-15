@@ -40,6 +40,11 @@ namespace Streamliner
 		internal static readonly float VerticalSpeedDiffRange =
 			MaxVerticalSpeedDiff - MinVerticalSpeedDiff;
 
+		// single cannon hit roughly decreases the speed by 9.5%
+		internal const float SpeedChangeIntensityThreshold = 1 / 0.095f;
+		internal const float MaxSpeedChangeIntensity =
+			BaseMaxLandingShakeAmount / BaseWallBounceShakeAmount;
+
 		// duration / decay speed == total lasting time in seconds
 		internal const float ShakeDuration = 60f;
 		internal const float ShakeDurationDecaySpeed = 240f;
@@ -55,7 +60,10 @@ namespace Streamliner
 			internal float ShakeAmount;
 			internal Vector2 ShakeVector;
 			internal float ShakeDuration;
-			internal float PreviousVerticalSpeed;
+
+			internal Vector3 CurrentVelocity;
+			internal Vector3 PreviousVelocity;
+			internal float SpeedChangeIntensity;
 		}
 
 		internal static readonly List<ShipController> TargetShips = new(MaxPlayer);
@@ -133,43 +141,90 @@ namespace Streamliner
 		internal static void Add(RectTransform panel, int playerIndex, string name) =>
 			Panels[playerIndex].Add(new Panel(panel, name));
 
+		private static Vector2 GetUpdatedShiftAmount(Vector2 currentVelocity)
+		{
+			// apply shift
+			Vector2 shiftTarget = currentVelocity * ShiftFactor;
+			// apply vertical emphasis
+			float verticalShiftAmount = shiftTarget.y * VerticalShiftEmphasis;
+			// limit vertical amount from getting too big
+			verticalShiftAmount = verticalShiftAmount > MaxVerticalShiftAmount ?
+				MaxVerticalShiftAmount : verticalShiftAmount < -MaxVerticalShiftAmount ?
+					-MaxVerticalShiftAmount : verticalShiftAmount;
+
+			return shiftTarget with { y = verticalShiftAmount };
+		}
+
+		private static void UpdateSpeedChangeIntensity(AmountData amountData)
+		{
+			float currentSpeed = amountData.CurrentVelocity.z;
+			float previousSpeed = amountData.PreviousVelocity.z;
+
+			amountData.SpeedChangeIntensity = 
+				(
+					previousSpeed > currentSpeed ?
+					previousSpeed - currentSpeed : currentSpeed - previousSpeed
+				) / (previousSpeed < 1f ? 1f : previousSpeed)
+				* SpeedChangeIntensityThreshold;
+		}
+
+		internal static float GetClampedSpeedChangeIntensity(
+			int shipId, float min = 0f, float max = 1f
+		)
+		{
+			float intensity = _amountData[shipId] is not null ?
+				_amountData[shipId].SpeedChangeIntensity * max : min;
+
+			return intensity < min ? min : intensity > max ? max : intensity;
+		}
+
 		internal static void UpdateAmount(ShipController ship)
 		{
 			AmountData amountData = _amountData[ship.ShipId];
 			ShipSim sim = ship.PysSim;
-			Vector2 localVelocity =
-				ship.InverseTransformDirection(ship.RBody.velocity);
-			float currentVerticalVelocity = localVelocity.y;
+			amountData.CurrentVelocity = ship.T.InverseTransformDirection(ship.RBody.velocity);
+			UpdateSpeedChangeIntensity(amountData);
 
 			// update shift amount
-			amountData.ShiftTarget = localVelocity * ShiftFactor;
-			// limit vertical amount from getting too big
-			float verticalShiftAmount = amountData.ShiftTarget.y * VerticalShiftEmphasis;
-			verticalShiftAmount = verticalShiftAmount > MaxVerticalShiftAmount ?
-				MaxVerticalShiftAmount : verticalShiftAmount < -MaxVerticalShiftAmount ?
-					-MaxVerticalShiftAmount : verticalShiftAmount;
-			amountData.ShiftTarget = amountData.ShiftTarget with { y = verticalShiftAmount };
+
+			amountData.ShiftTarget = GetUpdatedShiftAmount((Vector2) amountData.CurrentVelocity);
 
 			// update shake amount
-			float verticalSpeedDiff = currentVerticalVelocity - amountData.PreviousVerticalSpeed;
+
+			float verticalSpeedDiff = amountData.CurrentVelocity.y - amountData.PreviousVelocity.y;
 
 			if (ship.OnMaglock)
 			{
+				// nullify shock on maglock landing
 				amountData.ShakeAmount = 0;
-				amountData.ShakeDuration = amountData.ShakeAmount;
+				amountData.ShakeDuration = 0;
 			}
 			else if (verticalSpeedDiff > MinVerticalSpeedDiff)
 			{
+				// big landing
 				verticalSpeedDiff =
 					(verticalSpeedDiff - MinVerticalSpeedDiff) / VerticalSpeedDiffRange;
 				verticalSpeedDiff = verticalSpeedDiff < 0 ?
 					0 : verticalSpeedDiff > 1f ?
 						1f : verticalSpeedDiff;
-				amountData.ShakeAmount = verticalSpeedDiff / 1f * MaxLandingShakeAmount;
+				amountData.ShakeAmount = verticalSpeedDiff * MaxLandingShakeAmount;
+				amountData.ShakeDuration = ShakeDuration;
+			}
+			else if (
+				amountData.SpeedChangeIntensity >= 1 &&
+				amountData.PreviousVelocity.z > amountData.CurrentVelocity.z
+			)
+			{
+				float intensity = amountData.SpeedChangeIntensity;
+				// speed loss
+				amountData.ShakeAmount =
+					(intensity >= MaxSpeedChangeIntensity ? MaxSpeedChangeIntensity : intensity)
+					* WallBounceShakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
 			else if (sim.touchingWall && amountData.ShakeAmount < WallBounceShakeAmount)
 			{
+				// wall crash
 				amountData.ShakeAmount = WallBounceShakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
@@ -178,6 +233,7 @@ namespace Streamliner
 				amountData.ShakeAmount < ScrapingShakeAmount
 			)
 			{
+				// scraping
 				amountData.ShakeAmount = ScrapingShakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
@@ -192,7 +248,7 @@ namespace Streamliner
 				amountData.ShakeDuration = 0;
 			}
 
-			amountData.PreviousVerticalSpeed = currentVerticalVelocity;
+			amountData.PreviousVelocity = amountData.CurrentVelocity;
 		}
 
 		internal static IEnumerator Shift(int playerIndex)
