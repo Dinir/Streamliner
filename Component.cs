@@ -31,10 +31,6 @@ namespace Streamliner
 {
 	public class CustomScaleScriptableHud : ScriptableHud
 	{
-		public const float referenceResolutionMultiplier = 1.25f;
-		// base method multiplies it by 1.2.
-		public static readonly float finalResolutionMultiplier = 1.2f * referenceResolutionMultiplier;
-
 		public override void ConfigureForSplitscreen(int playerIndex)
 		{
 			base.ConfigureForSplitscreen(playerIndex);
@@ -55,7 +51,8 @@ namespace Streamliner
 				return;
 			}
 
-			component2.referenceResolution *= referenceResolutionMultiplier;
+			// base method multiplies it by 1.2.
+			component2.referenceResolution *= 1.25f;
 
 			/*
 			 * HudContainer Offset Values
