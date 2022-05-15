@@ -2052,15 +2052,7 @@ namespace Streamliner
 				}
 				else
 				{
-					Color.RGBToHSV(
-						Color.Lerp(
-							ship.Settings.REF_ENGINECOL_BRIGHT, ship.Settings.REF_ENGINECOL, 0.5f
-						) with { a = 1f },
-						out float h, out float s, out float v
-					);
-					s *= 1.1f;
-
-					_nodes.Add(new ShipNode(_nodeTemplate, Color.HSVToRGB(h, s, v), ship.ShipId));
+					_nodes.Add(new ShipNode(_nodeTemplate, GetShipRepresentativeColor(ship), ship.ShipId));
 				}
 				if (_isPlayerOne) _racerSectionsTraversed[ship.ShipId] = 0;
 				_racerRelativeSections.Add(new RacerRelativeSectionData(ship.ShipId, 0));
