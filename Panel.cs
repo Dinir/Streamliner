@@ -140,12 +140,12 @@ namespace Streamliner
 		internal static void Add(RectTransform panel, int playerIndex, string name) =>
 			Panels[playerIndex].Add(new Panel(panel, name));
 
-		private static Vector2 GetUpdatedShiftAmount(Vector2 currentVelocity)
+		private static Vector2 GetUpdatedShiftAmount(Vector2 currentVelocity, bool inVacuum)
 		{
 			// apply shift
 			Vector2 shiftTarget = currentVelocity * ShiftFactor;
 			// apply vertical emphasis
-			float verticalShiftAmount = shiftTarget.y * VerticalShiftEmphasis;
+			float verticalShiftAmount = shiftTarget.y * (!inVacuum ? VerticalShiftEmphasis : -1f);
 			// limit vertical amount from getting too big
 			verticalShiftAmount = verticalShiftAmount > MaxVerticalShiftAmount ?
 				MaxVerticalShiftAmount : verticalShiftAmount < -MaxVerticalShiftAmount ?
@@ -179,7 +179,8 @@ namespace Streamliner
 
 			// update shift amount
 
-			amountData.ShiftTarget = GetUpdatedShiftAmount((Vector2) amountData.CurrentVelocity);
+			amountData.ShiftTarget =
+				GetUpdatedShiftAmount((Vector2) amountData.CurrentVelocity, ship.InVacuum);
 
 			// update shake amount
 
