@@ -37,6 +37,8 @@ namespace Streamliner
 		public static bool OptionTargetTimer = true;
 		public static int OptionBestTime = 1;
 
+		public const int OptionValueTintShipEngineIndexForGame = -1;
+
 		public override void OnRegistered(string modPath)
 		{
 			_modPathOnClassScope = modPath;
@@ -145,8 +147,8 @@ namespace Streamliner
 			ctx.GenerateSelector(
 				"TextTint", "text tint",
 				"Change the colour of the texts.",
-				OptionValueTint,
-				"white", "red", "orange", "yellow", "lime", "green", "mint", "cyan", "azure", "blue", "violet", "magenta", "rose"
+				ConvertOVTForSelector(OptionValueTint),
+				"white", "ship engine colour", "red", "orange", "yellow", "lime", "green", "mint", "cyan", "azure", "blue", "violet", "magenta", "rose"
 			);
 
 			ctx.GenerateSelector(
@@ -256,7 +258,7 @@ namespace Streamliner
 
 		private void ModUiToCode(ModOptionsUiContext ctx)
 		{
-			OptionValueTint = ctx.GetSelectorValue("TextTint");
+			OptionValueTint = ConvertOVTForGame(ctx.GetSelectorValue("TextTint"));
 			OptionZoneTintOverride = ctx.GetSelectorValue("ZoneTintOverride") == 1;
 			OptionTimeDiffColour = ctx.GetSelectorValue("TimeDiffColour");
 			OptionPositionBoard = ctx.GetSelectorValue("PositionBoard") == 1;
@@ -321,6 +323,20 @@ namespace Streamliner
 
 			ini.Close();
 		}
+
+		private int ConvertOVTForGame(int selectorValue) => selectorValue switch
+		{
+			1 => OptionValueTintShipEngineIndexForGame, // ship engine colour
+			> 1 => selectorValue - 1, // tint index order starting from 1
+			_ => selectorValue
+		};
+
+		private int ConvertOVTForSelector(int ingameValue) => ingameValue switch
+		{
+			OptionValueTintShipEngineIndexForGame => 1, // ship engine colour
+			>= 1 => ingameValue + 1, // tint index order starting from 1
+			_ => ingameValue
+		};
 	}
 
 	/*

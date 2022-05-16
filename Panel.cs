@@ -365,7 +365,16 @@ namespace Streamliner
 			int clarity = 3
 		)
 		{
-			int initiatedTintIndex = tintIndex < 0 ? OptionValueTint : tintIndex;
+			int initiatedTintIndex = tintIndex switch
+			{
+				< 0 when OptionValueTint == OptionValueTintShipEngineIndexForGame => 0,
+				< 0 => OptionValueTint,
+				_ => tintIndex
+			};
+
+			if (tintIndex < 0 && OptionValueTint == OptionValueTintShipEngineIndexForGame)
+				Debug.LogWarning(
+					"GetTintColor() is called for ship engine colour. White tint will be returned.");
 
 			return Color.HSVToRGB(
 					StandardH[initiatedTintIndex],
