@@ -2030,7 +2030,9 @@ namespace Streamliner
 			_panel = CustomComponents.GetById("Base");
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
 			_panel.Find("BackgroundFill").GetComponent<Image>().color =
-				GetTintColor(TextAlpha.ThreeEighths);
+				OptionValueTint != OptionValueTintShipEngineIndexForGame ?
+					GetTintColor(TextAlpha.ThreeEighths) :
+					GetTintFromColor(TextAlpha.ThreeEighths, GetShipRepresentativeColor(TargetShip));
 
 			_nodeTemplate = CustomComponents.GetById("Node");
 			ShipNode.MaxSize = _panel.sizeDelta.x - _nodeTemplate.sizeDelta.x;
@@ -2059,13 +2061,20 @@ namespace Streamliner
 			foreach (ShipController ship in Ships.Loaded)
 			{
 				if (ship == TargetShip)
-				{
-					_nodes.Add(new ShipNode(_nodeTemplate, GetTintColor(clarity: 1), ship.ShipId));
-				}
+					_nodes.Add(new ShipNode(
+						_nodeTemplate,
+						OptionValueTint != OptionValueTintShipEngineIndexForGame ?
+							GetTintColor(clarity: 1) :
+							GetTintFromColor(color: GetShipRepresentativeColor(ship), clarity: 1),
+						ship.ShipId
+					));
 				else
-				{
-					_nodes.Add(new ShipNode(_nodeTemplate, GetShipRepresentativeColor(ship), ship.ShipId));
-				}
+					_nodes.Add(new ShipNode(
+						_nodeTemplate,
+						GetShipRepresentativeColor(ship),
+						ship.ShipId
+					));
+
 				if (_isPlayerOne) _racerSectionsTraversed[ship.ShipId] = 0;
 				_racerRelativeSections.Add(new RacerRelativeSectionData(ship.ShipId, 0));
 			}
