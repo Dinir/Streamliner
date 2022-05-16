@@ -139,9 +139,8 @@ namespace Streamliner
 
 		private float _currentSpeed;
 		private float _previousSpeed;
-		private const float _minAnimationSpeedModifier = 1f;
-		private const float _maxAnimationSpeedModifier = 4f;
-		private float _animationSpeedModifier = _minAnimationSpeedModifier;
+		private const float _minSpeedChangeIntensity = 1f;
+		private float _speedChangeIntensity = _minSpeedChangeIntensity;
 
 		private const float _animationSpeed = 5f;
 		private const float _animationTimerMax = 2.25f;
@@ -191,6 +190,7 @@ namespace Streamliner
 				return;
 
 			_currentSpeed = _panel.CurrentSize.x;
+			UpdateSpeedChangeIntensity();
 			ColorSpeedComponent();
 			_previousSpeed = _currentSpeed;
 		}
@@ -221,6 +221,16 @@ namespace Streamliner
 			return IntStrDb.GetNumber(value < 0 ? 0 : value);
 		}
 
+		private void UpdateSpeedChangeIntensity()
+		{
+			_speedChangeIntensity =
+				(
+					_previousSpeed > _currentSpeed ?
+					_previousSpeed - _currentSpeed : _currentSpeed - _previousSpeed
+				) / (_previousSpeed < 1f ? 1f : _previousSpeed)
+				* Shifter.SpeedChangeIntensityThreshold;
+		}
+
 		private void ColorSpeedComponent()
 		{
 			if (_previousSpeed > _currentSpeed)
@@ -235,16 +245,14 @@ namespace Streamliner
 			}
 
 			Color color = _panel.Value.color;
-			_animationSpeedModifier = Shifter.GetClampedSpeedChangeIntensity(
-				TargetShip.ShipId, _minAnimationSpeedModifier, _maxAnimationSpeedModifier);
 
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
-				if (_animationSpeedModifier == _maxAnimationSpeedModifier)
-					color = _highlightColor;
 				if (color != _highlightColor)
-					color = Color.Lerp(
-						color, _highlightColor, Time.deltaTime * _animationSpeed * _animationSpeedModifier);
+					color = _speedChangeIntensity >= _minSpeedChangeIntensity ?
+						_highlightColor :
+						Color.Lerp(color, _highlightColor, Time.deltaTime * _animationSpeed);
+
 				_speedDecreaseAnimationTimer -= Time.deltaTime;
 			}
 			else
@@ -253,8 +261,9 @@ namespace Streamliner
 			if (_speedIncreaseAnimationTimer > 0f)
 			{
 				if (color != _panel.GaugeColor)
-					color = Color.Lerp(
-						color, _panel.GaugeColor, Time.deltaTime * _animationSpeed);
+					color = 
+						Color.Lerp(color, _panel.GaugeColor, Time.deltaTime * _animationSpeed);
+
 				_speedIncreaseAnimationTimer -= Time.deltaTime;
 			}
 			else

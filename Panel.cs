@@ -167,16 +167,6 @@ namespace Streamliner
 				* SpeedChangeIntensityThreshold;
 		}
 
-		internal static float GetClampedSpeedChangeIntensity(
-			int shipId, float min = 0f, float max = 1f
-		)
-		{
-			float intensity = _amountData[shipId] is not null ?
-				_amountData[shipId].SpeedChangeIntensity * max : min;
-
-			return intensity < min ? min : intensity > max ? max : intensity;
-		}
-
 		internal static void UpdateAmount(ShipController ship)
 		{
 			if (ship.T is null)
