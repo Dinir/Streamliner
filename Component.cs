@@ -156,7 +156,6 @@ namespace Streamliner
 			base.Start();
 			_panel = new SpeedPanel(CustomComponents.GetById("Base"));
 			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.playerIndex, GetType().Name);
-			_highlightColor = GetTintColor(clarity: 0);
 
 			_gamemodeName = RaceManager.CurrentGamemode.Name;
 			_usingZoneColors = _gamemodeName switch
@@ -165,6 +164,15 @@ namespace Streamliner
 				"Upsurge" when OptionZoneTintOverride => true,
 				_ => false
 			};
+
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+				_highlightColor = GetTintColor(clarity: 0);
+			else
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_panel.UpdateColor(GetTintFromColor(color: engineColor));
+				_highlightColor = GetTintFromColor(color: engineColor, clarity: 0);
+			}
 
 			if (_usingZoneColors)
 			{
@@ -275,12 +283,6 @@ namespace Streamliner
 			_panel.ChangeDataPartColor(color);
 		}
 
-		/*
-		 * Some fields and the three `UpdateToZoneColor` methods will appear almost same in
-		 * other hud components except the part where the color is applied to the component.
-		 * I want to extract them into `Streamliner.PresetColorPicker`,
-		 * but I don't know how to do it so I am leaving these duplicates.
-		 */
 		private void UpdateToZoneColor(int zoneNumber)
 		{
 			Color color = GetZoneColor(zoneNumber);
