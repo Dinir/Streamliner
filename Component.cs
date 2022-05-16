@@ -793,7 +793,7 @@ namespace Streamliner
 				}
 			}
 
-			public LapSlot(RectTransform template)
+			public LapSlot(RectTransform template, Color? color)
 			{
 				Value = template.Find("Time").GetComponent<Text>();
 				_perfectLine = template.Find("PerfectLine").GetComponent<Image>();
@@ -802,15 +802,25 @@ namespace Streamliner
 				Value.gameObject.SetActive(true);
 				_perfectLapStatus = false;
 
-				ChangeColor(GetTintColor(TextAlpha.ThreeQuarters));
+				if (color is null)
+					ChangeColor(GetTintColor(TextAlpha.ThreeQuarters));
+				else
+					ChangeColor(GetTintFromColor(TextAlpha.ThreeQuarters, color));
 			}
 
 			internal void ChangeColor(Color color) => Value.color = color;
+			internal float Alpha
+			{
+				set => Value.color = Value.color with { a = value };
+			}
 		}
 
 		private void InitiateSlots()
 		{
-			_totalSlots = Mathf.Clamp(Race.MaxLaps, 0, 5);
+			_totalSlots = Mathf.Clamp(Race.MaxLaps, 1, 5);
+			Color? initialColor = OptionValueTint != OptionValueTintShipEngineIndexForGame ?
+				null : GetShipRepresentativeColor(TargetShip);
+
 			for (int i = 0; i < _totalSlots; i++)
 			{
 				RectTransform slot =
@@ -821,11 +831,11 @@ namespace Streamliner
 
 				slot.localPosition += Vector3.up * slot.sizeDelta.y * i;
 
-				_slots.Add(new LapSlot(slot));
+				_slots.Add(new LapSlot(slot, initialColor));
 			}
 
 			// Emphasis the current lap slot by a bit.
-			_slots[0].ChangeColor(GetTintColor(TextAlpha.NineTenths));
+			_slots[0].Alpha = GetTransparency(TextAlpha.NineTenths);
 		}
 
 		public override void Start()
@@ -842,6 +852,12 @@ namespace Streamliner
 			_lapSlotTemplate.Find("PerfectLine").gameObject.SetActive(false);
 			InitiateSlots();
 			_currentSlot = _slots[0];
+
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_panel.UpdateColor(GetTintFromColor(color: engineColor));
+			}
 
 			NgRaceEvents.OnShipLapUpdate += OnLapUpdate;
 		}
