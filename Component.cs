@@ -2470,6 +2470,18 @@ namespace Streamliner
 		};
 		private static readonly Regex TimeFormatRegex = new(
 			@"\d\d?:\d{2}\.\d{2}", RegexOptions.None, TimeSpan.FromMilliseconds(10));
+		private struct TimeFormatTrimMaterial
+		{
+			internal const char Minus = '-';
+			internal const string MinusUnderTen = "-0:0";
+			internal const string MinusUnderSixty = "-0:";
+			internal const char Plus = '+';
+			internal const string PlusUnderTen = "+0:0";
+			internal const string PlusUnderSixty = "+0:";
+			internal const string Second = "<size=150>s</size>";
+			internal const string RightPadding = "<color=#0000>-</color>";
+		}
+		private readonly StringBuilder _timeFormatTrimmer = new();
 		private static StringKind GetStringKind(string message)
 		{
 			for (int enumIndex = 0; enumIndex < DefinedStrings.Length; enumIndex++)
@@ -2678,6 +2690,40 @@ namespace Streamliner
 			inputColor == BnGAccent ? _defaultColor["Line"] :
 			GetTintFromColor(TextAlpha.NineTenths, inputColor);
 
+		private string TrimTimeDiffText(string timeDiff)
+		{
+			_timeFormatTrimmer.Clear();
+			_timeFormatTrimmer.Append(timeDiff);
+
+			char sign = timeDiff[0];
+
+			switch (sign)
+			{
+				case TimeFormatTrimMaterial.Minus:
+					_timeFormatTrimmer
+						.Replace(TimeFormatTrimMaterial.MinusUnderTen, null)
+						.Replace(TimeFormatTrimMaterial.MinusUnderSixty, null);
+					break;
+				case TimeFormatTrimMaterial.Plus:
+					_timeFormatTrimmer
+						.Replace(TimeFormatTrimMaterial.PlusUnderTen, null)
+						.Replace(TimeFormatTrimMaterial.PlusUnderSixty, null);
+					break;
+				default:
+					break;
+			}
+
+			if (_timeFormatTrimmer.Length < timeDiff.Length)
+			{
+				_timeFormatTrimmer.Insert(0, sign);
+				_timeFormatTrimmer.Append(TimeFormatTrimMaterial.Second);
+			}
+			else
+				_timeFormatTrimmer.Append(TimeFormatTrimMaterial.RightPadding);
+
+			return _timeFormatTrimmer.ToString();
+		}
+
 		private void AddMessage(string message, ShipController ship, Color color)
 		{
 			// this will ignore messages that have an other ship as "a receiver"
@@ -2706,7 +2752,7 @@ namespace Streamliner
 						_lapResult.text += Environment.NewLine + message;
 						break;
 					case StringKind.TimeDiff:
-						_timeDiff.text = message + "<color=#0000>-</color>";
+						_timeDiff.text = TrimTimeDiffText(message);
 						_timeDiff.color = color;
 						break;
 					case StringKind.Time:
