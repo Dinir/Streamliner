@@ -2524,8 +2524,8 @@ namespace Streamliner
 			return StringKind.General;
 		}
 
-		private static Dictionary<string, Color> _textColor;
-		private static Dictionary<string, Color> _defaultColor;
+		private Dictionary<string, Color> _textColor;
+		private Dictionary<string, Color> _defaultColor;
 
 		private readonly List<Line> _lines = new(LineMax);
 		private class Line
@@ -2599,6 +2599,16 @@ namespace Streamliner
 				{"cyan", GetTintColor(TextAlpha.NineTenths, 7, 1)},
 				{"empty", GetTintColor(TextAlpha.Zero)}
 			};
+
+			// using ship engine tint and not zone colors
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame && !_usingZoneColors)
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_textColor["75"] = GetTintFromColor(TextAlpha.ThreeQuarters, engineColor);
+				_textColor["90"] = GetTintFromColor(TextAlpha.NineTenths, engineColor);
+				_textColor["100"] = GetTintFromColor(color: engineColor);
+			}
+
 			_defaultColor = new Dictionary<string, Color>
 			{
 				{"TimeDiff", _textColor["90"]},
@@ -2708,7 +2718,7 @@ namespace Streamliner
 			_initiated = true;
 		}
 
-		private static Color GetAdaptedColor(Color inputColor) =>
+		private Color GetAdaptedColor(Color inputColor) =>
 			inputColor == Color.green ? _textColor["green"] :
 			inputColor == Color.red ? _textColor["red"] :
 			inputColor == BnGAccent ? _defaultColor["Line"] :
