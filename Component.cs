@@ -3286,7 +3286,7 @@ namespace Streamliner
 	{
 		private RectTransform _panel;
 		private PickupPanel _teammatePickupPanel;
-		private GameObject _labelFirst;
+		private Text _labelFirst;
 		private Text _labelSecond;
 		private RectTransform _slotLeft;
 		private RectTransform _slotRight;
@@ -3300,18 +3300,13 @@ namespace Streamliner
 
 		private class TeamPanel
 		{
-			private static readonly Color ValueColor = GetTintColor();
-			private static readonly Color ValueAdditionColor = GetTintColor(TextAlpha.Half);
-			private static readonly Color MemberColor =
-				GetTintColor(TextAlpha.ThreeEighths);
-			private static readonly Color PlacementColor =
-				GetTintColor(clarity: 2);
-			private static readonly Color PlayerHighlightColor =
-				GetTintColor(clarity: 1);
-			private static readonly Color PanelColor =
-				GetPanelColor();
-			private static readonly Color PlayerPanelColor =
-				GetPanelColor(OptionValueTint);
+			private Color ValueColor;
+			private Color ValueAdditionColor;
+			private Color MemberColor;
+			private Color PlacementColor;
+			private Color PlayerHighlightColor;
+			private readonly Color PanelColor = GetPanelColor();
+			private Color PlayerPanelColor;
 
 			private RaceTeam _team;
 			private bool _isPlayerTeam;
@@ -3402,6 +3397,38 @@ namespace Streamliner
 				ScoreAddition = _team.PlaceScore;
 			}
 
+			internal void UpdateColor()
+			{
+				ValueColor = GetTintColor();
+				ValueAdditionColor = GetTintColor(TextAlpha.Half);
+				MemberColor = GetTintColor(TextAlpha.ThreeEighths);
+				PlacementColor = GetTintColor(clarity: 2);
+				PlayerHighlightColor = GetTintColor(clarity: 1);
+				PlayerPanelColor = GetPanelColor(OptionValueTint);
+
+				_value.color = ValueColor;
+				_valueAddition.color = ValueAdditionColor;
+				_placementFirst.color = PlacementColor;
+				_placementSecond.color = PlacementColor;
+				_playerHighlight.color = PlayerHighlightColor;
+			}
+
+			internal void UpdateColor(Color color)
+			{
+				ValueColor = GetTintFromColor(color: color);
+				ValueAdditionColor = GetTintFromColor(TextAlpha.Half, color);
+				MemberColor = GetTintFromColor(TextAlpha.ThreeEighths, color);
+				PlacementColor = GetTintFromColor(color: color, clarity: 2);
+				PlayerHighlightColor = GetTintFromColor(color: color, clarity: 1);
+				PlayerPanelColor = GetPanelFromColor(color);
+
+				_value.color = ValueColor;
+				_valueAddition.color = ValueAdditionColor;
+				_placementFirst.color = PlacementColor;
+				_placementSecond.color = PlacementColor;
+				_playerHighlight.color = PlayerHighlightColor;
+			}
+
 			public TeamPanel(RectTransform panel)
 			{
 				_panelImage = panel.GetComponent<Image>();
@@ -3413,11 +3440,7 @@ namespace Streamliner
 				_placementSecond = panel.Find("PlacementSecond").GetComponent<Text>();
 				_playerHighlight = panel.Find("Highlight").GetComponent<Image>();
 
-				_value.color = ValueColor;
-				_valueAddition.color = ValueAdditionColor;
-				_placementFirst.color = PlacementColor;
-				_placementSecond.color = PlacementColor;
-				_playerHighlight.color = PlayerHighlightColor;
+				UpdateColor();
 			}
 		}
 
@@ -3428,14 +3451,11 @@ namespace Streamliner
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
 			_teammatePickupPanel =
 				new PickupPanel(_panel.Find("TeammatePickup").GetComponent<RectTransform>());
-			_labelFirst = _panel.Find("LabelFirst").gameObject;
+			_labelFirst = _panel.Find("LabelFirst").GetComponent<Text>();
 			_labelSecond = _panel.Find("LabelSecond").GetComponent<Text>();
 			_slotLeft = _panel.Find("SlotLeft").GetComponent<RectTransform>();
 			_slotRight = _panel.Find("SlotRight").GetComponent<RectTransform>();
 			_slotMiddle = _panel.Find("SlotMiddle").GetComponent<RectTransform>();
-
-			_labelFirst.GetComponent<Text>().color = GetTintColor();
-			_labelSecond.GetComponent<Text>().color = GetTintColor();
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
@@ -3493,10 +3513,18 @@ namespace Streamliner
 					if (teamCount >= 6)
 						_teamPanels[teamPanelIndex] = new TeamPanel(slotLeftest);
 
-					_labelFirst.SetActive(teamCount > 6);
+					_labelFirst.gameObject.SetActive(teamCount > 6);
 					_labelSecond.gameObject.SetActive(teamCount > 6);
 					break;
 			}
+
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+			{
+				_labelFirst.color = GetTintColor();
+				_labelSecond.color = GetTintColor();
+			}
+			else
+				UpdateColor(GetShipRepresentativeColor(TargetShip));
 		}
 
 		private void Initiate()
@@ -3575,6 +3603,15 @@ namespace Streamliner
 
 				yield return new WaitForSeconds(Position.UpdateTime);
 			}
+		}
+
+		public void UpdateColor(Color color)
+		{
+			_labelFirst.color = GetTintFromColor(color: color);
+			_labelSecond.color = GetTintFromColor(color: color);
+
+			foreach (TeamPanel p in _teamPanels)
+				p.UpdateColor(color);
 		}
 
 		public override void OnDestroy()
