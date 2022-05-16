@@ -435,7 +435,14 @@ namespace Streamliner
 			}
 
 			// Coloring
-			UpdateColor();
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+				UpdateColor();
+			else
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				UpdateColor(engineColor);
+			}
+
 			// assigning to `_defaultColor` here is to ensure the colors are set at `Start()`.
 			_currentColor = _defaultColor;
 			_currentDamageColor = _damageColor;
@@ -462,8 +469,8 @@ namespace Streamliner
 		}
 		private void UpdateColor(Color color)
 		{
-			_defaultColor = color with { a = GetTransparency(TextAlpha.ThreeQuarters) };
-			_gaugeBackground.color = color with { a = GetTransparency(TextAlpha.ThreeEighths) };
+			_defaultColor = GetTintFromColor(TextAlpha.ThreeQuarters, color);
+			_gaugeBackground.color = GetTintFromColor(TextAlpha.ThreeEighths, color);
 
 			_currentColor = _defaultColor;
 
