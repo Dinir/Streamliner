@@ -417,6 +417,23 @@ namespace Streamliner
 					a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
 				};
 
+		internal static Color GetPanelFromColor(
+			Color? color = null
+		)
+		{
+			Color.RGBToHSV(color ?? Color.white, out float hue, out float saturation, out _);
+			bool isGreyscale = Mathf.Approximately(saturation, 0f);
+
+			return Color.HSVToRGB(
+					hue,
+					isGreyscale ? 0 : StandardSV[0][0],
+					isGreyscale ? 0.16f : 0.30f
+				) with
+			{
+				a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
+			};
+		}
+
 		internal static float GetTransparency(TextAlpha transparencyIndex) =>
 			TintAlphaList[(int) transparencyIndex];
 
