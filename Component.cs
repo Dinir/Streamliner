@@ -997,10 +997,17 @@ namespace Streamliner
 			_bestTimeText = bestTimeSlot.Find("Time").GetComponent<Text>();
 			bestTimeSlot.Find("PerfectLine").gameObject.SetActive(false);
 
-			_bestTimeText.color = GetTintColor(TextAlpha.NineTenths);
-
 			_usingBestTimeDisplay = OptionBestTime != 0;
 			_bestTimeText.gameObject.SetActive(_usingBestTimeDisplay);
+
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+				_bestTimeText.color = GetTintColor(TextAlpha.NineTenths);
+			else
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_panel.UpdateColor(GetTintFromColor(color: engineColor));
+				_bestTimeText.color = GetTintFromColor(TextAlpha.NineTenths, engineColor);
+			}
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
