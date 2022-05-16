@@ -139,8 +139,8 @@ namespace Streamliner
 
 		private float _currentSpeed;
 		private float _previousSpeed;
-		private const float _minSpeedChangeIntensity = 1f;
-		private float _speedChangeIntensity = _minSpeedChangeIntensity;
+		private const float _minSpeedLossIntensity = 1f;
+		private float _speedLossIntensity = _minSpeedLossIntensity;
 
 		private const float _animationSpeed = 5f;
 		private const float _animationTimerMax = 2.25f;
@@ -190,7 +190,7 @@ namespace Streamliner
 				return;
 
 			_currentSpeed = _panel.CurrentSize.x;
-			UpdateSpeedChangeIntensity();
+			UpdateSpeedLossIntensity();
 			ColorSpeedComponent();
 			_previousSpeed = _currentSpeed;
 		}
@@ -221,27 +221,30 @@ namespace Streamliner
 			return IntStrDb.GetNumber(value < 0 ? 0 : value);
 		}
 
-		private void UpdateSpeedChangeIntensity()
+		private void UpdateSpeedLossIntensity()
 		{
-			_speedChangeIntensity =
-				(
-					_previousSpeed > _currentSpeed ?
-					_previousSpeed - _currentSpeed : _currentSpeed - _previousSpeed
-				) / (_previousSpeed < 1f ? 1f : _previousSpeed)
+			_speedLossIntensity =
+				(_previousSpeed - _currentSpeed)
+				/ (_previousSpeed < 1f ? 1f : _previousSpeed)
 				* Shifter.SpeedChangeIntensityThreshold;
+
+			_speedLossIntensity =
+				_speedLossIntensity <= -_minSpeedLossIntensity ? -_minSpeedLossIntensity :
+				_speedLossIntensity >= _minSpeedLossIntensity ? _minSpeedLossIntensity :
+				_speedLossIntensity;
 		}
 
 		private void ColorSpeedComponent()
 		{
-			if (_previousSpeed > _currentSpeed)
+			if (_speedLossIntensity > 0f)
 			{
 				_speedDecreaseAnimationTimer = _animationTimerMax;
 				_speedIncreaseAnimationTimer = 0f;
 			}
 			else
 			{
-				_speedIncreaseAnimationTimer = _animationTimerMax;
 				_speedDecreaseAnimationTimer = 0f;
+				_speedIncreaseAnimationTimer = _animationTimerMax;
 			}
 
 			Color color = _panel.Value.color;
@@ -249,7 +252,7 @@ namespace Streamliner
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
 				if (color != _highlightColor)
-					color = _speedChangeIntensity >= _minSpeedChangeIntensity ?
+					color = _speedLossIntensity == _minSpeedLossIntensity ?
 						_highlightColor :
 						Color.Lerp(color, _highlightColor, Time.deltaTime * _animationSpeed);
 
