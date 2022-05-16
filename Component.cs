@@ -2402,8 +2402,20 @@ namespace Streamliner
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
 			_panelAnimator = _panel.GetComponent<Animator>();
 
-			_panel.Find("Left").Find("Text").GetComponent<Text>().color = GetTintColor();
-			_panel.Find("Right").Find("Text").GetComponent<Text>().color = GetTintColor();
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+			{
+				_panel.Find("Left").Find("Text").GetComponent<Text>().color =
+					GetTintColor();
+				_panel.Find("Right").Find("Text").GetComponent<Text>().color =
+					GetTintColor();
+			}
+			else
+			{
+				_panel.Find("Left").Find("Text").GetComponent<Text>().color =
+					GetTintFromColor(color: GetShipRepresentativeColor(TargetShip));
+				_panel.Find("Right").Find("Text").GetComponent<Text>().color =
+					GetTintFromColor(color: GetShipRepresentativeColor(TargetShip));
+			}
 
 			/*
 			 * Using `SetActive()` is ineffective here,
