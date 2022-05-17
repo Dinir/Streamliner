@@ -3957,8 +3957,18 @@ namespace Streamliner
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
 			_label = _panel.Find("Label").GetComponent<Text>();
 			_value = _panel.Find("Value").GetComponent<Text>();
-			_label.color = GetTintColor(TextAlpha.ThreeQuarters);
-			_value.color = GetTintColor(TextAlpha.NineTenths);
+
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+			{
+				_label.color = GetTintColor(TextAlpha.ThreeQuarters);
+				_value.color = GetTintColor(TextAlpha.NineTenths);
+			}
+			else
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_label.color = GetTintFromColor(TextAlpha.ThreeQuarters, engineColor);
+				_value.color = GetTintFromColor(TextAlpha.NineTenths, engineColor);
+			}
 
 			NgNetworkBase.CurrentNetwork.OnCountdownStarted += CountdownInitiate;
 		}
