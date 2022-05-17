@@ -1888,12 +1888,19 @@ namespace Streamliner
 					break;
 			}
 
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_panel.UpdateColor(GetTintFromColor(color: engineColor));
+			}
+
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
 
 		private void Initiate()
 		{
 			StartCoroutine(UpdateData());
+			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
 
 		private IEnumerator UpdateData()
@@ -1948,7 +1955,6 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			NgRaceEvents.OnCountdownStart -= Initiate;
 			StopCoroutine(UpdateData());
 		}
 	}
