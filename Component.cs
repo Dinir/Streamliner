@@ -2579,6 +2579,7 @@ namespace Streamliner
 			internal const string PlusUnderTen = "+0:0";
 			internal const string PlusUnderSixty = "+0:";
 			internal const string Second = "<size=150>s</size>";
+			internal const string LeftPadding = "<size=50> </size>";
 			internal const string RightPadding = "<color=#0000>-</color>";
 		}
 		private readonly StringBuilder _timeFormatTrimmer = new();
@@ -2802,8 +2803,9 @@ namespace Streamliner
 
 		private string TrimTimeDiffText(string timeDiff)
 		{
-			_timeFormatTrimmer.Clear();
-			_timeFormatTrimmer.Append(timeDiff);
+			_timeFormatTrimmer
+				.Clear()
+				.Append(timeDiff);
 
 			char sign = timeDiff[0];
 
@@ -2820,13 +2822,15 @@ namespace Streamliner
 						.Replace(TimeFormatTrimMaterial.PlusUnderSixty, null);
 					break;
 				default:
-					break;
+					return timeDiff;
 			}
 
 			if (_timeFormatTrimmer.Length < timeDiff.Length)
 			{
-				_timeFormatTrimmer.Insert(0, sign);
-				_timeFormatTrimmer.Append(TimeFormatTrimMaterial.Second);
+				_timeFormatTrimmer
+					.Insert(0, sign)
+					.Insert(0, TimeFormatTrimMaterial.LeftPadding)
+					.Append(TimeFormatTrimMaterial.Second);
 			}
 			else
 				_timeFormatTrimmer.Append(TimeFormatTrimMaterial.RightPadding);
