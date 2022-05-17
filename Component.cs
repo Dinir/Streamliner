@@ -1502,6 +1502,7 @@ namespace Streamliner
 		private DoubleGaugePanel _panel;
 		private Text _zoneName;
 		private Text _zoneScore;
+		private bool _usingZoneColors;
 
 		public override void Start()
 		{
@@ -1513,19 +1514,24 @@ namespace Streamliner
 			_zoneScore = CustomComponents.GetById<Text>("Score");
 			_zoneScore.gameObject.SetActive(true);
 
-			ChangeModeSpecificPartsColor();
+			_usingZoneColors = OptionZoneTintOverride;
 
 			/*
 			 * When `OnZoneNumberUpdate` is called,
 			 * publicly accessible `ZonePalleteSettings.CurrentColors` is NOT updated!
 			 * So the palette settings should be manually fetched to get the next set.
 			 */
-			if (OptionZoneTintOverride)
+			if (_usingZoneColors)
 				UpdateZonePalleteSettings();
 
 			SetScore("0");
 			SetNumber("0");
 			SetTitle("toxic");
+
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+				ChangeModeSpecificPartsColor();
+			else
+				UpdateColor(GetShipRepresentativeColor(TargetShip));
 
 			NgUiEvents.OnZoneProgressUpdate += SetProgress;
 			NgUiEvents.OnZoneScoreUpdate += SetScore;
@@ -1544,12 +1550,14 @@ namespace Streamliner
 			_zoneScore.color = GetTintFromColor(TextAlpha.NineTenths, color);
 		}
 
-		private void UpdateToZoneColor(int zoneNumber)
+		private void UpdateColor(Color color)
 		{
-			Color currentEnvDetColor = GetZoneColor(zoneNumber);
-			_panel.UpdateColor(GetTintFromColor(color: currentEnvDetColor));
-			ChangeModeSpecificPartsColor(currentEnvDetColor);
+			_panel.UpdateColor(GetTintFromColor(color: color));
+			ChangeModeSpecificPartsColor(color);
 		}
+
+		private void UpdateToZoneColor(int zoneNumber) =>
+			UpdateColor(GetZoneColor(zoneNumber));
 
 		private void SetProgress(float progress) =>
 			_panel.FillBoth(progress);
@@ -1562,7 +1570,7 @@ namespace Streamliner
 			_panel.Value.text = number;
 			int zoneNumber = Convert.ToInt32(number);
 
-			if (OptionZoneTintOverride && zoneNumber % 5 == 0)
+			if (_usingZoneColors && zoneNumber % 5 == 0)
 				UpdateToZoneColor(zoneNumber);
 		}
 
