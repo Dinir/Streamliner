@@ -13,7 +13,7 @@ namespace Streamliner
 	public class HudRegister : CodeMod
 	{
 		// This name appears at "config - game - hud - style - hud style".
-		private const string ID = "Streamliner 1.1.0-beta";
+		private const string ID = "Streamliner 1.1.0";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
