@@ -360,6 +360,18 @@ namespace Streamliner
 		}
 		internal static ZonePalleteSettings PalleteSettings;
 
+		/*
+		 * about `initiatedTintIndex` on ship engine tint index
+		 * 
+		 * When `OptionValueTint` is set to the ship engine index,
+		 * the components still have to call the methods depending on tintIndex,
+		 * before they can call the methods that can accept custom colors.
+		 * 
+		 * `GetTintColor()` and `GetPanelColor()` therefore need to
+		 * be able to handle the case where
+		 * tintIndex is `OptionValueTintShipEngineIndexForGame`.
+		 */
+
 		internal static Color GetTintColor(
 			TextAlpha transparencyIndex = TextAlpha.Full,
 			int tintIndex = -1,
@@ -372,10 +384,6 @@ namespace Streamliner
 				< 0 => OptionValueTint,
 				_ => tintIndex
 			};
-
-			if (tintIndex < 0 && OptionValueTint == OptionValueTintShipEngineIndexForGame)
-				Debug.LogWarning(
-					"GetTintColor() is called for ship engine colour. White tint will be returned.");
 
 			return Color.HSVToRGB(
 					StandardH[initiatedTintIndex],
@@ -407,15 +415,23 @@ namespace Streamliner
 
 		internal static Color GetPanelColor(
 			int tintIndex = 0
-		) =>
-			Color.HSVToRGB(
-					StandardH[tintIndex],
-					tintIndex == 0 ? 0 : StandardSV[0][0],
-					tintIndex == 0 ? 0.16f : 0.30f
+		)
+		{
+			int initiatedTintIndex = tintIndex switch
+			{
+				< 0 => 0,
+				_ => tintIndex
+			};
+
+			return Color.HSVToRGB(
+					StandardH[initiatedTintIndex],
+					initiatedTintIndex == 0 ? 0 : StandardSV[0][0],
+					initiatedTintIndex == 0 ? 0.16f : 0.30f
 				) with
 				{
 					a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
 				};
+		}
 
 		internal static Color GetPanelColorFromColor(
 			Color? color = null
