@@ -3346,6 +3346,11 @@ namespace Streamliner
 
 			if (_usingZoneColors)
 				UpdateToZoneColor(0);
+			else if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_panel.UpdateColor(GetTintFromColor(color: engineColor));
+			}
 
 			NgRaceEvents.OnCountdownStart -= Initiate;
 
