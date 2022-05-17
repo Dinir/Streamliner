@@ -1115,6 +1115,7 @@ namespace Streamliner
 		private const string StringSpeedLap = "Speed Lap";
 		private RectTransform _panel;
 		private RectTransform _normalDisplay;
+		private Text _normalDisplayLabel;
 		private Text _normalDisplayValue;
 		private DoubleGaugePanel _bigDisplay;
 
@@ -1192,9 +1193,8 @@ namespace Streamliner
 			_panel = CustomComponents.GetById("Base");
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
 			_normalDisplay = CustomComponents.GetById("Normal");
-			_normalDisplay.Find("Label").GetComponent<Text>().color = GetTintColor(TextAlpha.ThreeQuarters);
+			_normalDisplayLabel = _normalDisplay.Find("Label").GetComponent<Text>();
 			_normalDisplayValue = _normalDisplay.Find("Value").GetComponent<Text>();
-			_normalDisplayValue.color = GetTintColor();
 			_bigDisplay = new DoubleGaugePanel(CustomComponents.GetById("Big"), true);
 			_bigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
 
@@ -1229,6 +1229,19 @@ namespace Streamliner
 				_displayType is DisplayType.Big or DisplayType.Both;
 			_showingLapTimeAdvantage =
 				_gamemodeName == StringTimeTrial && _timeType == TimeType.Lap;
+
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+			{
+				_normalDisplayLabel.color = GetTintColor(TextAlpha.ThreeQuarters);
+				_normalDisplayValue.color = GetTintColor();
+			}
+			else
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_bigDisplay.UpdateColor(GetTintFromColor(color: engineColor));
+				_normalDisplayLabel.color = GetTintFromColor(TextAlpha.ThreeQuarters, engineColor);
+				_normalDisplayValue.color = GetTintFromColor(color: engineColor);
+			}
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
