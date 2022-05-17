@@ -417,7 +417,7 @@ namespace Streamliner
 					a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
 				};
 
-		internal static Color GetPanelFromColor(
+		internal static Color GetPanelColorFromColor(
 			Color? color = null
 		)
 		{

@@ -3536,7 +3536,7 @@ namespace Streamliner
 				MemberColor = GetTintFromColor(TextAlpha.ThreeEighths, color);
 				PlacementColor = GetTintFromColor(color: color, clarity: 2);
 				PlayerHighlightColor = GetTintFromColor(color: color, clarity: 1);
-				PlayerPanelColor = GetPanelFromColor(color);
+				PlayerPanelColor = GetPanelColorFromColor(color);
 
 				_value.color = ValueColor;
 				_valueAddition.color = ValueAdditionColor;
