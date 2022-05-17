@@ -22,7 +22,7 @@ namespace Streamliner
 		private const string OptionSectionDisplay = "Display";
 		private const string OptionSectionMotion = "Motion Effect";
 		private const string OptionSectionAddition = "Additional Information";
-		public static int OptionValueTint;
+		public static int OptionValueTint = OptionValueTintShipEngineIndexForGame;
 		public static bool OptionZoneTintOverride = true;
 		public static int OptionTimeDiffColour;
 		public static bool OptionPositionBoard = true;
