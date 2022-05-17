@@ -1973,6 +1973,12 @@ namespace Streamliner
 			};
 			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.playerIndex, GetType().Name);
 
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_panel.UpdateColor(GetTintFromColor(color: engineColor));
+			}
+
 			NgRaceEvents.OnShipLapUpdate += UpdateLap;
 		}
 
