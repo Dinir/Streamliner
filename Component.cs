@@ -1623,6 +1623,7 @@ namespace Streamliner
 		private float _currentZoneTimeWidth;
 		private float _currentZoneWidth;
 		private float _currentShieldWidth;
+		private bool _usingZoneColors;
 
 		public override void Start()
 		{
@@ -1642,13 +1643,18 @@ namespace Streamliner
 			_currentSmallGaugeColor = _panel.SmallGaugeColor;
 			_smallGaugeAlpha = _panel.SmallGaugeColor.a;
 
-			ChangeModeSpecificPartsColor();
+			_usingZoneColors = OptionZoneTintOverride;
 
 			_isPlayerOne = TargetShip.playerIndex == 0;
 
 			_gamemode = (GmUpsurge) RaceManager.CurrentGamemode;
-			if (OptionZoneTintOverride && _isPlayerOne)
+			if (_usingZoneColors && _isPlayerOne)
 				UpdateZonePalleteSettings(_gamemode);
+
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+				ChangeModeSpecificPartsColor();
+			else
+				UpdateColor(GetShipRepresentativeColor(TargetShip));
 
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
@@ -1756,9 +1762,17 @@ namespace Streamliner
 			_playingOverflowTransition = false;
 		}
 
+		private void UpdateColor(Color color)
+		{
+			_panel.UpdateColor(GetTintFromColor(color: color));
+			// instead of doing `UpdateSmallGaugesColor()`, just update the field
+			_panel.SmallGaugeColor = GetTintFromColor(color: color, clarity: 1);
+			ChangeModeSpecificPartsColor(color);
+		}
+
 		private void UpdateToZoneColor(ShipController ship, float oldScore, float newScore)
 		{
-			if (!OptionZoneTintOverride || ship != TargetShip)
+			if (!_usingZoneColors || ship != TargetShip)
 				return;
 
 			Color currentZoneColor = GetZoneColor((int) newScore);
@@ -1767,10 +1781,7 @@ namespace Streamliner
 				return;
 
 			_currentZoneColor = currentZoneColor;
-			_panel.UpdateColor(GetTintFromColor(color: currentZoneColor));
-			// instead of doing `UpdateSmallGaugesColor()`, just update the field
-			_panel.SmallGaugeColor = GetTintFromColor(color: currentZoneColor, clarity: 1);
-			ChangeModeSpecificPartsColor(currentZoneColor);
+			UpdateColor(currentZoneColor);
 		}
 
 		public override void Update()
