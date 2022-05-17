@@ -127,6 +127,10 @@ namespace Streamliner
 					);
 				}
 			}
+
+			// Apply Rect Mask 2D if available.
+			RectMask2D mask = CustomComponents.GetById("Base").parent.GetComponent<RectMask2D>();
+			if (mask is not null) mask.enabled = true;
 		}
 	}
 
