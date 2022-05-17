@@ -341,26 +341,33 @@ namespace Streamliner
 
 	/*
 	 * Brief Table of Vanilla Hud Components for Gamemodes
-	 * For an accurate list, you gotta check where each classes of `NgUi.RaceUi.HUD` are loaded.
+	 * 
+	 * For an accurate list, you gotta check `NgModes.Gamemode`
+	 * and its derived classes for `CreateNewHuds` calls.
 	 *
 	 *            R  TR TT SL SU KN EL UP RH
-	 * Speed      V  V  V  V  V  V  V  V  V
-	 * Energy     V  V  V  V  V  V  V  V  V
-	 * Timer      V  .  V  V2 .  .  .  .  .
+	 * Speed&NRG  V  V  V  V  V  V  V  V  V
+	 * Timer      V  .  V  V3 .  .  .  .  .
 	 * ZoneEnergy .  .  .  .  .  .  .  V  .
-	 * Zone       .  .  .  .  V  .  .  V2 .
+	 * Zone       .  .  .  .  V  .  .  V3 .
 	 * Placement  V  V  .  .  .  V  .  .  V
 	 * Lap        V  V  V  .  .  .  .  .  .
 	 * Position   V  V  .  .  .  V  V  .  V
 	 * Pitlane    V  V  V  .  .  V  .  .  .
-	 * Message    V  V  V  V  V  V  V  V  V
+	 * Message1   V  V  V  V  V  V  V  V  V
 	 * Pickup     V  V  .  V  .  V  V  .  V
-	 * Board      V1 V2 .  .  .  V1 V  V2 V
-	 * Awards     .  .  V3 .  V3 .  .  .  .
+	 * Board      V2 V3 .  .  .  V2 V  V3 V
+	 * Awards     .  .  V4 .  V4 .  .  .  .
+	 * ShipTags   V  .  .  .  .  V  V  V  V
+	 * ShieldBars V5 .  .  .  .  V5 V  .  .
+	 * RespwnDknr V  V  V  V  V  V  V  V  V
 	 *
-	 * 1: when `Hud.GetPositionBoardEnabled()` is `true`
-	 * 2: replaces the default one with a variation
-	 * 3: when `NgCampaign.Enabled` is `true`
+	 * 1: because I made this table to help me making the hud, this row combines
+	 *    `NotificationBuffer`, `NowPlaying`, and `WrongWayIndicator`.
+	 * 2: when `Hud.GetPositionBoardEnabled()` is `true`
+	 * 3: replaces the default one with a variation
+	 * 4: when `NgCampaign.Enabled` is `true`
+	 * 5: loads when `Hud.ShieldBarsInRaces` is `true`
 	 */
 
 	public class RaceHudManager : SceneHudManager
@@ -377,6 +384,8 @@ namespace Streamliner
 			RegisterHud<Pitlane>(HudRegister.Assets.GetComponent<HudComponents>("Pitlane", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
+			if (Hud.GetShipTagsMode() != 0) RegisterInternalHud("NetworkNameTags");
+			if (Hud.ShieldBarsInRaces) RegisterInternalHud("Eliminator");
 			if (HudRegister.OptionPositionBoard && Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 			if (NgNetworkBase.CurrentNetwork)
@@ -424,6 +433,7 @@ namespace Streamliner
 				RegisterHud<Awards>(HudRegister.Assets.GetComponent<HudComponents>("Awards", false));
 
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
@@ -472,10 +482,13 @@ namespace Streamliner
 			RegisterHud<Pitlane>(HudRegister.Assets.GetComponent<HudComponents>("Pitlane", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
+			if (Hud.GetShipTagsMode() != 0) RegisterInternalHud("NetworkNameTags");
+			if (Hud.ShieldBarsInRaces) RegisterInternalHud("Eliminator");
 			if (HudRegister.OptionPositionBoard && Hud.GetPositionBoardEnabled())
 				RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
+			RegisterInternalHud("RespawnDarkener");
 		}
 	}
 
@@ -488,6 +501,8 @@ namespace Streamliner
 			RegisterHud<PositionTracker>(HudRegister.Assets.GetComponent<HudComponents>("Position", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<PickupDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Pickup", false));
+			if (Hud.GetShipTagsMode() != 0) RegisterInternalHud("NetworkNameTags");
+			RegisterInternalHud("Eliminator");
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
@@ -504,6 +519,7 @@ namespace Streamliner
 			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
 			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
+			if (Hud.GetShipTagsMode() != 0) RegisterInternalHud("NetworkNameTags");
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
@@ -521,6 +537,7 @@ namespace Streamliner
 			RegisterHud<PositionTracker>(HudRegister.Assets.GetComponent<HudComponents>("Position", false));
 			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
 			RegisterHud<TurboDisplay>(HudRegister.Assets.GetComponent<HudComponents>("Turbo", false));
+			if (Hud.GetShipTagsMode() != 0) RegisterInternalHud("NetworkNameTags");
 			RegisterHud<Leaderboard>(HudRegister.Assets.GetComponent<HudComponents>("Leaderboard", false));
 
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
