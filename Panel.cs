@@ -1216,19 +1216,44 @@ namespace Streamliner
 			_iconImage.color = _offensiveColor;
 		}
 
+		private void Initiate()
+		{
+			_panelGroup.alpha = 0f;
+			_bracketsImage.enabled = false;
+			_iconImage.enabled = false;
+			if (_info is not null)
+			{
+				_info.enabled = false;
+				_info.text = "";
+			}
+
+			_offensiveColor = GetTintColor(tintIndex: 2, clarity: 2);
+			_defensiveColor = GetTintColor(tintIndex: 8, clarity: 2);
+
+			UpdateColor();
+		}
+
+		public void UpdateColor()
+		{
+			_hudDefaultColor = GetTintColor();
+			if (_info is not null)
+				_info.color = GetTintColor();
+		}
+
+		public void UpdateColor(Color color)
+		{
+			_hudDefaultColor = GetTintFromColor(color: color);
+			if (_info is not null)
+				_info.color = GetTintFromColor(color: color);
+		}
+
 		public PickupPanel(RectTransform basePanel)
 		{
 			_panelGroup = basePanel.GetComponent<CanvasGroup>();
 			_bracketsImage = basePanel.Find("Brackets").GetComponent<Image>();
 			_iconImage = basePanel.Find("Icon").GetComponent<Image>();
 
-			_panelGroup.alpha = 0f;
-			_bracketsImage.enabled = false;
-			_iconImage.enabled = false;
-
-			_offensiveColor = GetTintColor(tintIndex: 2, clarity: 2);
-			_defensiveColor = GetTintColor(tintIndex: 8, clarity: 2);
-			_hudDefaultColor = GetTintColor();
+			Initiate();
 		}
 
 		public PickupPanel(RectTransform basePanel, Text infoText)
@@ -1237,17 +1262,8 @@ namespace Streamliner
 			_bracketsImage = basePanel.Find("Brackets").GetComponent<Image>();
 			_iconImage = basePanel.Find("Icon").GetComponent<Image>();
 			_info = infoText;
-			_info.color = GetTintColor();
 
-			_panelGroup.alpha = 0f;
-			_bracketsImage.enabled = false;
-			_iconImage.enabled = false;
-			_info.enabled = false;
-			_info.text = "";
-
-			_offensiveColor = GetTintColor(tintIndex: 2, clarity: 2);
-			_defensiveColor = GetTintColor(tintIndex: 8, clarity: 2);
-			_hudDefaultColor = GetTintColor();
+			Initiate();
 		}
 	}
 

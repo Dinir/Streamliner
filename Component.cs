@@ -3187,6 +3187,13 @@ namespace Streamliner
 			_warningPanel = new PickupPanel(
 				_panel.Find("WarningBackground").GetComponent<RectTransform>());
 
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_playerPanel.UpdateColor(engineColor);
+				_warningPanel.UpdateColor(engineColor);
+			}
+
 			PickupBase.OnPickupInit += ShowPickup;
 			PickupBase.OnPickupDeinit += HidePickup;
 			NgUiEvents.OnWeaponWarning += Warn;
@@ -3265,6 +3272,12 @@ namespace Streamliner
 			_panel = CustomComponents.GetById("Base");
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
 			_playerPanel = new PickupPanel(_panel);
+
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_playerPanel.UpdateColor(engineColor);
+			}
 
 			PickupBase.OnPickupInit += ShowPickup;
 			PickupBase.OnPickupDeinit += HidePickup;
