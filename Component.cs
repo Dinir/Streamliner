@@ -2877,8 +2877,8 @@ namespace Streamliner
 
 		private void AddMessage(string message, ShipController ship, Color color)
 		{
-			// this will ignore messages that have an other ship as "a receiver"
-			if (ship != TargetShip)
+			// `ship` here is the receiver. Every ship is the receiver if it's set to null.
+			if (ship != TargetShip && ship is not null)
 				return;
 
 			color = GetAdaptedColor(color);
