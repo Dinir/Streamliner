@@ -1730,6 +1730,9 @@ namespace Streamliner
 			ShipController ship, Barrier barrier, int side
 		)
 		{
+			if (ship != TargetShip)
+				return;
+
 			if (Gameplay.MirrorEnabled)
 				side *= -1;
 
