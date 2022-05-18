@@ -1115,7 +1115,7 @@ namespace Streamliner
 
 		private static Color _offensiveColor;
 		private static Color _defensiveColor;
-		private static Color _hudDefaultColor;
+		private Color _hudDefaultColor;
 
 		public IEnumerator ColorFade(
 			bool enableIcon, bool offensive = false, bool usePickupColor = true
