@@ -1614,7 +1614,7 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			if (OptionZoneTintOverride)
+			if (_usingZoneColors)
 				FlushZonePalleteSettings();
 
 			NgUiEvents.OnZoneProgressUpdate -= SetProgress;
@@ -1885,7 +1885,7 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			if (OptionZoneTintOverride && _isPlayerOne)
+			if (_usingZoneColors && _isPlayerOne)
 				FlushZonePalleteSettings();
 
 			UpsurgeShip.OnDeployedBarrier -= StartTransition;
