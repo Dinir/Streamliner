@@ -72,6 +72,8 @@ Restart the game to get it properly loaded.
 - +Revenant+ for **Making a Custom Hud for BallisticNG**  
   It's the only tutorial that has ever existed for this. He also helped me adapting to the 1.3 code base changes to make something finally appear on the game screen for the first time.
 
+- Special thanks to [Vincent Velegra] and [Kabelsalat] for keeping me going.
+
 And thank you for trying Streamliner.
 
 - - -
@@ -118,6 +120,9 @@ When building the container you made with some components in it, the file name w
 
 [Sector Gamma]: https://zipangcomplex.booth.pm/items/3307757
 [Spire NBP]: https://sites.google.com/site/totalfontgeek/nbp-fonts/spire-nbp
+
+[Vincent Velegra]: https://twitch.tv/vincentvelegra_
+[Kabelsalat]: https://twitter.com/ThatGuyKabel
 
 [Install / Update]: https://ballisticng-documentation.readthedocs.io/en/latest/unity_tools/install_update.html
 [Getting Started]: https://ballisticng-documentation.readthedocs.io/en/latest/code_mods/getting_started.html
