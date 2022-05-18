@@ -51,6 +51,32 @@ namespace Streamliner
 				return;
 			}
 
+			/*
+			 * Mask Order in the Unity Assets
+			 * 
+			 * Prefab
+			 * └ Container
+			 *   (created by "Create New Custom HUD")
+			 *   └ Vertical Splitscreen Mask
+			 *     (Shifter.MaxVerticalShiftAmount gap on top and bottom)
+			 *     └ Horizontal Splitscreen Mask
+			 *       (cancels vertical gaps, Shifter.MaxVerticalShiftAmount gap on left and right)
+			 *       └ Base
+			 *         (actual hud component)
+			 * 
+			 * The reason is because the design anchors to top and bottom of the container boundary;
+			 * having the base under the horizontal mask prevents any of its positioning values from changing.
+			 */
+
+			RectTransform baseHudComponent = CustomComponents.GetById("Base");
+			RectMask2D vertMask = baseHudComponent?.parent.parent.GetComponent<RectMask2D>() ?? null;
+			RectMask2D horiMask = baseHudComponent?.parent.GetComponent<RectMask2D>() ?? null;
+			if (!baseHudComponent)
+			{
+				Debug.LogWarning($"There's no explicitly named \"Base\" component in {GetType().Name}!");
+			}
+
+
 			// base method multiplies it by 1.2.
 			component2.referenceResolution *= 1.25f;
 
@@ -96,6 +122,8 @@ namespace Streamliner
 						(0f - component2.referenceResolution.x) * 0.5f,
 						-verticalSplitscreenHeightGap
 					);
+
+					if (vertMask is not null) vertMask.enabled = true;
 				}
 				else
 				{
@@ -103,6 +131,8 @@ namespace Streamliner
 						0f,
 						component2.referenceResolution.y * 0.5f
 					);
+
+					if (horiMask is not null) horiMask.enabled = true;
 				}
 			}
 
@@ -118,6 +148,8 @@ namespace Streamliner
 						0f,
 						-verticalSplitscreenHeightGap
 					);
+
+					if (vertMask is not null) vertMask.enabled = true;
 				}
 				else
 				{
@@ -125,12 +157,10 @@ namespace Streamliner
 						0f,
 						(0f - component2.referenceResolution.y) * 0.5f
 					);
+
+					if (horiMask is not null) horiMask.enabled = true;
 				}
 			}
-
-			// Apply Rect Mask 2D if available.
-			RectMask2D mask = CustomComponents.GetById("Base").parent.GetComponent<RectMask2D>();
-			if (mask is not null) mask.enabled = true;
 		}
 	}
 
