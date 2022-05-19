@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright © 2022 Dinir Nertan
+// Licensed under the Open Software License version 3.0
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;

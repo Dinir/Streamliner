@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿// Copyright © 2022 Dinir Nertan
+// Licensed under the Open Software License version 3.0
+
+using System.IO;
 using BallisticUnityTools.AssetApi;
 using BallisticUnityTools.Placeholders;
 using NgModding;
@@ -13,7 +16,7 @@ namespace Streamliner
 	public class HudRegister : CodeMod
 	{
 		// This name appears at "config - game - hud - style - hud style".
-		private const string ID = "Streamliner 1.1.0";
+		private const string ID = "Streamliner 1.1.1";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
