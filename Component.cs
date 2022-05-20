@@ -1512,7 +1512,7 @@ namespace Streamliner
 				IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(timeLeft * 100f % 100f)) :
 				"99";
 			timeLeft = timeLeft > _targetTime ? _targetTime : timeLeft;
-			_bigDisplay.FillBoth(timeLeft / timeMax);
+			_bigDisplay.FillBoth(timeMax == 0f ? 0f : timeLeft / timeMax);
 		}
 
 		public override void OnDestroy()
