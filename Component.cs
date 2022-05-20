@@ -1208,6 +1208,7 @@ namespace Streamliner
 		private bool _usingBestTimeDisplay;
 		private bool _usingLeftTimeDisplay;
 		private bool _showingLapTimeAdvantage;
+		private bool _loadedBestLapTime;
 		private string _gamemodeName;
 		private bool _isPointToPointTrack;
 		private bool _isCampaign;
@@ -1285,6 +1286,8 @@ namespace Streamliner
 
 		private void Initiate()
 		{
+			_loadedBestLapTime = TargetShip.LoadedBestLapTime;
+
 			UpdateBestTime();
 			if (_isCampaign)
 			{
@@ -1379,7 +1382,7 @@ namespace Streamliner
 				return;
 			}
 
-			_bestTime = TargetShip.LoadedBestLapTime switch
+			_bestTime = _loadedBestLapTime switch
 			{
 				true when _timeType == TimeType.Total =>
 					TargetShip.TargetTime,
@@ -1427,7 +1430,7 @@ namespace Streamliner
 			 */
 			if (!_isCampaign)
 			{
-				if (TargetShip.LoadedBestLapTime || _timeType == TimeType.Lap)
+				if (_loadedBestLapTime || _timeType == TimeType.Lap)
 					_targetTime = _bestTime;
 				return;
 			}
@@ -1466,11 +1469,20 @@ namespace Streamliner
 
 		private void UpdateAndAnnounceAverageLapTimeAdvantage(ShipController ship)
 		{
-			if (ship != TargetShip || TargetShip.CurrentLap <= 1 || _bestTime <= 0f)
+			if (
+				ship != TargetShip ||
+				TargetShip.CurrentLap <= 1 ||
+				_bestTime <= 0f
+			)
 				return;
 
-			UpdateAverageLapTimeAdvantage();
-			AnnounceAverageLapTimeAdvantage();
+			if (_loadedBestLapTime)
+			{
+				UpdateAverageLapTimeAdvantage();
+				AnnounceAverageLapTimeAdvantage();
+			}
+			else
+				AnnounceLapTimeDifference();
 		}
 
 		private void UpdateAverageLapTimeAdvantage() =>
@@ -1483,6 +1495,26 @@ namespace Streamliner
 				TargetShip,
 				_averageLapTimeAdvantage >= 0 ? Color.green : Color.red
 			);
+
+		private void AnnounceLapTimeDifference()
+		{
+			_averageLapTimeAdvantage =
+				_bestTime - TargetShip.GetLapTime(TargetShip.CurrentLap - 1);
+
+			// for every new best lap time in the first ever time trial session
+			if (TargetShip.CurrentLap == 2 || _averageLapTimeAdvantage == 0f)
+			{
+				NgUiEvents.CallOnTriggerMessage(
+					FloatToTime.Convert(_bestTime, TimeFormat),
+					TargetShip,
+					BnGAccent
+				);
+				return;
+			}
+
+			// otherwise show the comparison with the current best lap time
+			AnnounceAverageLapTimeAdvantage();
+		}
 
 		private void SetLeftLabel(ShipController ship)
 		{
@@ -1512,14 +1544,19 @@ namespace Streamliner
 
 			float timeLeft = _targetTime - _currentTime;
 			float timeMax = _isCampaign ? _awardTimeDifference : _targetTime;
-			if (_showingLapTimeAdvantage)
+
+			if (_showingLapTimeAdvantage && _loadedBestLapTime)
 				timeLeft += _averageLapTimeAdvantage;
+
 			timeLeft = timeLeft < 0f ? 0f : timeLeft;
+
 			_bigDisplay.Value.text = _bigTimeTextBuilder.ToStringNoDecimal(timeLeft);
 			_bigDisplay.SmallValue.text = timeLeft < BigTimeTextBuilder.LesserCounterStopValue ?
 				IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(timeLeft * 100f % 100f)) :
 				"99";
+
 			timeLeft = timeLeft > _targetTime ? _targetTime : timeLeft;
+
 			_bigDisplay.FillBoth(timeMax == 0f ? 0f : timeLeft / timeMax);
 		}
 
