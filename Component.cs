@@ -1318,7 +1318,7 @@ namespace Streamliner
 
 				NgRaceEvents.OnShipLapUpdate += SetLeftLabel;
 				if (_showingLapTimeAdvantage)
-					NgRaceEvents.OnShipLapUpdate += UpdateAverageLapTimeAdvantage;
+					NgRaceEvents.OnShipLapUpdate += UpdateAndAnnounceAverageLapTimeAdvantage;
 				if (_gamemodeName == StringSpeedLap)
 				{
 					NgUiEvents.OnGamemodeUpdateCurrentLapTime += UpdateSpeedLapCurrentTime;
@@ -1464,17 +1464,25 @@ namespace Streamliner
 				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
 		}
 
-		private void UpdateAverageLapTimeAdvantage(ShipController ship)
+		private void UpdateAndAnnounceAverageLapTimeAdvantage(ShipController ship)
 		{
-			if (ship != TargetShip || TargetShip.CurrentLap <= 1)
+			if (ship != TargetShip || TargetShip.CurrentLap <= 1 || _bestTime <= 0f)
 				return;
 
-			if (_bestTime <= 0f)
-				return;
+			UpdateAverageLapTimeAdvantage();
+			AnnounceAverageLapTimeAdvantage();
+		}
 
+		private void UpdateAverageLapTimeAdvantage() =>
 			_averageLapTimeAdvantage +=
 				_bestTime - TargetShip.GetLapTime(TargetShip.CurrentLap - 1);
-		}
+
+		private void AnnounceAverageLapTimeAdvantage() =>
+			NgUiEvents.CallOnTriggerMessage(
+				_bigTimeTextBuilder.ToTimeDiffString(-_averageLapTimeAdvantage),
+				TargetShip,
+				_averageLapTimeAdvantage >= 0 ? Color.green : Color.red
+			);
 
 		private void SetLeftLabel(ShipController ship)
 		{
@@ -1522,16 +1530,15 @@ namespace Streamliner
 			if (_usingBestTimeDisplay)
 				NgRaceEvents.OnShipLapUpdate -= SetBestTime;
 			if (_usingLeftTimeDisplay)
-				NgRaceEvents.OnShipLapUpdate -= SetLeftLabel;
-			switch (_usingLeftTimeDisplay)
 			{
-				case true when _showingLapTimeAdvantage:
-					NgRaceEvents.OnShipLapUpdate -= UpdateAverageLapTimeAdvantage;
-					break;
-				case true when _gamemodeName == StringSpeedLap:
+				NgRaceEvents.OnShipLapUpdate -= SetLeftLabel;
+				if (_showingLapTimeAdvantage)
+					NgRaceEvents.OnShipLapUpdate -= UpdateAndAnnounceAverageLapTimeAdvantage;
+				if (_gamemodeName == StringSpeedLap)
+				{
 					NgUiEvents.OnGamemodeUpdateCurrentLapTime -= UpdateSpeedLapCurrentTime;
 					NgUiEvents.OnGamemodeInvalidatedLap -= InvalidateLap;
-					break;
+				}
 			}
 		}
 	}

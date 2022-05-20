@@ -498,6 +498,7 @@ namespace Streamliner
 	internal class BigTimeTextBuilder
 	{
 		private readonly StringBuilder _sb;
+		private const string TimeFormat = "0:00.00";
 		private const float CounterStopValue = 5999.99f;
 		internal const float LesserCounterStopValue = CounterStopValue * 0.1f;
 
@@ -556,6 +557,16 @@ namespace Streamliner
 
 			return _sb.ToString();
 		}
+
+		internal string ToTimeDiffString(float value) =>
+			(value <= 0 ? "-" : "+") +
+			FloatToTime.Convert(
+				Math.Abs(
+					value <= -CounterStopValue ? -CounterStopValue :
+					value >= CounterStopValue ? CounterStopValue :
+					value
+				), TimeFormat
+			);
 
 		internal string ToStringNoDecimal(float value)
 		{
