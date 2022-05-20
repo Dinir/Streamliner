@@ -1459,6 +1459,7 @@ namespace Streamliner
 			if (ship != TargetShip)
 				return;
 
+			// the panel is long enough to contain >=20 minutes time
 			_normalDisplayValue.text = _bestTime >= 0f ?
 				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
 		}
@@ -1507,8 +1508,9 @@ namespace Streamliner
 				timeLeft += _averageLapTimeAdvantage;
 			timeLeft = timeLeft < 0f ? 0f : timeLeft;
 			_bigDisplay.Value.text = _bigTimeTextBuilder.ToStringNoDecimal(timeLeft);
-			_bigDisplay.SmallValue.text =
-				IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(timeLeft * 100f % 100f));
+			_bigDisplay.SmallValue.text = timeLeft < BigTimeTextBuilder.LesserCounterStopValue ?
+				IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(timeLeft * 100f % 100f)) :
+				"99";
 			timeLeft = timeLeft > _targetTime ? _targetTime : timeLeft;
 			_bigDisplay.FillBoth(timeLeft / timeMax);
 		}

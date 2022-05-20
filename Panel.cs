@@ -498,6 +498,9 @@ namespace Streamliner
 	internal class BigTimeTextBuilder
 	{
 		private readonly StringBuilder _sb;
+		private const float CounterStopValue = 5999.99f;
+		internal const float LesserCounterStopValue = CounterStopValue * 0.1f;
+
 		// 0:00.<size=20> </size><size=150>00</size>
 		// Default font size in the component is 300.
 		private const string StringAfterMinute =
@@ -506,21 +509,31 @@ namespace Streamliner
 			".<size=20> </size><size=150>";
 		private const string StringAfterHundredth =
 			"</size>";
+
 		private static readonly string EmptyTime =
 			"-" + StringAfterMinute +
 			"--" + StringAfterSecond +
 			"--" + StringAfterHundredth;
+		private static readonly string CounterStopTime =
+			"99" + StringAfterMinute +
+			"59" + StringAfterSecond +
+			StringAfterHundredth; // omit hundredths when value >= 1200
 
 		private const string StringAfterSecondNoDecimal =
 			".";
 		private static readonly string EmptyTimeNoDecimal =
 			"-" + StringAfterMinute +
 			"--" + StringAfterSecondNoDecimal;
+		private static readonly string CounterStopTimeNoDecimal =
+			"9" + StringAfterMinute +
+			"59" + StringAfterSecondNoDecimal;
 
 		internal string ToString(float value)
 		{
 			if (value < 0f)
 				return EmptyTime;
+			if (value >= CounterStopValue)
+				return CounterStopTime;
 
 			_sb.Clear();
 			string minutes = IntStrDb.GetNumber(
@@ -548,6 +561,8 @@ namespace Streamliner
 		{
 			if (value < 0f)
 				return EmptyTimeNoDecimal;
+			if (value >= LesserCounterStopValue)
+				return CounterStopTimeNoDecimal;
 
 			_sb.Clear();
 			string minutes = IntStrDb.GetNumber(
