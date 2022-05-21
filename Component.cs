@@ -1210,7 +1210,7 @@ namespace Streamliner
 		private bool _showingLapTimeAdvantage;
 		private bool _loadedBestLapTime;
 		private string _gamemodeName;
-		private bool _isPointToPointTrack;
+		private int _totalBaseLaps;
 		private bool _isCampaign;
 		private float _bestTime;
 		private float _bronzeTarget;
@@ -1237,10 +1237,26 @@ namespace Streamliner
 			_bigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
 
 			_gamemodeName = RaceManager.CurrentGamemode.Name;
-			_isPointToPointTrack = RaceManager.Instance.PointToPointTrack;
+			/*
+			 * Getting Total Laps
+			 * 
+			 * `Race.GetBaseLapCountFor(Race.Speedclass)`:
+			 *   Base lap count for the speed class being used in the current race. 2~5.
+			 * `Race.ExtraLaps`:
+			 *   Extra lap count set by the user.
+			 * `RaceManager.Instance.ForcedExtraLaps`:
+			 *   Extra lap count set by the game. Drag tracks' 10 laps come through this.
+			 * `Race.MaxLaps`:
+			 *   Final total laps for the current race. Caps at 99.
+			 *   Sum of all three above, except when the track is point-to-point, in which it's 1.
+			 */
+			_totalBaseLaps = RaceManager.Instance.PointToPointTrack ? 1 :
+				Race.GetBaseLapCountFor(Race.Speedclass) + RaceManager.Instance.ForcedExtraLaps;
 			_isCampaign = NgCampaign.Enabled;
+
 			SetTimeType(_gamemodeName);
 			SetDisplayType(_gamemodeName);
+
 			switch (_displayType)
 			{
 				case DisplayType.None:
@@ -1388,9 +1404,7 @@ namespace Streamliner
 					TargetShip.TargetTime,
 				true when TargetShip.BestLapTime <= 0f
 				          && TargetShip.TargetTime > 0f =>
-					TargetShip.TargetTime / (
-						_isPointToPointTrack ? 1 : Race.GetBaseLapCountFor(Race.Speedclass)
-					),
+					TargetShip.TargetTime / _totalBaseLaps,
 				true => TargetShip.BestLapTime,
 				false => TargetShip.HasBestLapTime ?
 					TargetShip.BestLapTime : -1f
