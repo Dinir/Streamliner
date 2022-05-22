@@ -165,6 +165,27 @@ namespace Streamliner
 				}
 			}
 		}
+
+		public override void Start()
+		{
+			base.Start();
+			NgRaceEvents.OnCountdownStart += FinishSettingInitialTextTint;
+		}
+
+		/// <summary>
+		/// Data needed to define the text tint to use for the hud component are
+		/// not all ready when `Start()` starts.
+		/// 
+		/// This method is evoked at the later timing at which I believe
+		/// everything needed is loaded and ready.
+		/// 
+		/// It would be really cool if the exact timing I can consider everything is ready
+		/// is documented on the official documentations.
+		/// </summary>
+		public virtual void FinishSettingInitialTextTint()
+		{
+			NgRaceEvents.OnCountdownStart -= FinishSettingInitialTextTint;
+		}
 	}
 
 	public class Speedometer : CustomScaleScriptableHud
@@ -202,15 +223,6 @@ namespace Streamliner
 				_ => false
 			};
 
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
-				_highlightColor = GetTintColor(clarity: 0);
-			else
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				_panel.UpdateColor(GetTintFromColor(color: engineColor));
-				_highlightColor = GetTintFromColor(color: engineColor, clarity: 0);
-			}
-
 			if (_usingZoneColors)
 			{
 				switch (_gamemodeName)
@@ -218,6 +230,19 @@ namespace Streamliner
 					case "Survival": NgUiEvents.OnZoneNumberUpdate += UpdateToZoneColor; break;
 					case "Upsurge": NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor; break;
 				}
+			}
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+				_highlightColor = GetTintColor(clarity: 0);
+			else
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_panel.UpdateColor(GetTintFromColor(color: engineColor));
+				_highlightColor = GetTintFromColor(color: engineColor, clarity: 0);
 			}
 		}
 
@@ -470,17 +495,17 @@ namespace Streamliner
 					case "Upsurge": NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor; break;
 				}
 			}
+		}
 
-			// Coloring
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
 			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
 				UpdateColor();
 			else
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				UpdateColor(engineColor);
-			}
+				UpdateColor(GetShipRepresentativeColor(TargetShip));
 
-			// assigning to `_defaultColor` here is to ensure the colors are set at `Start()`.
+			// assigning to `_defaultColor` here is to ensure the colors are initially set.
 			_currentColor = _defaultColor;
 			_currentDamageColor = _damageColor;
 			_value.color = _defaultColor;
@@ -830,7 +855,7 @@ namespace Streamliner
 				}
 			}
 
-			public LapSlot(RectTransform template, Color? color)
+			public LapSlot(RectTransform template)
 			{
 				Value = template.Find("Time").GetComponent<Text>();
 				_perfectLine = template.Find("PerfectLine").GetComponent<Image>();
@@ -839,10 +864,7 @@ namespace Streamliner
 				Value.gameObject.SetActive(true);
 				_perfectLapStatus = false;
 
-				if (color is null)
-					ChangeColor(GetTintColor(TextAlpha.ThreeQuarters));
-				else
-					ChangeColor(GetTintFromColor(TextAlpha.ThreeQuarters, color));
+				ChangeColor(GetTintColor(TextAlpha.ThreeQuarters));
 			}
 
 			internal void ChangeColor(Color color) => Value.color = color;
@@ -855,8 +877,6 @@ namespace Streamliner
 		private void InitiateSlots()
 		{
 			_totalSlots = Mathf.Clamp(Race.MaxLaps, 1, 5);
-			Color? initialColor = OptionValueTint != OptionValueTintShipEngineIndexForGame ?
-				null : GetShipRepresentativeColor(TargetShip);
 
 			for (int i = 0; i < _totalSlots; i++)
 			{
@@ -868,7 +888,7 @@ namespace Streamliner
 
 				slot.localPosition += Vector3.up * slot.sizeDelta.y * i;
 
-				_slots.Add(new LapSlot(slot, initialColor));
+				_slots.Add(new LapSlot(slot));
 			}
 
 			// Emphasis the current lap slot by a bit.
@@ -890,13 +910,22 @@ namespace Streamliner
 			InitiateSlots();
 			_currentSlot = _slots[0];
 
-			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				_panel.UpdateColor(GetTintFromColor(color: engineColor));
-			}
-
 			NgRaceEvents.OnShipLapUpdate += OnLapUpdate;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			// tint for the other case is set in `InitiateSlots()`
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+				return;
+
+			Color engineColor = GetShipRepresentativeColor(TargetShip);
+			_panel.UpdateColor(GetTintFromColor(color: engineColor));
+			foreach (LapSlot s in _slots)
+				s.ChangeColor(GetTintFromColor(TextAlpha.ThreeQuarters, engineColor));
+			// Emphasis the current lap slot by a bit.
+			_currentSlot.Alpha = GetTransparency(TextAlpha.NineTenths);
 		}
 
 		public override void Update()
@@ -1037,15 +1066,6 @@ namespace Streamliner
 			_usingBestTimeDisplay = OptionBestTime != 0;
 			_bestTimeText.gameObject.SetActive(_usingBestTimeDisplay);
 
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
-				_bestTimeText.color = GetTintColor(TextAlpha.NineTenths);
-			else
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				_panel.UpdateColor(GetTintFromColor(color: engineColor));
-				_bestTimeText.color = GetTintFromColor(TextAlpha.NineTenths, engineColor);
-			}
-
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
 
@@ -1064,6 +1084,19 @@ namespace Streamliner
 
 			_initiated = true;
 			NgRaceEvents.OnCountdownStart -= Initiate;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+				_bestTimeText.color = GetTintColor(TextAlpha.NineTenths);
+			else
+			{
+				Color engineColor = GetShipRepresentativeColor(TargetShip);
+				_panel.UpdateColor(GetTintFromColor(color: engineColor));
+				_bestTimeText.color = GetTintFromColor(TextAlpha.NineTenths, engineColor);
+			}
 		}
 
 		public override void Update()
@@ -1284,6 +1317,12 @@ namespace Streamliner
 			_showingLapTimeAdvantage =
 				_gamemodeName == StringTimeTrial && _timeType == TimeType.Lap;
 
+			NgRaceEvents.OnCountdownStart += Initiate;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
 			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
 			{
 				_normalDisplayLabel.color = GetTintColor(TextAlpha.ThreeQuarters);
@@ -1296,8 +1335,6 @@ namespace Streamliner
 				_normalDisplayLabel.color = GetTintFromColor(TextAlpha.ThreeQuarters, engineColor);
 				_normalDisplayValue.color = GetTintFromColor(color: engineColor);
 			}
-
-			NgRaceEvents.OnCountdownStart += Initiate;
 		}
 
 		private void Initiate()
@@ -1625,15 +1662,19 @@ namespace Streamliner
 			SetNumber("0");
 			SetTitle("toxic");
 
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
-				ChangeModeSpecificPartsColor();
-			else
-				UpdateColor(GetShipRepresentativeColor(TargetShip));
-
 			NgUiEvents.OnZoneProgressUpdate += SetProgress;
 			NgUiEvents.OnZoneScoreUpdate += SetScore;
 			NgUiEvents.OnZoneNumberUpdate += SetNumber;
 			NgUiEvents.OnZoneTitleUpdate += SetTitle;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+				ChangeModeSpecificPartsColor();
+			else
+				UpdateColor(GetShipRepresentativeColor(TargetShip));
 		}
 
 		private void ChangeModeSpecificPartsColor()
@@ -1748,16 +1789,24 @@ namespace Streamliner
 			if (_usingZoneColors && _isPlayerOne)
 				UpdateZonePalleteSettings(_gamemode);
 
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
-				ChangeModeSpecificPartsColor();
-			else
-				UpdateColor(GetShipRepresentativeColor(TargetShip));
-
 			UpsurgeShip.OnDeployedBarrier += StartTransition;
 			UpsurgeShip.OnBuiltBoostStepsIncrease += StartTransition;
 			UpsurgeShip.OnShieldActivated += StartTransition;
 			NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor;
 			Barrier.OnPlayerBarrierWarned += WarnBarrier;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+				ChangeModeSpecificPartsColor();
+			else
+				UpdateColor(GetShipRepresentativeColor(TargetShip));
+
+			// update these as well because this method is ran before the colors need to be ever changing
+			_currentSmallGaugeColor = _panel.SmallGaugeColor;
+			_smallGaugeAlpha = _panel.SmallGaugeColor.a;
 		}
 
 		private void ChangeModeSpecificPartsColor()
@@ -1988,13 +2037,15 @@ namespace Streamliner
 					break;
 			}
 
-			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				_panel.UpdateColor(GetTintFromColor(color: engineColor));
-			}
-
 			NgRaceEvents.OnCountdownStart += Initiate;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			// tint for the other case is set in `InitiateSlots()`
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+				_panel.UpdateColor(GetTintFromColor(color: GetShipRepresentativeColor(TargetShip)));
 		}
 
 		private void Initiate()
@@ -2073,13 +2124,14 @@ namespace Streamliner
 			};
 			if (OptionMotion) Shifter.Add(_panel.Base, TargetShip.playerIndex, GetType().Name);
 
-			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				_panel.UpdateColor(GetTintFromColor(color: engineColor));
-			}
-
 			NgRaceEvents.OnShipLapUpdate += UpdateLap;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+				_panel.UpdateColor(GetTintFromColor(color: GetShipRepresentativeColor(TargetShip)));
 		}
 
 		private void UpdateLap(ShipController ship)
@@ -2205,10 +2257,6 @@ namespace Streamliner
 			base.Start();
 			_panel = CustomComponents.GetById("Base");
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
-			_panel.Find("BackgroundFill").GetComponent<Image>().color =
-				OptionValueTint != OptionValueTintShipEngineIndexForGame ?
-					GetTintColor(TextAlpha.ThreeEighths) :
-					GetTintFromColor(TextAlpha.ThreeEighths, GetShipRepresentativeColor(TargetShip));
 
 			_nodeTemplate = CustomComponents.GetById("Node");
 			ShipNode.MaxSize = _panel.sizeDelta.x - _nodeTemplate.sizeDelta.x;
@@ -2216,6 +2264,15 @@ namespace Streamliner
 			_isPlayerOne = TargetShip.playerIndex == 0;
 
 			NgRaceEvents.OnCountdownStart += Initiate;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			_panel.Find("BackgroundFill").GetComponent<Image>().color =
+				OptionValueTint != OptionValueTintShipEngineIndexForGame ?
+					GetTintColor(TextAlpha.ThreeEighths) :
+					GetTintFromColor(TextAlpha.ThreeEighths, GetShipRepresentativeColor(TargetShip));
 		}
 
 		private void Initiate()
@@ -2234,12 +2291,14 @@ namespace Streamliner
 			if (_isPlayerOne) _racerSectionsTraversed = new int[totalShips];
 			_racerRelativeSections = new List<RacerRelativeSectionData>(totalShips);
 
+			bool usingShipEngineTint = OptionValueTint == OptionValueTintShipEngineIndexForGame;
+
 			foreach (ShipController ship in Ships.Loaded)
 			{
 				if (ship == TargetShip)
 					_nodes.Add(new ShipNode(
 						_nodeTemplate,
-						OptionValueTint != OptionValueTintShipEngineIndexForGame ?
+						!usingShipEngineTint ?
 							GetTintColor(clarity: 1) :
 							GetTintFromColor(color: GetShipRepresentativeColor(ship), clarity: 1),
 						ship.ShipId
@@ -2578,21 +2637,6 @@ namespace Streamliner
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
 			_panelAnimator = _panel.GetComponent<Animator>();
 
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
-			{
-				_panel.Find("Left").Find("Text").GetComponent<Text>().color =
-					GetTintColor();
-				_panel.Find("Right").Find("Text").GetComponent<Text>().color =
-					GetTintColor();
-			}
-			else
-			{
-				_panel.Find("Left").Find("Text").GetComponent<Text>().color =
-					GetTintFromColor(color: GetShipRepresentativeColor(TargetShip));
-				_panel.Find("Right").Find("Text").GetComponent<Text>().color =
-					GetTintFromColor(color: GetShipRepresentativeColor(TargetShip));
-			}
-
 			/*
 			 * Using `SetActive()` is ineffective here,
 			 * so instead I made an empty animation for the default state.
@@ -2601,6 +2645,16 @@ namespace Streamliner
 			 */
 
 			PitlaneIndicator.OnPitlaneIndicatorTriggered += Play;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			Color textColor = OptionValueTint != OptionValueTintShipEngineIndexForGame ?
+				GetTintColor() : GetTintFromColor(color: GetShipRepresentativeColor(TargetShip));
+
+			_panel.Find("Left").Find("Text").GetComponent<Text>().color = textColor;
+			_panel.Find("Right").Find("Text").GetComponent<Text>().color = textColor;
 		}
 
 		private void Play(ShipController ship, int side)
@@ -2774,17 +2828,8 @@ namespace Streamliner
 				{"green", GetTintColor(TextAlpha.NineTenths, 5, 1)},
 				{"magenta", GetTintColor(TextAlpha.NineTenths, 11, 1)},
 				{"cyan", GetTintColor(TextAlpha.NineTenths, 7, 1)},
-				{"empty", GetTintColor(TextAlpha.Zero)}
+				{"empty", Color.clear}
 			};
-
-			// using ship engine tint and not zone colors
-			if (OptionValueTint == OptionValueTintShipEngineIndexForGame && !_usingZoneColors)
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				_textColor["75"] = GetTintFromColor(TextAlpha.ThreeQuarters, engineColor);
-				_textColor["90"] = GetTintFromColor(TextAlpha.NineTenths, engineColor);
-				_textColor["100"] = GetTintFromColor(color: engineColor);
-			}
 
 			_defaultColor = new Dictionary<string, Color>
 			{
@@ -2816,6 +2861,24 @@ namespace Streamliner
 					case "Upsurge": NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor; break;
 				}
 			}
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+				return;
+
+			UpdateColor(GetShipRepresentativeColor(TargetShip));
+
+			_timeDiff.color = _defaultColor["TimeDiff"];
+			_lapResult.color = _defaultColor["LapResult"];
+			_finalLap.color = _defaultColor["FinalLap"];
+			foreach (Line l in _lines)
+				l.Value.color = _defaultColor["Line"];
+			_nowPlaying.color = _defaultColor["NowPlaying"];
+			_wrongWayCurrentColor = _defaultColor["WrongWay"] with { a = _wrongWayCurrentAlpha };
+			_wrongWay.color = _wrongWayCurrentColor;
 		}
 
 		private void FlushTimeGroupTexts(ShipController ship)
@@ -3225,13 +3288,8 @@ namespace Streamliner
 			_npFadeOutInProgress = false;
 		}
 
-		private void UpdateToZoneColor(int zoneNumber)
+		private void UpdateColor(Color color)
 		{
-			Color color = GetZoneColor(zoneNumber);
-			if (_currentZoneColor == color)
-				return;
-
-			_currentZoneColor = color;
 			_textColor["75"] = GetTintFromColor(TextAlpha.ThreeQuarters, color);
 			_textColor["90"] = GetTintFromColor(TextAlpha.NineTenths, color);
 			_textColor["100"] = GetTintFromColor(color: color);
@@ -3239,6 +3297,16 @@ namespace Streamliner
 			// oh no I can't iterate over a Dictionary
 			foreach (string text in new List<string>(_defaultColor.Keys))
 				_defaultColor[text] = text != "WrongWay" ? _textColor["90"] : _textColor["100"];
+		}
+
+		private void UpdateToZoneColor(int zoneNumber)
+		{
+			Color color = GetZoneColor(zoneNumber);
+			if (_currentZoneColor == color)
+				return;
+
+			_currentZoneColor = color;
+			UpdateColor(color);
 		}
 		private void UpdateToZoneColor(string number)
 		{
@@ -3291,16 +3359,20 @@ namespace Streamliner
 			_warningPanel = new PickupPanel(
 				_panel.Find("WarningBackground").GetComponent<RectTransform>());
 
-			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				_playerPanel.UpdateColor(engineColor);
-				_warningPanel.UpdateColor(engineColor);
-			}
-
 			PickupBase.OnPickupInit += ShowPickup;
 			PickupBase.OnPickupDeinit += HidePickup;
 			NgUiEvents.OnWeaponWarning += Warn;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+				return;
+
+			Color engineColor = GetShipRepresentativeColor(TargetShip);
+			_playerPanel.UpdateColor(engineColor);
+			_warningPanel.UpdateColor(engineColor);
 		}
 
 		private void ShowPickup(PickupBase pickup, ShipController ship)
@@ -3377,14 +3449,17 @@ namespace Streamliner
 			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
 			_playerPanel = new PickupPanel(_panel);
 
-			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				_playerPanel.UpdateColor(engineColor);
-			}
-
 			PickupBase.OnPickupInit += ShowPickup;
 			PickupBase.OnPickupDeinit += HidePickup;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+				return;
+			
+			_playerPanel.UpdateColor(GetShipRepresentativeColor(TargetShip));
 		}
 
 		private void ShowPickup(PickupBase pickup, ShipController ship)
@@ -3440,7 +3515,17 @@ namespace Streamliner
 			_hideLastSlotOnExplosion = RaceManager.CurrentGamemode.Name == "Knockout";
 			if (_hideLastSlotOnExplosion)
 				NgRaceEvents.OnShipExploded += _panel.HideLastSlot;
-			NgRaceEvents.OnCountdownStart += Initiate;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			Initiate();
+
+			if (_usingZoneColors)
+				UpdateToZoneColor(0);
+			else if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+				_panel.UpdateColor(GetTintFromColor(color: GetShipRepresentativeColor(TargetShip)));
 		}
 
 		private void Initiate()
@@ -3460,16 +3545,6 @@ namespace Streamliner
 			_panel.InitiateLayout(RaceManager.CurrentGamemode.TargetScore);
 			_panel.InitiateSlots(Ships.Loaded);
 			StartCoroutine(_panel.Update(Ships.Loaded));
-
-			if (_usingZoneColors)
-				UpdateToZoneColor(0);
-			else if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
-			{
-				Color engineColor = GetShipRepresentativeColor(TargetShip);
-				_panel.UpdateColor(GetTintFromColor(color: engineColor));
-			}
-
-			NgRaceEvents.OnCountdownStart -= Initiate;
 
 			if (_usingZoneColors)
 				NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor;
@@ -3676,8 +3751,22 @@ namespace Streamliner
 			_slotLeft = _panel.Find("SlotLeft").GetComponent<RectTransform>();
 			_slotRight = _panel.Find("SlotRight").GetComponent<RectTransform>();
 			_slotMiddle = _panel.Find("SlotMiddle").GetComponent<RectTransform>();
+		}
 
-			NgRaceEvents.OnCountdownStart += Initiate;
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+			InitiateLayout();
+
+			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
+			{
+				_labelFirst.color = GetTintColor();
+				_labelSecond.color = GetTintColor();
+			}
+			else
+				UpdateColor(GetShipRepresentativeColor(TargetShip));
+
+			Initiate();
 		}
 
 		private void InitiateLayout()
@@ -3737,20 +3826,10 @@ namespace Streamliner
 					_labelSecond.gameObject.SetActive(teamCount > 6);
 					break;
 			}
-
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
-			{
-				_labelFirst.color = GetTintColor();
-				_labelSecond.color = GetTintColor();
-			}
-			else
-				UpdateColor(GetShipRepresentativeColor(TargetShip));
 		}
 
 		private void Initiate()
 		{
-			InitiateLayout();
-
 			for (int i = 0; i < _teamPanels.Length; i++)
 				_teamPanels[i].UpdateTeam(Ships.Teams[i], TargetShip);
 
@@ -3758,8 +3837,6 @@ namespace Streamliner
 			RaceTeam.OnScoreUpdated += UpdatePanels;
 			PickupBase.OnPickupInit += ShowPickup;
 			PickupBase.OnPickupDeinit += HidePickup;
-
-			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
 
 		private void UpdatePanels(RaceTeam team, float oldScore, float newScore)
@@ -4062,6 +4139,12 @@ namespace Streamliner
 			_label = _panel.Find("Label").GetComponent<Text>();
 			_value = _panel.Find("Value").GetComponent<Text>();
 
+			NgNetworkBase.CurrentNetwork.OnCountdownStarted += CountdownInitiate;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
 			if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
 			{
 				_label.color = GetTintColor(TextAlpha.ThreeQuarters);
@@ -4073,8 +4156,6 @@ namespace Streamliner
 				_label.color = GetTintFromColor(TextAlpha.ThreeQuarters, engineColor);
 				_value.color = GetTintFromColor(TextAlpha.NineTenths, engineColor);
 			}
-
-			NgNetworkBase.CurrentNetwork.OnCountdownStarted += CountdownInitiate;
 		}
 
 		public override void Update()
