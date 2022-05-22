@@ -236,7 +236,9 @@ namespace Streamliner
 		public override void FinishSettingInitialTextTint()
 		{
 			base.FinishSettingInitialTextTint();
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+			if (_usingZoneColors)
+				UpdateToZoneColor(0);
+			else if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
 				_highlightColor = GetTintColor(clarity: 0);
 			else
 			{
@@ -500,7 +502,9 @@ namespace Streamliner
 		public override void FinishSettingInitialTextTint()
 		{
 			base.FinishSettingInitialTextTint();
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+			if (_usingZoneColors)
+				UpdateToZoneColor(0);
+			else if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
 				UpdateColor();
 			else
 				UpdateColor(GetShipRepresentativeColor(TargetShip));
@@ -1671,7 +1675,9 @@ namespace Streamliner
 		public override void FinishSettingInitialTextTint()
 		{
 			base.FinishSettingInitialTextTint();
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+			if (_usingZoneColors)
+				UpdateToZoneColor(0);
+			else if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
 				ChangeModeSpecificPartsColor();
 			else
 				UpdateColor(GetShipRepresentativeColor(TargetShip));
@@ -1799,12 +1805,14 @@ namespace Streamliner
 		public override void FinishSettingInitialTextTint()
 		{
 			base.FinishSettingInitialTextTint();
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+			if (_usingZoneColors)
+				UpdateToZoneColor(TargetShip, 0f, 0f);
+			else if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
 				ChangeModeSpecificPartsColor();
 			else
 				UpdateColor(GetShipRepresentativeColor(TargetShip));
 
-			// update these as well because this method is ran before the colors need to be ever changing
+			// update these as well because this method is ran before the colors ever change
 			_currentSmallGaugeColor = _panel.SmallGaugeColor;
 			_smallGaugeAlpha = _panel.SmallGaugeColor.a;
 		}
@@ -2866,10 +2874,12 @@ namespace Streamliner
 		public override void FinishSettingInitialTextTint()
 		{
 			base.FinishSettingInitialTextTint();
-			if (OptionValueTint != OptionValueTintShipEngineIndexForGame || _usingZoneColors)
+			if (_usingZoneColors)
+				UpdateToZoneColor(0);
+			else if (OptionValueTint != OptionValueTintShipEngineIndexForGame)
 				return;
-
-			UpdateColor(GetShipRepresentativeColor(TargetShip));
+			else
+				UpdateColor(GetShipRepresentativeColor(TargetShip));
 
 			_timeDiff.color = _defaultColor["TimeDiff"];
 			_lapResult.color = _defaultColor["LapResult"];
