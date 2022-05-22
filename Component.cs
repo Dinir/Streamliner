@@ -4106,7 +4106,7 @@ namespace Streamliner
 		}
 
 		// can't access the actual value at the moment so here's a placeholder.
-		private static float GetCountdownTime() => 30.0f;
+		private static float GetCountdownTime() => 30.0f; // NgNetworkBase.RaceFinishedCountdownTime
 
 		public override void OnDestroy()
 		{
