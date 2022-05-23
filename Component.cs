@@ -1761,6 +1761,7 @@ namespace Streamliner
 		private float _overflowTransitionAlpha;
 		private bool _valuesAreFinite = true;
 		private bool _playingOverflowTransition;
+		private bool _valuesHandledOnRespawn;
 		private float _finiteZoneTimeWidth;
 		private float _finiteZoneWidth;
 		private float _finiteShieldWidth;
@@ -1800,6 +1801,7 @@ namespace Streamliner
 			UpsurgeShip.OnShieldActivated += StartTransition;
 			NgRaceEvents.OnShipScoreChanged += UpdateToZoneColor;
 			Barrier.OnPlayerBarrierWarned += WarnBarrier;
+			NgRaceEvents.OnShipRespawn += UpdateAndSetValuesOnRespawn;
 		}
 
 		public override void FinishSettingInitialTextTint()
@@ -1896,6 +1898,24 @@ namespace Streamliner
 			_panel.ChangeSmallGaugesColor(_currentSmallGaugeColor);
 		}
 
+		private void UpdateAndSetValuesOnRespawn(ShipController ship)
+		{
+			if (ship != TargetShip)
+				return;
+
+			_valuesHandledOnRespawn = true;
+
+			UpdateValues();
+
+			_currentZoneTimeWidth = _finiteZoneTimeWidth;
+			_currentZoneWidth = _finiteZoneWidth;
+			_currentShieldWidth = _finiteShieldWidth;
+
+			SetValues();
+
+			_valuesHandledOnRespawn = false;
+		}
+
 		private IEnumerator ResetZoneTime()
 		{
 			_playingOverflowTransition = true;
@@ -1962,7 +1982,8 @@ namespace Streamliner
 				_valuesAreFinite = false;
 			}
 
-			UpdateValues();
+			if (!_valuesHandledOnRespawn)
+				UpdateValues();
 
 			if (_transitionTimer > 0f)
 			{
@@ -2003,7 +2024,8 @@ namespace Streamliner
 				_transitionTimer = 0f;
 			}
 
-			SetValues();
+			if (!_valuesHandledOnRespawn)
+				SetValues();
 		}
 
 		public override void OnDestroy()
@@ -2017,6 +2039,7 @@ namespace Streamliner
 			UpsurgeShip.OnShieldActivated -= StartTransition;
 			NgRaceEvents.OnShipScoreChanged -= UpdateToZoneColor;
 			Barrier.OnPlayerBarrierWarned -= WarnBarrier;
+			NgRaceEvents.OnShipRespawn -= UpdateAndSetValuesOnRespawn;
 		}
 	}
 
