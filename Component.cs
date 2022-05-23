@@ -1813,6 +1813,7 @@ namespace Streamliner
 				UpdateColor(GetShipRepresentativeColor(TargetShip));
 
 			// update these as well because this method is ran before the colors ever change
+			_panel.UpdateSmallGaugesColor();
 			_currentSmallGaugeColor = _panel.SmallGaugeColor;
 			_smallGaugeAlpha = _panel.SmallGaugeColor.a;
 		}
@@ -1922,8 +1923,8 @@ namespace Streamliner
 		private void UpdateColor(Color color)
 		{
 			_panel.UpdateColor(GetTintFromColor(color: color));
-			// instead of doing `UpdateSmallGaugesColor()`, just update the field
-			_panel.SmallGaugeColor = GetTintFromColor(color: color, clarity: 1);
+			_panel.UpdateSmallGaugesColor();
+			_currentSmallGaugeColor = _panel.SmallGaugeColor;
 			ChangeModeSpecificPartsColor(color);
 		}
 
