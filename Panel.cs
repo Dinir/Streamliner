@@ -203,40 +203,40 @@ namespace Streamliner
 				verticalSpeedDiff = verticalSpeedDiff < 0 ?
 					0 : verticalSpeedDiff > 1f ?
 						1f : verticalSpeedDiff;
-				amountData.ShakeAmount = verticalSpeedDiff * MaxLandingShakeAmount;
+				float shakeAmount = verticalSpeedDiff * MaxLandingShakeAmount;
+				if (amountData.ShakeAmount < shakeAmount)
+					amountData.ShakeAmount = shakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
 			// wall crash
-			else if (sim.touchingWall && amountData.ShakeAmount < WallBounceShakeAmount)
+			else if (sim.touchingWall)
 			{
-				amountData.ShakeAmount = WallBounceShakeAmount;
+				if (amountData.ShakeAmount < WallBounceShakeAmount)
+					amountData.ShakeAmount = WallBounceShakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
 			// scraping
-			else if (
-				(sim.isShipScraping || sim.ScrapingShip) &&
-				amountData.ShakeAmount < ScrapingShakeAmount
-			)
+			else if (sim.isShipScraping || sim.ScrapingShip)
 			{
-				amountData.ShakeAmount = ScrapingShakeAmount;
+				if (amountData.ShakeAmount < ScrapingShakeAmount)
+					amountData.ShakeAmount = ScrapingShakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
 			// speed loss
 			else if (
 				amountData.SpeedChangeIntensity >= MinSpeedChangeIntensity &&
-				amountData.PreviousVelocity.z > amountData.CurrentVelocity.z &&
-				amountData.ShakeAmount < WallBounceShakeAmount
+				amountData.PreviousVelocity.z > amountData.CurrentVelocity.z
 			)
 			{
-				float intensity = amountData.SpeedChangeIntensity - MinSpeedChangeIntensity;
-				amountData.ShakeAmount = (intensity >= 1f ? 1f : intensity) * WallBounceShakeAmount;
+				float shakeAmount = amountData.SpeedChangeIntensity - MinSpeedChangeIntensity;
+				shakeAmount = (shakeAmount >= 1f ? 1f : shakeAmount) * WallBounceShakeAmount;
+				if (amountData.ShakeAmount < shakeAmount)
+					amountData.ShakeAmount = shakeAmount;
 				amountData.ShakeDuration = ShakeDuration;
 			}
 
 			if (amountData.ShakeDuration > 0)
-			{
 				amountData.ShakeDuration -= Time.deltaTime * ShakeDurationDecaySpeed;
-			}
 			else
 			{
 				amountData.ShakeAmount = 0;
