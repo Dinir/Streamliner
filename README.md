@@ -22,7 +22,7 @@ custom hud for [BallisticNG], made to streamline your racing process
 - ### Shorter time difference format.
   `-0:04.22` => `-4.22s`
 - ### Target time display,
-  which shows you the average lap time of your best time, and starts counting down as you start a new lap. It adds up any saves and loses at every new lap, to help you keep the pace on Time Trial (activate it on the mod option).
+  which shows you the average lap time of your best time, and starts counting down as you start a new lap. It adds up any saves and loses at every new lap, to help you keep the pace on Time Trial (activate it with the mod option).
 - ### Scrolling lap time display,
   so you can actually see your 5th lap time in a longer race.
 - ### Motion effect,
@@ -48,16 +48,14 @@ Mods of the game can't overcome these at the moment.
 The hud is made for version 1.3 of the game, and it's available in its beta branch on Steam at the moment.  
 Please switch the game to the beta version before trying this hud.
 
-Click [here][Download Link] or *Releases* at the right side of the page to get the **7z** archive file. Then extract and copy the entire folder to the game's Code Mods folder:
-
+Click [here][Download Link] or *Releases* at the right side of the page to get the **7z** archive file.  
+Then extract and copy the entire folder to the game's Code Mods folder:
 ```
 <Steam Library>\steamapps\common\BallisticNG\User\Mods\Code Mods\
 ```
-
 The archive file contains WeaponSprites folder, an `nga`, a readme `txt`, and a `dll`.
 
-Run the game and go to *mod - manage mods* to *activate* Streamliner. Keep *always recompile* off.
-
+Run the game and go to *mod - manage mods* to *activate* Streamliner. Keep *always recompile* off.  
 Restart the game to get it properly loaded.
 
 - - -
@@ -87,9 +85,9 @@ There are not much available custom huds for this game, so it was hopeless to ge
 ### Details
 
 - `Assets` are Unity assets of the hud. You can open `Assets/Streamliner.unity` Scene to see each hud components. I excluded font files to avoid violating any rights of the font authors.
-- `WeaponSprites` are the sprites image files the game will load.
+- `WeaponSprites` are the sprite image files the game will load.
 - The three cs files are the scripts running the hud.
-  - `Initiate.cs` handles the process loading the hud and the mod option.
+  - `Initiate.cs` handles registering the hud and the mod options.
   - `Component.cs` contains scripts for the hud components.
   - `Panel.cs` contains classes used by several hud component scripts.
 
