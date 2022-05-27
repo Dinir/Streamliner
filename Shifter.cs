@@ -58,6 +58,25 @@ namespace Streamliner
 			internal Vector3 CurrentVelocity;
 			internal Vector3 PreviousVelocity;
 			internal float SpeedChangeIntensity;
+
+			internal void UpdateShakeState(float amount, float duration)
+			{
+				if (ShakeAmount < amount)
+					ShakeAmount = amount;
+				ShakeDuration = duration;
+			}
+
+			internal void DecayShakeByTime(float time)
+			{
+				float decayAmount = time * ShakeDurationDecaySpeed;
+				if (ShakeDuration > 0)
+					ShakeDuration -= decayAmount;
+				else
+				{
+					ShakeAmount = 0;
+					ShakeDuration = 0;
+				}
+			}
 		}
 
 		internal static readonly List<ShipController> TargetShips = new(MaxPlayer);
@@ -179,9 +198,8 @@ namespace Streamliner
 
 			// update shake amount
 
-			float verticalSpeedDiff = amountData.CurrentVelocity.y - amountData.PreviousVelocity.y;
-
 			// big landing
+			float verticalSpeedDiff = amountData.CurrentVelocity.y - amountData.PreviousVelocity.y;
 			if (verticalSpeedDiff > MinVerticalSpeedDiff && !ship.OnMaglock)
 			{
 				verticalSpeedDiff =
@@ -189,24 +207,17 @@ namespace Streamliner
 				verticalSpeedDiff = verticalSpeedDiff < 0 ?
 					0 : verticalSpeedDiff > 1f ?
 						1f : verticalSpeedDiff;
-				float shakeAmount = verticalSpeedDiff * MaxLandingShakeAmount;
-				if (amountData.ShakeAmount < shakeAmount)
-					amountData.ShakeAmount = shakeAmount;
-				amountData.ShakeDuration = ShakeDuration;
+				amountData.UpdateShakeState(verticalSpeedDiff * MaxLandingShakeAmount, ShakeDuration);
 			}
 			// wall crash
 			else if (sim.touchingWall)
 			{
-				if (amountData.ShakeAmount < WallBounceShakeAmount)
-					amountData.ShakeAmount = WallBounceShakeAmount;
-				amountData.ShakeDuration = ShakeDuration;
+				amountData.UpdateShakeState(WallBounceShakeAmount, ShakeDuration);
 			}
 			// scraping
 			else if (sim.isShipScraping || sim.ScrapingShip)
 			{
-				if (amountData.ShakeAmount < ScrapingShakeAmount)
-					amountData.ShakeAmount = ScrapingShakeAmount;
-				amountData.ShakeDuration = ShakeDuration;
+				amountData.UpdateShakeState(ScrapingShakeAmount, ShakeDuration);
 			}
 			// speed loss
 			else if (
@@ -218,18 +229,10 @@ namespace Streamliner
 				shakeAmount =
 					(shakeAmount >= SpeedChangeIntensityRange ? SpeedChangeIntensityRange : shakeAmount)
 					/ SpeedChangeIntensityRange * WallBounceShakeAmount;
-				if (amountData.ShakeAmount < shakeAmount)
-					amountData.ShakeAmount = shakeAmount;
-				amountData.ShakeDuration = ShakeDuration;
+				amountData.UpdateShakeState(shakeAmount, ShakeDuration);
 			}
 
-			if (amountData.ShakeDuration > 0)
-				amountData.ShakeDuration -= Time.deltaTime * ShakeDurationDecaySpeed;
-			else
-			{
-				amountData.ShakeAmount = 0;
-				amountData.ShakeDuration = 0;
-			}
+			amountData.DecayShakeByTime(Time.deltaTime);
 
 			amountData.PreviousVelocity = amountData.CurrentVelocity;
 		}
