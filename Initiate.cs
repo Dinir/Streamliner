@@ -1,6 +1,7 @@
 ﻿// Copyright © 2022 Dinir Nertan
 // Licensed under the Open Software License version 3.0
 
+using System;
 using System.IO;
 using BallisticUnityTools.AssetApi;
 using BallisticUnityTools.Placeholders;
@@ -163,7 +164,8 @@ namespace Streamliner
 
 			ctx.GenerateSelector(
 				"TimeDiffColour", "time text colour",
-				"Set the colour pair to use for the time difference text.",
+				"Set the colour pair to use for the time difference text."
+				+ LiveUpdatableOptionNotice(),
 				OptionTimeDiffColour,
 				"red & green", "magenta & green", "red & cyan"
 			);
@@ -172,7 +174,8 @@ namespace Streamliner
 
 			ctx.GenerateSelector(
 				"PositionBoard", "position board",
-				"Show the position listing HUD. Disabling this option will turn it off even in multiplayer races.",
+				"Show the position listing HUD." + Environment.NewLine
+				+ "Disabling this option will turn it off even in multiplayer races.",
 				OptionPositionBoard ? 1 : 0,
 				"off", "follow game setting"
 			);
@@ -188,7 +191,8 @@ namespace Streamliner
 
 			ctx.GenerateSlider(
 				"ShiftMultiplier", "shift intensity",
-				"Set how intense smooth shifting of the hud should be.",
+				"Set how intense smooth shifting of the hud should be."
+				+ LiveUpdatableOptionNotice(),
 				0.0f, 2.0f, OptionShiftMultiplier, 0.1f,
 				10, NgSlider.RoundMode.Round,
 				10, NgSlider.RoundMode.Round
@@ -196,7 +200,8 @@ namespace Streamliner
 
 			ctx.GenerateSlider(
 				"ShakeMultiplier", "shake intensity",
-				"Set how intense shake of the hud should be.",
+				"Set how intense shake of the hud should be."
+				+ LiveUpdatableOptionNotice(),
 				0.0f, 2.0f, OptionShakeMultiplier, 0.1f,
 				10, NgSlider.RoundMode.Round,
 				10, NgSlider.RoundMode.Round
@@ -204,7 +209,8 @@ namespace Streamliner
 
 			ctx.GenerateSlider(
 				"ScrapeMultiplier", "scrape intensity",
-				"Set how intense shake of the hud should be when scraping.",
+				"Set how intense shake of the hud should be when scraping."
+				+ LiveUpdatableOptionNotice(),
 				0.0f, 2.0f, OptionScrapeMultiplier, 0.1f,
 				10, NgSlider.RoundMode.Round,
 				10, NgSlider.RoundMode.Round
@@ -214,7 +220,8 @@ namespace Streamliner
 
 			ctx.GenerateSelector(
 				"SpeedHighlight", "speed reduction",
-				"Highlight speedometer when speed decreases.",
+				"Highlight speedometer when speed decreases."
+				+ ImperfectLiveUpdatableOptionNotice(),
 				OptionSpeedHighlight ? 1 : 0,
 				"off", "on"
 			);
@@ -223,21 +230,24 @@ namespace Streamliner
 
 			ctx.GenerateSelector(
 				"EnergyChange", "energy change",
-				"Highlight energy meter on damage or recharging.",
+				"Highlight energy meter on damage or recharging."
+				+ ImperfectLiveUpdatableOptionNotice(),
 				OptionEnergyChange ? 1 : 0,
 				"off", "on"
 			);
 
 			ctx.GenerateSelector(
 				"LowEnergyTransition", "low energy",
-				"Change the colour of energy meter when the ship's energy is low.",
+				"Change the colour of energy meter when the ship's energy is low."
+				+ ImperfectLiveUpdatableOptionNotice(),
 				OptionLowEnergy,
 				"off", "follow audio setting", "on"
 			);
 
 			ctx.GenerateSelector(
 				"RechargeAmount", "recharge amount",
-				"Show the amount the ship recharged on a pit lane.",
+				"Show the amount the ship recharged on a pit lane."
+				+ ImperfectLiveUpdatableOptionNotice(),
 				OptionRechargeAmount ? 1 : 0,
 				"off", "on"
 			);
@@ -340,6 +350,18 @@ namespace Streamliner
 			>= 1 => ingameValue + 1, // tint index order starting from 1
 			_ => ingameValue
 		};
+
+		private string TooltipSecondParagraph(string message, string htmlColorString = "#ffae00") =>
+			Environment.NewLine + Environment.NewLine
+				+ "<color=" + htmlColorString + ">" + message + "</color>";
+
+		private string ImperfectLiveUpdatableOptionNotice() =>
+			TooltipSecondParagraph(
+				"This value can be updated without restarting the race, " + Environment.NewLine
+				+ "but disabling it in the middle of a color change won't revert the color."
+			);
+		private string LiveUpdatableOptionNotice() =>
+			TooltipSecondParagraph("This value can be updated without restarting the race.");
 	}
 
 	/*
