@@ -182,26 +182,17 @@ namespace Streamliner
 			float verticalSpeedDiff = amountData.CurrentVelocity.y - amountData.PreviousVelocity.y;
 
 			// big landing
-			if (verticalSpeedDiff > MinVerticalSpeedDiff)
+			if (verticalSpeedDiff > MinVerticalSpeedDiff && !ship.OnMaglock)
 			{
-				// nullify shock on maglock landing
-				if (ship.OnMaglock)
-				{
-					amountData.ShakeAmount = 0;
-					amountData.ShakeDuration = 0;
-				}
-				else
-				{
-					verticalSpeedDiff =
-						(verticalSpeedDiff - MinVerticalSpeedDiff) / VerticalSpeedDiffRange;
-					verticalSpeedDiff = verticalSpeedDiff < 0 ?
-						0 : verticalSpeedDiff > 1f ?
-							1f : verticalSpeedDiff;
-					float shakeAmount = verticalSpeedDiff * MaxLandingShakeAmount;
-					if (amountData.ShakeAmount < shakeAmount)
-						amountData.ShakeAmount = shakeAmount;
-					amountData.ShakeDuration = ShakeDuration;
-				}
+				verticalSpeedDiff =
+					(verticalSpeedDiff - MinVerticalSpeedDiff) / VerticalSpeedDiffRange;
+				verticalSpeedDiff = verticalSpeedDiff < 0 ?
+					0 : verticalSpeedDiff > 1f ?
+						1f : verticalSpeedDiff;
+				float shakeAmount = verticalSpeedDiff * MaxLandingShakeAmount;
+				if (amountData.ShakeAmount < shakeAmount)
+					amountData.ShakeAmount = shakeAmount;
+				amountData.ShakeDuration = ShakeDuration;
 			}
 			// wall crash
 			else if (sim.touchingWall)
