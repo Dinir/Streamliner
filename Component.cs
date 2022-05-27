@@ -197,8 +197,8 @@ namespace Streamliner
 
 		private float _currentSpeed;
 		private float _previousSpeed;
-		private const float _minSpeedLossIntensity = 1f;
-		private float _speedLossIntensity = _minSpeedLossIntensity;
+		private const float _maxSpeedLossIntensity = 1f;
+		private float _speedLossIntensity;
 
 		private const float _animationSpeed = 5f;
 		private const float _animationTimerMax = 2.25f;
@@ -301,8 +301,8 @@ namespace Streamliner
 				* Shifter.SpeedChangeIntensityThreshold;
 
 			_speedLossIntensity =
-				_speedLossIntensity <= -_minSpeedLossIntensity ? -_minSpeedLossIntensity :
-				_speedLossIntensity >= _minSpeedLossIntensity ? _minSpeedLossIntensity :
+				_speedLossIntensity <= -_maxSpeedLossIntensity ? -_maxSpeedLossIntensity :
+				_speedLossIntensity >= _maxSpeedLossIntensity ? _maxSpeedLossIntensity :
 				_speedLossIntensity;
 		}
 
@@ -324,7 +324,7 @@ namespace Streamliner
 			if (_speedDecreaseAnimationTimer > 0f)
 			{
 				if (color != _highlightColor)
-					color = _speedLossIntensity == _minSpeedLossIntensity ?
+					color = _speedLossIntensity == _maxSpeedLossIntensity ?
 						_highlightColor :
 						Color.Lerp(color, _highlightColor, Time.deltaTime * _animationSpeed);
 
