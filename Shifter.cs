@@ -52,6 +52,7 @@ namespace Streamliner
 		{
 			internal Vector2 ShiftTarget;
 			internal float ShakeAmount;
+			internal float TimeSinceLastShakeAmountChange;
 			internal Vector2 ShakeVector;
 			internal float ShakeDuration;
 
@@ -61,14 +62,26 @@ namespace Streamliner
 
 			internal void UpdateShakeState(float amount, float duration)
 			{
-				if (ShakeAmount < amount)
+				if (
+					ShakeAmount < amount ||
+					(TimeSinceLastShakeAmountChange <= 0 && ShakeAmount != amount)
+				)
+				{
 					ShakeAmount = amount;
+					TimeSinceLastShakeAmountChange = duration;
+				}
 				ShakeDuration = duration;
 			}
 
 			internal void DecayShakeByTime(float time)
 			{
 				float decayAmount = time * ShakeDurationDecaySpeed;
+
+				if (TimeSinceLastShakeAmountChange > 0)
+					TimeSinceLastShakeAmountChange -= decayAmount;
+				else
+					TimeSinceLastShakeAmountChange = 0;
+
 				if (ShakeDuration > 0)
 					ShakeDuration -= decayAmount;
 				else
@@ -198,6 +211,23 @@ namespace Streamliner
 
 			// update shake amount
 
+			/*
+			 * Shake Causes Check Order
+			 * 
+			 * from bigger base maximum shake amount to smaller base maximum shake amount,
+			 * 1. ( 0 ~ 60) Landing with a vertical velocity change bigger than MinVerticalSpeedDiff
+			 * 2. (     30) Wall Crash
+			 * 3. ( 0 ~ 30) Speed Loss
+			 * 4. (      6) Scraping
+			 * 
+			 * Shake amount and duration update when any of these satisfies:
+			 * - new shake amount is bigger than ongoing amount
+			 * - current shake amount change lasted long enough, and new amount is different
+			 * 
+			 * Otherwise, only the duration is refreshed to the new value,
+			 * to make the shake effect last long for the last moment new cause is happened.
+			 */
+
 			// big landing
 			float verticalSpeedDiff = amountData.CurrentVelocity.y - amountData.PreviousVelocity.y;
 			if (verticalSpeedDiff > MinVerticalSpeedDiff && !ship.OnMaglock)
@@ -214,11 +244,6 @@ namespace Streamliner
 			{
 				amountData.UpdateShakeState(WallBounceShakeAmount, ShakeDuration);
 			}
-			// scraping
-			else if (sim.isShipScraping || sim.ScrapingShip)
-			{
-				amountData.UpdateShakeState(ScrapingShakeAmount, ShakeDuration);
-			}
 			// speed loss
 			else if (
 				amountData.SpeedChangeIntensity >= MinSpeedChangeIntensity &&
@@ -230,6 +255,11 @@ namespace Streamliner
 					(shakeAmount >= SpeedChangeIntensityRange ? SpeedChangeIntensityRange : shakeAmount)
 					/ SpeedChangeIntensityRange * WallBounceShakeAmount;
 				amountData.UpdateShakeState(shakeAmount, ShakeDuration);
+			}
+			// scraping
+			else if (sim.isShipScraping || sim.ScrapingShip)
+			{
+				amountData.UpdateShakeState(ScrapingShakeAmount, ShakeDuration);
 			}
 
 			amountData.DecayShakeByTime(Time.deltaTime);
