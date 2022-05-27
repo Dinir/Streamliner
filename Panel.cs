@@ -485,8 +485,8 @@ namespace Streamliner
 				return GetTintColor();
 
 			int zoneColorIndex = zoneNumber / 5;
-			zoneColorIndex = zoneColorIndex > PalleteSettings.Pallete.Length - 1 ?
-				0 : zoneColorIndex;
+			zoneColorIndex = zoneColorIndex >= PalleteSettings.Pallete.Length ?
+				zoneColorIndex % PalleteSettings.Pallete.Length : zoneColorIndex;
 
 			return
 				PalleteSettings.Pallete[zoneColorIndex].GetColor(EZoneColorTarget.EnvironmentDetail);
