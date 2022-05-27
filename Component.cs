@@ -1968,7 +1968,7 @@ namespace Streamliner
 			if (_upsurgeTargetShip == null)
 			{
 				_upsurgeTargetShip = _gamemode.Ships.Find(ship => ship.TargetShip == TargetShip);
-				if (OptionZoneTintOverride)
+				if (_usingZoneColors)
 					UpdateToZoneColor(TargetShip, 0f, 0f);
 				return;
 			}
@@ -3733,6 +3733,12 @@ namespace Streamliner
 				MemberColor = GetTintColor(TextAlpha.ThreeEighths);
 				PlacementColor = GetTintColor(clarity: 2);
 				PlayerHighlightColor = GetTintColor(clarity: 1);
+				/*
+				 * This line directly accesses the option value because
+				 * the method is only called on initiation.
+				 * The value should be locally stored inside the TeamScoreboard class
+				 * if this method is ever going to be used inside Update cycle.
+				 */
 				PlayerPanelColor = GetPanelColor(OptionValueTint);
 
 				_value.color = ValueColor;
