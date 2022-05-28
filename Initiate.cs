@@ -17,7 +17,7 @@ namespace Streamliner
 	public class HudRegister : CodeMod
 	{
 		// This name appears at "config - game - hud - style - hud style".
-		private const string ID = "Streamliner 1.1.9";
+		private const string ID = "Streamliner 1.1.10";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
@@ -157,7 +157,7 @@ namespace Streamliner
 
 			ctx.GenerateSelector(
 				"ZoneTintOverride", "zone modes tint",
-				"Set text tint for Survival and Upsurge.",
+				"Set text tint for Survival and Upsurge modes.",
 				OptionZoneTintOverride ? 1 : 0,
 				"text tint", "tint from survival palette"
 			);
@@ -184,7 +184,7 @@ namespace Streamliner
 
 			ctx.GenerateSelector(
 				"Motion", "motion effect",
-				"Loosen the hud a bit.",
+				"Loosen the hud up a bit.",
 				OptionMotion ? 1 : 0,
 				"off", "on"
 			);
@@ -256,14 +256,14 @@ namespace Streamliner
 
 			ctx.GenerateSelector(
 				"TargetTimer", "target timer",
-				"Put a countdown timer on top of the screen on Time Trial and Speed Lap mode.",
+				"Put a countdown timer on top of the screen on Time Trial and Speed Lap modes.",
 				OptionTargetTimer ? 1 : 0,
 				"off", "on"
 			);
 
 			ctx.GenerateSelector(
 				"BestTime", "best time",
-				"Set which time to show as the best time on Race and Time Trial mode.",
+				"Set which time to show as the best time on Race and Time Trial modes.",
 				OptionBestTime,
 				"off", "total time", "lap time"
 			);
