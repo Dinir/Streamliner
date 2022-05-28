@@ -61,11 +61,18 @@ namespace Streamliner
 			 * └ Container
 			 *   (created by "Create New Custom HUD")
 			 *   └ Vertical Splitscreen Mask
-			 *     (Shifter.MaxVerticalShiftAmount gap on top and bottom)
+			 *     (additional gap on the closer side, top or bottom)
 			 *     └ Horizontal Splitscreen Mask
-			 *       (cancels vertical gaps, Shifter.MaxVerticalShiftAmount gap on left and right)
+			 *       (cancels vertical gaps, additional gap on left and right)
 			 *       └ Base
 			 *         (actual hud component)
+			 * 
+			 * additional gap ==
+			 *   Shifter.MaxVerticalShiftAmount + max possible shake value + round up
+			 *   52.5 + 15 + 60                 + 60 * 2.0                 + 0.5      == 248
+			 *   panel half height                Shifter.BaseMaxLandingShakeAmount
+			 *   label                            maximum OptionShakeMultiplier
+			 *   padding
 			 * 
 			 * The reason is because the design anchors to top and bottom of the container boundary;
 			 * having the base under the horizontal mask prevents any of its positioning values from changing.
