@@ -3700,25 +3700,24 @@ namespace Streamliner
 
 			internal void UpdateTeam(RaceTeam team, ShipController playerShip)
 			{
-
+				// either the team for the slot is changed or not, scores should be updated anyway
+				Score = team.Score;
+				ScoreAddition = team.PlaceScore;
+				
 				if (team == _team)
-					Score = team.Score;
-				else
-				{
-					IsPlayerTeam = team.Ships[0] == playerShip || team.Ships[1] == playerShip;
-					_team = team;
-					Score = team.Score;
-					ScoreAddition = team.PlaceScore;
-					_memberFirst.text = team.Ships[0].ShipName;
-					_memberSecond.text = team.Ships[1].ShipName;
-					/*
-					 * Default hud just clears the text instead when changing the panels,
-					 * leaving the text empty for few frames after they are changed.
-					 * I wonder if keeping that way is safer,
-					 * whatever "safe" would mean here.
-					 */
-					UpdatePlacement();
-				}
+					return;
+
+				IsPlayerTeam = team.Ships[0] == playerShip || team.Ships[1] == playerShip;
+				_team = team;
+				_memberFirst.text = team.Ships[0].ShipName;
+				_memberSecond.text = team.Ships[1].ShipName;
+				/*
+				 * Default hud just clears the text instead when changing the panels,
+				 * leaving the text empty for few frames after they are changed.
+				 * I wonder if keeping that way is safer,
+				 * whatever "safe" would mean here.
+				 */
+				UpdatePlacement();
 			}
 
 			internal void UpdatePlacement()
