@@ -3700,10 +3700,8 @@ namespace Streamliner
 
 			internal void UpdateTeam(RaceTeam team, ShipController playerShip)
 			{
-				// either the team for the slot is changed or not, scores should be updated anyway
 				Score = team.Score;
-				ScoreAddition = team.PlaceScore;
-				
+
 				if (team == _team)
 					return;
 
@@ -3722,6 +3720,8 @@ namespace Streamliner
 
 			internal void UpdatePlacement()
 			{
+				ScoreAddition = _team.PlaceScore;
+
 				if (!_isPlayerTeam)
 					return;
 
@@ -3729,7 +3729,6 @@ namespace Streamliner
 					IntStrDb.GetNoSingleCharNumber(_team.Ships[0].CurrentPlace);
 				_placementSecond.text =
 					IntStrDb.GetNoSingleCharNumber(_team.Ships[1].CurrentPlace);
-				ScoreAddition = _team.PlaceScore;
 			}
 
 			internal void UpdateColor()
