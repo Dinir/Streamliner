@@ -2220,10 +2220,12 @@ namespace Streamliner
 			internal static float MaxSize;
 			// speed of 4 makes it nearly in sync with the placement component
 			private const int TransitionSpeed = 4;
+			private const float RateDiffToForceUpdate = 0.99f;
 			internal int Id;
 			private readonly RectTransform _node;
 			private readonly Image _nodeImage;
 			private float _currentPositionRate;
+			private float _previousRate;
 			private Vector2 _position;
 
 			public int SiblingIndex
@@ -2234,12 +2236,15 @@ namespace Streamliner
 			public void SetPosition(float rate, bool forceUpdate = false)
 			{
 				rate = rate < 0f ? 0f : rate > 1f ? 1f : rate;
+				if (Math.Abs(rate - _previousRate) >= RateDiffToForceUpdate)
+					forceUpdate = true;
 
 				if (!Mathf.Approximately(_currentPositionRate, rate))
 					_currentPositionRate = forceUpdate ?
 						rate :
 						Mathf.Lerp(_currentPositionRate, rate, Time.deltaTime * TransitionSpeed);
 
+				_previousRate = rate;
 				_position.x = _currentPositionRate * MaxSize;
 				_node.anchoredPosition = _position;
 			}
