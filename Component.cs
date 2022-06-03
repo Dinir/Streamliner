@@ -2194,15 +2194,16 @@ namespace Streamliner
 	{
 		private const float AlphaEliminated = 0.5f;
 		private static int _totalSections;
+		private static int _halfTotalSections;
 		// A ship 16 sections away is barely visible in horizontal splitscreen.
-		private const int MinimumEndDistance = 16 * 5;
+		private static int MinimumEndDistance = 16 * 5;
 		private static EPosHudMode _previousMode;
 		private bool _canShipRespawn;
 		private bool _initiated;
 		private bool _modeChanged;
 
 		// for game modes that don't count laps.
-		private static bool _manuallyCountLaps;
+		private static bool _notCountingLaps;
 
 		private RectTransform _panel;
 		private RectTransform _nodeTemplate;
@@ -2224,11 +2225,6 @@ namespace Streamliner
 			private readonly Image _nodeImage;
 			private float _currentPositionRate;
 			private Vector2 _position;
-
-			// for game modes that don't count laps.
-			internal int ManuallyCountedCurrentLap;
-			internal bool ManuallySetLapValidated;
-			internal int? ManuallySetMiddleSection;
 
 			public int SiblingIndex
 			{
@@ -2317,7 +2313,7 @@ namespace Streamliner
 		private void Initiate()
 		{
 			_canShipRespawn = RaceManager.CurrentGamemode.CanShipsRespawn();
-			_manuallyCountLaps = RaceManager.CurrentGamemode.Name switch
+			_notCountingLaps = RaceManager.CurrentGamemode.Name switch
 			{
 				"Eliminator" => true,
 				_ => false
@@ -2368,25 +2364,20 @@ namespace Streamliner
 			_nodes[TargetShip.ShipId].SiblingIndex = totalShips;
 			_singleNode.SiblingIndex = totalShips - 1;
 			if (_isPlayerOne)
+			{
 				_totalSections = GetTotalSectionCount();
+				if (_notCountingLaps)
+				{
+					_halfTotalSections = _totalSections / 2;
+					if (_halfTotalSections < MinimumEndDistance)
+						MinimumEndDistance = _halfTotalSections;
+				}
+			}
 
 			StartCoroutine(UpdateSectionsTraversed());
 
 			_initiated = true;
 			NgRaceEvents.OnCountdownStart -= Initiate;
-
-			if (_manuallyCountLaps)
-			{
-				/*
-				 * When passing the validation gate,
-				 * MidLineReset and then MidLine is triggered.
-				 * When trying to pass it in the reverse direction,
-				 * both are called in the reversed order as well.
-				 */
-				NgRaceEvents.OnStartLineTriggered += LimitNodeToFirstHalf;
-				NgRaceEvents.OnMidLineResetTriggered += ResetValidationState;
-				NgRaceEvents.OnMidLineTriggered += ReleaseNodeBeyondFirstHalf;
-			}
 		}
 
 		public override void Update()
@@ -2404,6 +2395,9 @@ namespace Streamliner
 			}
 
 			SetNodes();
+
+			/*if (Input.GetKey(KeyCode.Backspace))
+				Debug.Log(Dump(1));*/
 		}
 
 		private void UpdateMode()
@@ -2445,21 +2439,7 @@ namespace Streamliner
 							continue;
 
 						_racerSectionsTraversed[id] =
-							GetPassingSectionIndex(
-								ship,
-								_manuallyCountLaps ?
-									_nodes[id].ManuallyCountedCurrentLap : ship.CurrentLap,
-								_totalSections
-							);
-						if (
-							_manuallyCountLaps &&
-							_nodes[id].ManuallySetMiddleSection is not null &&
-							ship.CurrentSection.index >= _nodes[id].ManuallySetMiddleSection &&
-							!_nodes[id].ManuallySetLapValidated
-						)
-						{
-							_racerSectionsTraversed[id] -= _totalSections;
-						}
+							GetPassingSectionIndex(ship, !_notCountingLaps ? ship.CurrentLap : 1, _totalSections);
 					}
 					_sectionsTraversedUpdated = true;
 				}
@@ -2467,39 +2447,29 @@ namespace Streamliner
 				yield return new WaitUntil(() => _sectionsTraversedUpdated);
 
 				int playerSection = _racerSectionsTraversed[TargetShip.ShipId];
-				for (int id = 0; id < _racerSectionsTraversed.Length; id++)
+				if (!_notCountingLaps)
+					for (int id = 0; id < _racerSectionsTraversed.Length; id++)
+						_racerRelativeSections[id].Value = _racerSectionsTraversed[id] - playerSection;
+				else
 				{
-					_racerRelativeSections[id].Value =
-						_racerSectionsTraversed[id] - playerSection;
+					// https://www.desmos.com/calculator/abgfistvwm
+					bool playerOverHalf = playerSection >= _halfTotalSections;
+					int rs, rsLower, rsHigher;
+					for (int id = 0; id < _racerSectionsTraversed.Length; id++)
+					{
+						rs = _racerSectionsTraversed[id] - playerSection;
+						rsLower = rs - ( playerOverHalf ? 0 : _totalSections );
+						rsHigher = rs + ( playerOverHalf ? _totalSections : 0 );
+
+						_racerRelativeSections[id].Value =
+							Math.Abs(rsLower) - rsHigher >= 0 ? rsHigher : rsLower;
+					}
 				}
 
 				if (_isPlayerOne) _sectionsTraversedUpdated = false;
 
 				yield return new WaitForSeconds(Position.UpdateTime);
 			}
-		}
-
-		private void LimitNodeToFirstHalf(ShipController ship)
-		{
-			if (
-				!_nodes[ship.ShipId].ManuallySetLapValidated &&
-				_nodes[ship.ShipId].ManuallyCountedCurrentLap > 0
-			)
-				return;
-
-			_nodes[ship.ShipId].ManuallyCountedCurrentLap++;
-			_nodes[ship.ShipId].ManuallySetLapValidated = false;
-		}
-
-		private void ResetValidationState(ShipController ship)
-		{
-			_nodes[ship.ShipId].ManuallySetLapValidated = false;
-		}
-
-		private void ReleaseNodeBeyondFirstHalf(ShipController ship)
-		{
-			_nodes[ship.ShipId].ManuallySetLapValidated = true;
-			_nodes[ship.ShipId].ManuallySetMiddleSection = ship.CurrentSection.index;
 		}
 
 		private void SetNodes()
@@ -2647,18 +2617,21 @@ namespace Streamliner
 				sb[0].AppendLine(sb[i].ToString());
 			}
 			return sb[0].ToString();
+		}
+		private string Dump(int shipId)
+		{
+			StringBuilder sb = new();
+			sb.Append(Ships.Loaded[shipId].ShipName)
+				.Append(": ")
+				.Append($"ST: {_racerSectionsTraversed[shipId]}, RS: {_racerRelativeSections[shipId].Value}");
+
+			return sb.ToString();
 		}*/
 
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
 			StopCoroutine(UpdateSectionsTraversed());
-			if (_manuallyCountLaps)
-			{
-				NgRaceEvents.OnStartLineTriggered -= LimitNodeToFirstHalf;
-				NgRaceEvents.OnMidLineResetTriggered -= ResetValidationState;
-				NgRaceEvents.OnMidLineTriggered -= ReleaseNodeBeyondFirstHalf;
-			}
 		}
 	}
 
