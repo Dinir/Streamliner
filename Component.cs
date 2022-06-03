@@ -4215,8 +4215,7 @@ namespace Streamliner
 				if (_timer < 0f) _timer = 0f;
 			}
 
-			_value.text =
-				(Math.Round(_timer * 100f) / 100.0).ToString("F2", CultureInfo.InvariantCulture);
+			SetTime();
 		}
 
 		private void CountdownInitiate(NgCountdownHeaders type)
@@ -4229,7 +4228,11 @@ namespace Streamliner
 
 			_label.text = "race ends in";
 			_timer = GetCountdownTime();
+			SetTime();
 		}
+
+		private void SetTime() => _value.text =
+			(Math.Round(_timer * 100f) / 100.0).ToString("F2", CultureInfo.InvariantCulture);
 
 		// can't access the actual value at the moment so here's a placeholder.
 		private static float GetCountdownTime() => 30.0f; // NgNetworkBase.RaceFinishedCountdownTime
