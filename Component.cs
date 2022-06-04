@@ -2937,9 +2937,6 @@ namespace Streamliner
 			_wrongWayCurrentColor = _defaultColor["WrongWay"] with { a = _wrongWayCurrentAlpha };
 			_wrongWay.color = _wrongWayCurrentColor;
 
-			if (Audio.Levels.MusicVolume == 0f)
-				_nowPlaying.gameObject.SetActive(false);
-
 			_timeDiff.text = "";
 			_lapResult.text = "";
 			_finalLap.text = "";
@@ -3071,9 +3068,7 @@ namespace Streamliner
 
 		private void AddSong(string songName)
 		{
-			bool musicIsOn = Audio.Levels.MusicVolume != 0f;
-			_nowPlaying.gameObject.SetActive(musicIsOn);
-			if (!musicIsOn)
+			if (Mathf.Approximately(Audio.Levels.MusicVolume, 0f))
 				return;
 
 			_nowPlaying.text = songName;
@@ -3195,7 +3190,7 @@ namespace Streamliner
 			}
 
 			// now playing
-			if (Audio.Levels.MusicVolume != 0f)
+			if (!Mathf.Approximately(Audio.Levels.MusicVolume, 0f))
 			{
 				if (_npDisplayTime > 0f)
 				{
