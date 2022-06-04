@@ -4089,6 +4089,148 @@ namespace Streamliner
 		}
 	}
 
+	public class PrecisionTargetTime : CustomScaleScriptableHud
+	{
+		private RectTransform _panel;
+		private RectTransform _normalDisplay;
+		private DoubleGaugePanel _bigDisplay;
+		private readonly Color _platinumColor = GetTintColor(tintIndex: 7);
+		private readonly Color _goldColor = GetTintColor(tintIndex: 3);
+		private readonly Color _silverColor = GetTintColor(tintIndex: 0);
+		private readonly Color _bronzeColor = GetTintColor(tintIndex: 2);
+		private Color _defaultColor;
+
+		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
+
+		private GmPrecision _gamemode;
+		private float _bronzeTarget;
+		private float _silverTarget;
+		private float _goldTarget;
+		private float _platinumTarget;
+		private float _targetTime;
+		private float _awardTimeDifference;
+
+		public override void Start()
+		{
+			base.Start();
+			_panel = CustomComponents.GetById("Base");
+			if (OptionMotion) Shifter.Add(_panel, TargetShip.playerIndex, GetType().Name);
+			_normalDisplay = CustomComponents.GetById("Normal");
+			_bigDisplay = new DoubleGaugePanel(CustomComponents.GetById("Big"), true);
+			_bigDisplay.SetFillStartingSide(DoubleGaugePanel.StartingPoint.Center);
+
+			_normalDisplay.gameObject.SetActive(false);
+
+			_gamemode = (GmPrecision) RaceManager.CurrentGamemode;
+
+			if (!_gamemode.HasAuthorTimes || !_gamemode.AuthorTimes)
+			{
+				_bronzeTarget = -1f;
+				_silverTarget = -1f;
+				_goldTarget = -1f;
+				_platinumTarget = -1f;
+			}
+			else
+			{
+				_bronzeTarget = _gamemode.AuthorTimes.BronzeTarget;
+				_silverTarget = _gamemode.AuthorTimes.SilverTarget;
+				_goldTarget = _gamemode.AuthorTimes.GoldTarget;
+				_platinumTarget = _gamemode.AuthorTimes.PlatinumTarget;
+			}
+
+			UpdateTargetTime();
+			SetLeftTime(0f);
+
+			NgUiEvents.OnGamemodeUpdateCurrentLapTime += SetLeftTime;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+				_bigDisplay.UpdateColor(GetTintFromColor(color: GetShipRepresentativeColor(TargetShip)));
+
+			_defaultColor = _bigDisplay.GaugeColor;
+		}
+
+		public override void Update()
+		{
+			base.Update();
+		}
+
+		private void UpdateTargetTime()
+		{
+			switch (_gamemode.CurrentAward)
+			{
+				case NgAward.Platinum:
+					_targetTime = _platinumTarget;
+					_awardTimeDifference = _platinumTarget;
+					break;
+				case NgAward.Gold:
+					_targetTime = _goldTarget;
+					_awardTimeDifference = _goldTarget - _platinumTarget;
+					break;
+				case NgAward.Silver:
+					_targetTime = _silverTarget;
+					_awardTimeDifference = _silverTarget - _goldTarget;
+					break;
+				case NgAward.Bronze:
+					_targetTime = _bronzeTarget;
+					_awardTimeDifference = _bronzeTarget - _silverTarget;
+					break;
+				case NgAward.None:
+				default:
+					_targetTime = -1f;
+					break;
+			}
+		}
+
+		private Color GetMedalTint() => _gamemode.CurrentAward switch
+		{
+			NgAward.Platinum => _platinumColor,
+			NgAward.Gold => _goldColor,
+			NgAward.Silver => _silverColor,
+			NgAward.Bronze => _bronzeColor,
+			_ => _defaultColor,
+		};
+
+		private void SetLeftTime(float currentTime)
+		{
+			if (currentTime < 0f || _targetTime <= 0f)
+			{
+				_bigDisplay.Value.text = _bigTimeTextBuilder.ToStringNoDecimal(-1f);
+				_bigDisplay.SmallValue.text = "--";
+				_bigDisplay.FillBoth(0f);
+				return;
+			}
+
+			float timeLeft = _targetTime - currentTime;
+			float timeMax = _awardTimeDifference;
+
+			if (timeLeft < 0f && _gamemode.HasAuthorTimes)
+			{
+				UpdateTargetTime();
+				_bigDisplay.UpdateColor(GetMedalTint());
+			}
+
+			timeLeft = timeLeft < 0f ? 0f : timeLeft > _targetTime ? _targetTime : timeLeft;
+
+			_bigDisplay.Value.text = _bigTimeTextBuilder.ToStringNoDecimal(timeLeft);
+			_bigDisplay.SmallValue.text = timeLeft < BigTimeTextBuilder.LesserCounterStopValue ?
+				IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(timeLeft * 100f % 100f)) :
+				"99";
+
+			_bigDisplay.FillBoth(timeMax == 0f ? 0f : timeLeft / timeMax);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			NgUiEvents.OnGamemodeUpdateCurrentLapTime -= SetLeftTime;
+		}
+	}
+
 	public class RaceFinishCountdown : CustomScaleScriptableHud
 	{
 		private RectTransform _panel;

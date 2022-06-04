@@ -19,7 +19,7 @@ namespace Streamliner
 		// This name appears at "config - game - hud - style - hud style".
 		// The hud is considered as a different one if this is changed.
 		private const string ID = "Streamliner";
-		private const string _version = "1.1.14";
+		private const string _version = "1.2.0";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
@@ -68,6 +68,7 @@ namespace Streamliner
 
 		private static void RegisterManagers()
 		{
+			// Refer to `NgModes.GamemodeRegister` for the exact strings for each gamemode names.
 			CustomHudRegistry.RegisterSceneManager(
 				"Race", ID, new RaceHudManager());
 			CustomHudRegistry.RegisterSceneManager(
@@ -86,6 +87,8 @@ namespace Streamliner
 				"Upsurge", ID, new UpsurgeHudManager());
 			CustomHudRegistry.RegisterSceneManager(
 				"Rush Hour", ID, new RushHourHudManager());
+			CustomHudRegistry.RegisterSceneManager(
+				"Precision", ID, new PrecisionHudmanager());
 		}
 
 		private static void RegisterSprites()
@@ -569,6 +572,20 @@ namespace Streamliner
 
 			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 			RegisterInternalHud("RespawnDarkener");
+		}
+	}
+
+	public class PrecisionHudmanager : SceneHudManager
+	{
+		public override void OnCreateHuds()
+		{
+			RegisterHud<Speedometer>(HudRegister.Assets.GetComponent<HudComponents>("Speed", false));
+			RegisterHud<EnergyMeter>(HudRegister.Assets.GetComponent<HudComponents>("Energy", false));
+			RegisterHud<LapTimer>(HudRegister.Assets.GetComponent<HudComponents>("Timer", false));
+			RegisterHud<MessageLogger>(HudRegister.Assets.GetComponent<HudComponents>("Messages", false));
+			RegisterHud<PrecisionTargetTime>(HudRegister.Assets.GetComponent<HudComponents>("TargetTime", false));
+
+			RegisterHud<ShifterHud>(HudRegister.Assets.GetComponent<HudComponents>("Shifter", false));
 		}
 	}
 }
