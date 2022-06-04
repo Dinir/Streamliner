@@ -3190,38 +3190,35 @@ namespace Streamliner
 			}
 
 			// now playing
-			if (!Mathf.Approximately(Audio.Levels.MusicVolume, 0f))
+			if (_npDisplayTime > 0f)
 			{
-				if (_npDisplayTime > 0f)
-				{
-					_npDisplayTime -= Time.deltaTime;
-					if (_npDisplayTime <= 0f)
-						_npFadeOutTimeRemaining = FadeOutTimeMax;
-				}
-				else
-					_npDisplayTime = 0f;
+				_npDisplayTime -= Time.deltaTime;
+				if (_npDisplayTime <= 0f)
+					_npFadeOutTimeRemaining = FadeOutTimeMax;
+			}
+			else
+				_npDisplayTime = 0f;
 
-				if (
-					_npFadeOutTimeRemaining > 0f &&
-					!_npFadeOutInProgress
-				)
-					StartCoroutine(RemoveSong());
+			if (
+				_npFadeOutTimeRemaining > 0f &&
+				!_npFadeOutInProgress
+			)
+				StartCoroutine(RemoveSong());
 
-				if (
-					_npDisplayTime == 0f &&
-					_npFadeOutTimeRemaining == 0f &&
-					!_npFadeOutInProgress
-				)
-				{
-					_nowPlaying.text = "";
-					_nowPlaying.color = _defaultColor["NowPlaying"];
-				}
+			if (
+				_npDisplayTime == 0f &&
+				_npFadeOutTimeRemaining == 0f &&
+				!_npFadeOutInProgress
+			)
+			{
+				_nowPlaying.text = "";
+				_nowPlaying.color = _defaultColor["NowPlaying"];
 			}
 
+			// wrong way
 			if (_facingBackwardExpected)
 				return;
 
-			// wrong way
 			if (
 				!_wasWrongWay && !TargetShip.FacingForward ||
 				_wasWrongWay && TargetShip.FacingForward
