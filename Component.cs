@@ -1058,11 +1058,8 @@ namespace Streamliner
 		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
 
 		private bool _usingBestTimeDisplay;
-		private bool _initiated;
 		private float _currentTime;
-		private float _bestTime;
 		private bool _lapInvalidated;
-		private bool _bestTimeIsUpAtLapUpdate;
 
 		public override void Start()
 		{
@@ -1077,24 +1074,12 @@ namespace Streamliner
 			_usingBestTimeDisplay = OptionBestTime != 0;
 			_bestTimeText.gameObject.SetActive(_usingBestTimeDisplay);
 
-			NgRaceEvents.OnCountdownStart += Initiate;
-		}
-
-		private void Initiate()
-		{
-			UpdateBestTime();
-			NgRaceEvents.OnShipLapUpdate += UpdateBestTimeOnLapUpdate;
-			if (_usingBestTimeDisplay)
-			{
-				SetBestTime(TargetShip);
-				NgRaceEvents.OnShipLapUpdate += SetBestTime;
-			}
 			SetCurrentTime();
+
+			if (_usingBestTimeDisplay)
+				NgUiEvents.OnGamemodeUpdateBestTime += SetBestTime;
 			NgUiEvents.OnGamemodeUpdateCurrentLapTime += UpdateCurrentTime;
 			NgUiEvents.OnGamemodeInvalidatedLap += InvalidateLap;
-
-			_initiated = true;
-			NgRaceEvents.OnCountdownStart -= Initiate;
 		}
 
 		public override void FinishSettingInitialTextTint()
@@ -1113,10 +1098,6 @@ namespace Streamliner
 		public override void Update()
 		{
 			base.Update();
-			if (!_initiated || !TargetShip)
-				return;
-
-			UpdateBestTime();
 			SetCurrentTime();
 		}
 
@@ -1125,6 +1106,9 @@ namespace Streamliner
 			_currentTime = currentTime;
 			_lapInvalidated = false;
 		}
+
+		private void InvalidateLap() =>
+			_lapInvalidated = true;
 
 		private void SetCurrentTime()
 		{
@@ -1136,55 +1120,21 @@ namespace Streamliner
 			}
 
 			_panel.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
-
-			if (TargetShip.CurrentSection is null)
-				return;
-
-			_panel.Fill(GetLapCompletionRate(TargetShip, _totalSections));
+			if (TargetShip?.CurrentSection is not null)
+				_panel.Fill(GetLapCompletionRate(TargetShip, _totalSections));
 		}
 
-		private void UpdateBestTimeOnLapUpdate(ShipController ship)
+		private void SetBestTime(float bestTime)
 		{
-			if (ship != TargetShip)
-				return;
-
-			UpdateBestTime();
-			_bestTimeIsUpAtLapUpdate = true;
+			_bestTimeText.text = bestTime >= 0f ?
+				FloatToTime.Convert(bestTime, TimeFormat) : EmptyTime;
 		}
-
-		private void UpdateBestTime()
-		{
-			if (_bestTimeIsUpAtLapUpdate)
-			{
-				_bestTimeIsUpAtLapUpdate = false;
-				return;
-			}
-
-			_bestTime = TargetShip.LoadedBestLapTime ?
-				TargetShip.BestLapTime :
-				TargetShip.HasBestLapTime ?
-					TargetShip.BestLapTime :
-					-1f;
-		}
-
-		private void SetBestTime(ShipController ship)
-		{
-			if (ship != TargetShip)
-				return;
-
-			_bestTimeText.text = _bestTime >= 0f ?
-				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
-		}
-
-		private void InvalidateLap() =>
-			_lapInvalidated = true;
 
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			NgRaceEvents.OnShipLapUpdate -= UpdateBestTimeOnLapUpdate;
 			if (_usingBestTimeDisplay)
-				NgRaceEvents.OnShipLapUpdate -= SetBestTime;
+				NgUiEvents.OnGamemodeUpdateBestTime -= SetBestTime;
 			NgUiEvents.OnGamemodeUpdateCurrentLapTime -= UpdateCurrentTime;
 			NgUiEvents.OnGamemodeInvalidatedLap -= InvalidateLap;
 		}
