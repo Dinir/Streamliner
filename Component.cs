@@ -4159,6 +4159,22 @@ namespace Streamliner
 			if (_gamemode.HasAuthorTimes)
 				_bigDisplay.UpdateColor(GetMedalTint());
 			SetLeftTime(0f);
+
+			RemovePrecisionHud();
+		}
+
+		private void RemovePrecisionHud()
+		{
+			System.Reflection.FieldInfo[] fields = _gamemode.GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+			System.Reflection.FieldInfo[] array = fields;
+			Type typeOfPH = typeof(PrecisionHud);
+			foreach (System.Reflection.FieldInfo fieldInfo in array)
+			{
+				if (fieldInfo.FieldType != typeOfPH)
+					continue;
+
+				Destroy(((PrecisionHud) fieldInfo.GetValue(_gamemode)).gameObject);
+			}
 		}
 
 		private void UpdateTargetTime()
