@@ -1126,8 +1126,22 @@ namespace Streamliner
 			_lapInvalidated = false;
 		}
 
-		private void InvalidateLap() =>
-			_lapInvalidated = true;
+		private void SetCurrentTime()
+		{
+			if (_lapInvalidated)
+			{
+				_panel.Value.text = _bigTimeTextBuilder.ToString(-1f);
+				_panel.Fill(0f);
+				return;
+			}
+
+			_panel.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
+
+			if (TargetShip.CurrentSection is null)
+				return;
+
+			_panel.Fill(GetLapCompletionRate(TargetShip, _totalSections));
+		}
 
 		private void UpdateBestTimeOnLapUpdate(ShipController ship)
 		{
@@ -1162,22 +1176,8 @@ namespace Streamliner
 				FloatToTime.Convert(_bestTime, TimeFormat) : EmptyTime;
 		}
 
-		private void SetCurrentTime()
-		{
-			if (_lapInvalidated)
-			{
-				_panel.Value.text = _bigTimeTextBuilder.ToString(-1f);
-				_panel.Fill(0f);
-				return;
-			}
-
-			_panel.Value.text = _bigTimeTextBuilder.ToString(_currentTime);
-
-			if (TargetShip.CurrentSection is null)
-				return;
-
-			_panel.Fill(GetLapCompletionRate(TargetShip, _totalSections));
-		}
+		private void InvalidateLap() =>
+			_lapInvalidated = true;
 
 		public override void OnDestroy()
 		{

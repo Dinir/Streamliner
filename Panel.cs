@@ -78,13 +78,13 @@ namespace Streamliner
 			};
 
 			return Color.HSVToRGB(
-					StandardH[initiatedTintIndex],
-					initiatedTintIndex == 0 ? 0 : StandardSV[clarity][0],
-					StandardSV[clarity][1]
-				) with
-				{
-					a = TintAlphaList[(int) transparencyIndex]
-				};
+				StandardH[initiatedTintIndex],
+				initiatedTintIndex == 0 ? 0 : StandardSV[clarity][0],
+				StandardSV[clarity][1]
+			) with
+			{
+				a = TintAlphaList[(int) transparencyIndex]
+			};
 		}
 
 		internal static Color GetTintFromColor(
@@ -116,13 +116,13 @@ namespace Streamliner
 			};
 
 			return Color.HSVToRGB(
-					StandardH[initiatedTintIndex],
-					initiatedTintIndex == 0 ? 0 : StandardSV[0][0],
-					initiatedTintIndex == 0 ? 0.16f : 0.30f
-				) with
-				{
-					a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
-				};
+				StandardH[initiatedTintIndex],
+				initiatedTintIndex == 0 ? 0 : StandardSV[0][0],
+				initiatedTintIndex == 0 ? 0.16f : 0.30f
+			) with
+			{
+				a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
+			};
 		}
 
 		internal static Color GetPanelColorFromColor(
@@ -133,10 +133,10 @@ namespace Streamliner
 			bool isGreyscale = Mathf.Approximately(saturation, 0f);
 
 			return Color.HSVToRGB(
-					hue,
-					isGreyscale ? 0 : StandardSV[0][0],
-					isGreyscale ? 0.16f : 0.30f
-				) with
+				hue,
+				isGreyscale ? 0 : StandardSV[0][0],
+				isGreyscale ? 0.16f : 0.30f
+			) with
 			{
 				a = TintAlphaList[(int) TextAlpha.ThreeQuarters]
 			};
