@@ -58,6 +58,9 @@ The archive file contains WeaponSprites folder, an `nga`, a readme `txt`, and a 
 Run the game and go to *mod - manage mods* to *activate* Streamliner. Keep *always recompile* off.  
 Restart the game to get it properly loaded.
 
+If this is your first time using a custom hud, first I am glad my hud is the first one you try so thank you,  
+and second don't forget to set the hud to Streamliner, in *config - game - hud - style - hud style*.
+
 - - -
 
 ## Credits
