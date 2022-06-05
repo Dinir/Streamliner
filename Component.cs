@@ -4123,6 +4123,23 @@ namespace Streamliner
 
 			_gamemode = (GmPrecision) RaceManager.CurrentGamemode;
 
+			NgUiEvents.OnGamemodeUpdateCurrentLapTime += SetLeftTime;
+		}
+
+		public override void FinishSettingInitialTextTint()
+		{
+			base.FinishSettingInitialTextTint();
+
+			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
+				_bigDisplay.UpdateColor(GetTintFromColor(color: GetShipRepresentativeColor(TargetShip)));
+
+			_defaultColor = _bigDisplay.GaugeColor;
+
+			Initiate();
+		}
+
+		private void Initiate()
+		{
 			if (!_gamemode.HasAuthorTimes || !_gamemode.AuthorTimes)
 			{
 				_bronzeTarget = -1f;
@@ -4139,24 +4156,9 @@ namespace Streamliner
 			}
 
 			UpdateTargetTime();
+			if (_gamemode.HasAuthorTimes)
+				_bigDisplay.UpdateColor(GetMedalTint());
 			SetLeftTime(0f);
-
-			NgUiEvents.OnGamemodeUpdateCurrentLapTime += SetLeftTime;
-		}
-
-		public override void FinishSettingInitialTextTint()
-		{
-			base.FinishSettingInitialTextTint();
-
-			if (OptionValueTint == OptionValueTintShipEngineIndexForGame)
-				_bigDisplay.UpdateColor(GetTintFromColor(color: GetShipRepresentativeColor(TargetShip)));
-
-			_defaultColor = _bigDisplay.GaugeColor;
-		}
-
-		public override void Update()
-		{
-			base.Update();
 		}
 
 		private void UpdateTargetTime()
@@ -4205,14 +4207,14 @@ namespace Streamliner
 				return;
 			}
 
-			float timeLeft = _targetTime - currentTime;
-			float timeMax = _awardTimeDifference;
-
-			if (timeLeft < 0f && _gamemode.HasAuthorTimes)
+			if (_targetTime < currentTime && _gamemode.HasAuthorTimes)
 			{
 				UpdateTargetTime();
 				_bigDisplay.UpdateColor(GetMedalTint());
 			}
+
+			float timeLeft = _targetTime - currentTime;
+			float timeMax = _awardTimeDifference;
 
 			timeLeft = timeLeft < 0f ? 0f : timeLeft > _targetTime ? _targetTime : timeLeft;
 
