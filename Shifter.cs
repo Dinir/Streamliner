@@ -5,7 +5,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using NgEvents;
+using NgSettings;
 using NgShips;
+using NgUi.RaceUi;
 using static Streamliner.HudRegister;
 using Random = UnityEngine.Random;
 
@@ -130,7 +133,9 @@ namespace Streamliner
 			internal void SetTargetPosition(Vector2 position) =>
 				TargetPosition = OriginPosition + position;
 			internal void SetShiftedPosition(Vector2 position) =>
-				ShiftedPosition = position;
+				ShiftedPosition = Vector2.SmoothDamp(
+					ShiftedPosition, position, ref CurrentSpeed, DampTime
+				);
 			internal void SetShakingPosition(Vector2 position) =>
 				ShakingPosition = ShiftedPosition + position;
 			internal void ResetShakingPosition() =>
@@ -283,9 +288,7 @@ namespace Streamliner
 						continue;
 
 					// always update position that's only affected by shifting
-					p.SetShiftedPosition(Vector2.SmoothDamp(
-						p.ShiftedPosition, p.TargetPosition, ref p.CurrentSpeed, DampTime
-					));
+					p.SetShiftedPosition(p.TargetPosition);
 
 					// if shake is in effect, force apply the shake to the shifted position,
 					// but don't actually change the stored variable.
@@ -354,5 +357,51 @@ namespace Streamliner
 
 			return sb.ToString();
 		}*/
+	}
+
+	public class ShifterHud : ScriptableHud
+	{
+		private int _playerIndex;
+		private bool _isPlayerOne;
+
+		public override void Start()
+		{
+			base.Start();
+			/*
+			 * When running this block while loading hud components for Player Two:
+			 * 
+			 * Player Two TargetShip: Ships.Loaded[1]
+			 * Player Two TargetShip.ShipId == Player One TargetShip.ShipId: ｔｒｕｅ
+			 * Player Two TargetShip.Is(Ships.PlayerOneShip): ｔｒｕｅ
+			 * Player Two TargetShip.playerIndex: 1
+			 */
+			_playerIndex = TargetShip.playerIndex;
+			_isPlayerOne = _playerIndex == 0;
+
+			Shifter.TargetShips.Add(TargetShip);
+
+			StartCoroutine(Shifter.Shift(_playerIndex));
+
+			NgRaceEvents.OnShipExploded += Shifter.HideHud;
+			NgRaceEvents.OnShipRespawn += Shifter.ShowHud;
+		}
+
+		public override void Update()
+		{
+			base.Update();
+			Shifter.UpdateAmount(TargetShip);
+		}
+
+		public override void OnDestroy()
+		{
+			base.OnDestroy();
+			StopCoroutine(Shifter.Shift(_playerIndex));
+
+			if (_isPlayerOne)
+				Shifter.Flush();
+
+			NgRaceEvents.OnShipExploded -= Shifter.HideHud;
+			NgRaceEvents.OnShipRespawn -= Shifter.ShowHud;
+		}
 	}
 }
