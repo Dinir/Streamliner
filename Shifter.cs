@@ -143,10 +143,33 @@ namespace Streamliner
 			internal void ResetShakingPosition() =>
 				ShakingPosition = ShiftedPosition;
 
-			internal void SetPositionToShifted() =>
-				_rt.anchoredPosition = ShiftedPosition;
-			internal void SetPositionToShaking() =>
-				_rt.anchoredPosition = ShakingPosition;
+			internal void SetPositionToShifted(bool horizontalFlip = false) =>
+				_rt.anchoredPosition = !horizontalFlip ?
+					ShiftedPosition :
+					FlipPositionOnOrigin(ShiftedPosition, true);
+
+			internal void SetPositionToShaking(bool horizontalFlip = false) =>
+				_rt.anchoredPosition = !horizontalFlip ?
+					ShakingPosition :
+					FlipPositionOnOrigin(ShakingPosition, true);
+
+			internal Vector2 FlipPositionOnOrigin(Vector2 position, bool x = false, bool y = false) => x switch
+			{
+				true when y is false => position with
+				{
+					x = (position.x - OriginPosition.x) * -1f + OriginPosition.x
+				},
+				false when y is true => position with
+				{
+					y = (position.y - OriginPosition.y) * -1f + OriginPosition.y
+				},
+				true when y is true => position with
+				{
+					x = (position.x - OriginPosition.x) * -1f + OriginPosition.x,
+					y = (position.y - OriginPosition.y) * -1f + OriginPosition.y
+				},
+				_ => position
+			};
 			internal void ResetPosition() =>
 				_rt.anchoredPosition = OriginPosition;
 
@@ -280,6 +303,7 @@ namespace Streamliner
 		{
 			AmountData amountData = _amountData[playerIndex];
 			List<Panel> panels = Panels[playerIndex];
+			ShipCamera camSim = TargetShips[playerIndex].CamSim;
 
 			while (true)
 			{
@@ -299,12 +323,12 @@ namespace Streamliner
 					if (amountData.ShakeDuration > 0)
 					{
 						p.SetShakingPosition(amountData.ShakeVector);
-						p.SetPositionToShaking();
+						p.SetPositionToShaking(camSim.LookingBehind);
 					}
 					else
 					{
 						p.ResetShakingPosition();
-						p.SetPositionToShifted();
+						p.SetPositionToShifted(camSim.LookingBehind);
 					}
 				}
 
