@@ -51,6 +51,8 @@ namespace Streamliner
 		internal static float WallBounceShakeAmount = 30f;
 		internal static float ScrapingShakeAmount = 6f;
 
+		internal static bool Mirrored;
+
 		private class AmountData
 		{
 			internal Vector2 ShiftTarget;
@@ -183,7 +185,9 @@ namespace Streamliner
 				MaxVerticalShiftAmount : verticalShiftAmount < -MaxVerticalShiftAmount ?
 					-MaxVerticalShiftAmount : verticalShiftAmount;
 
-			return shiftTarget with { y = verticalShiftAmount };
+			return !Mirrored ?
+				shiftTarget with { y = verticalShiftAmount } :
+				shiftTarget with { x = shiftTarget.x * -1f, y = verticalShiftAmount };
 		}
 
 		private static void UpdateSpeedChangeIntensity(AmountData amountData)
@@ -377,6 +381,9 @@ namespace Streamliner
 			 */
 			_playerIndex = TargetShip.playerIndex;
 			_isPlayerOne = _playerIndex == 0;
+
+			if (_isPlayerOne)
+				Shifter.Mirrored = Gameplay.MirrorEnabled;
 
 			Shifter.TargetShips.Add(TargetShip);
 
