@@ -25,9 +25,6 @@ namespace Streamliner
 
 		// options
 		private string _settingsPath;
-		private const string OptionSectionDisplay = "Display";
-		private const string OptionSectionMotion = "Motion Effect";
-		private const string OptionSectionAddition = "Additional Information";
 		public static int OptionValueTint = OptionValueTintShipEngineIndexForGame;
 		public static bool OptionZoneTintOverride = true;
 		public static int OptionTimeDiffColour;
@@ -44,6 +41,20 @@ namespace Streamliner
 		public static int OptionBestTime = 1;
 
 		public const int OptionValueTintShipEngineIndexForGame = -1;
+
+		// fields for options
+		private const string OptionSectionDisplay = "Display";
+		private const string OptionSectionMotion = "Motion Effect";
+		private const string OptionSectionAddition = "Additional Information";
+		//private readonly string BnGAccentHtmlString = "#" + UnityEngine.ColorUtility.ToHtmlStringRGB(NgUi.RaceUi.ScriptableHud.BnGAccent);
+		private const string BnGAccentHtmlString = "#ffad00";
+		private readonly string ImperfectLiveUpdatableOptionNotice =
+			TooltipSecondParagraph(
+				"This value can be updated without restarting the race, " + Environment.NewLine
+				+ "but disabling it in the middle of a color change won't revert the color."
+			);
+		private readonly string LiveUpdatableOptionNotice =
+			TooltipSecondParagraph("This value can be updated without restarting the race.");
 
 		public override void OnRegistered(string modPath)
 		{
@@ -170,7 +181,7 @@ namespace Streamliner
 			ctx.GenerateSelector(
 				"TimeDiffColour", "time text colour",
 				"Set the colour pair to use for the time difference text."
-				+ LiveUpdatableOptionNotice(),
+				+ LiveUpdatableOptionNotice,
 				OptionTimeDiffColour,
 				"red & green", "magenta & green", "red & cyan"
 			);
@@ -197,7 +208,7 @@ namespace Streamliner
 			ctx.GenerateSlider(
 				"ShiftMultiplier", "shift intensity",
 				"Set how intense smooth shifting of the hud should be."
-				+ LiveUpdatableOptionNotice(),
+				+ LiveUpdatableOptionNotice,
 				0.0f, 2.0f, OptionShiftMultiplier, 0.1f,
 				10, NgSlider.RoundMode.Round,
 				10, NgSlider.RoundMode.Round
@@ -206,7 +217,7 @@ namespace Streamliner
 			ctx.GenerateSlider(
 				"ShakeMultiplier", "shake intensity",
 				"Set how intense shake of the hud should be."
-				+ LiveUpdatableOptionNotice(),
+				+ LiveUpdatableOptionNotice,
 				0.0f, 2.0f, OptionShakeMultiplier, 0.1f,
 				10, NgSlider.RoundMode.Round,
 				10, NgSlider.RoundMode.Round
@@ -215,7 +226,7 @@ namespace Streamliner
 			ctx.GenerateSlider(
 				"ScrapeMultiplier", "scrape intensity",
 				"Set how intense shake of the hud should be when scraping."
-				+ LiveUpdatableOptionNotice(),
+				+ LiveUpdatableOptionNotice,
 				0.0f, 2.0f, OptionScrapeMultiplier, 0.1f,
 				10, NgSlider.RoundMode.Round,
 				10, NgSlider.RoundMode.Round
@@ -226,7 +237,7 @@ namespace Streamliner
 			ctx.GenerateSelector(
 				"SpeedHighlight", "speed reduction",
 				"Highlight speedometer when speed decreases."
-				+ ImperfectLiveUpdatableOptionNotice(),
+				+ ImperfectLiveUpdatableOptionNotice,
 				OptionSpeedHighlight ? 1 : 0,
 				"off", "on"
 			);
@@ -236,7 +247,7 @@ namespace Streamliner
 			ctx.GenerateSelector(
 				"EnergyChange", "energy change",
 				"Highlight energy meter on damage or recharging."
-				+ ImperfectLiveUpdatableOptionNotice(),
+				+ ImperfectLiveUpdatableOptionNotice,
 				OptionEnergyChange ? 1 : 0,
 				"off", "on"
 			);
@@ -244,7 +255,7 @@ namespace Streamliner
 			ctx.GenerateSelector(
 				"LowEnergyTransition", "low energy",
 				"Change the colour of energy meter when the ship's energy is low."
-				+ ImperfectLiveUpdatableOptionNotice(),
+				+ ImperfectLiveUpdatableOptionNotice,
 				OptionLowEnergy,
 				"off", "follow audio setting", "on"
 			);
@@ -252,7 +263,7 @@ namespace Streamliner
 			ctx.GenerateSelector(
 				"RechargeAmount", "recharge amount",
 				"Show the amount the ship recharged on a pit lane."
-				+ ImperfectLiveUpdatableOptionNotice(),
+				+ ImperfectLiveUpdatableOptionNotice,
 				OptionRechargeAmount ? 1 : 0,
 				"off", "on"
 			);
@@ -356,20 +367,9 @@ namespace Streamliner
 			_ => ingameValue
 		};
 
-		//private readonly string BnGAccentHtmlString = "#" + UnityEngine.ColorUtility.ToHtmlStringRGB(NgUi.RaceUi.ScriptableHud.BnGAccent);
-		private const string BnGAccentHtmlString = "#ffad00"; 
-
-		private string TooltipSecondParagraph(string message, string htmlColorString = null) =>
+		private static string TooltipSecondParagraph(string message, string htmlColorString = null) =>
 			Environment.NewLine + Environment.NewLine
 				+ "<color=" + (htmlColorString ?? BnGAccentHtmlString) + ">" + message + "</color>";
-
-		private string ImperfectLiveUpdatableOptionNotice() =>
-			TooltipSecondParagraph(
-				"This value can be updated without restarting the race, " + Environment.NewLine
-				+ "but disabling it in the middle of a color change won't revert the color."
-			);
-		private string LiveUpdatableOptionNotice() =>
-			TooltipSecondParagraph("This value can be updated without restarting the race.");
 	}
 
 	/*
