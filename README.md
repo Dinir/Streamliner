@@ -46,20 +46,33 @@ Mods of the game can't overcome these at the moment.
 ## How to Install
 
 The hud is made for version 1.3 of the game, and it's available in its beta branch on Steam at the moment.  
-Please switch the game to the beta version before trying this hud.
+Please switch the game to the beta version to use this hud.
 
 Click [here][Download Link] or *Releases* at the right side of the page to get the **7z** archive file.  
-Then extract and copy the entire folder to the game's Code Mods folder:
-```
-<Steam Library>\steamapps\common\BallisticNG\User\Mods\Code Mods\
-```
-The archive file contains WeaponSprites folder, an `nga`, a readme `txt`, and a `dll`.
+The archive file contains a folder for weapon sprites, an `nga`, a readme text `md`, and a `dll`.
 
-Run the game and go to *mod - manage mods* to *activate* Streamliner. Keep *always recompile* off.  
-Restart the game to get it properly loaded.
+1. Extract the entire folder into the game's Code Modes folder.  
+    `<Steam Library>\steamapps\common\BallisticNG\User\Mods\Code Mods\`
+2. Activate the hud.  
+Run the game and go to *mod - manage mods*, then set as follow:
+    > activated: **On**  
+    > always recompile: **Off**
+3. Restart the game to load the hud.
+4. Change the hud style.  
+Go to *config - game - hud - style - hud style* and set it to Streamliner.
+5. Optionally, adjust the hud in the mod options.  
+Go to *config - game - mods - mod select* and select Streamliner
+to access its mod options.  
+Most options require restarting the race if changed in-game.
+Options that can be applied immediately are noted in their tooltips.
 
-If this is your first time using a custom hud, first I am glad my hud is the first one you try so thank you,  
-and second don't forget to set the hud to Streamliner, in *config - game - hud - style - hud style*.
+### How to Update
+
+This hud is occasionally updated, but I don't have a decent place I can announce the updates on.  
+If you have a GitHub account, consider *Watch* and customize it to only notify you on new releases. Otherwise, please check this repository once every while.
+
+You can overwrite the older files with ones from the newer release.  
+If something is broken in the newer version, go back to the older version and please notify me. Older versions are available on *Releases*.
 
 - - -
 
@@ -72,8 +85,6 @@ and second don't forget to set the hud to Streamliner, in *config - game - hud -
 
 - +Revenant+ for **Making a Custom Hud for BallisticNG**  
   It's the only tutorial that has ever existed for this. He also helped me adapting to the 1.3 code base changes to make something finally appear on the game screen for the first time.
-
-- Special thanks to [Kabelsalat] for keeping me going.
 
 And thank you for trying Streamliner.
 
@@ -121,8 +132,6 @@ When building the container you made with some components in it, the file name w
 
 [Sector Gamma]: https://zipangcomplex.booth.pm/items/3307757
 [Spire NBP]: https://sites.google.com/site/totalfontgeek/nbp-fonts/spire-nbp
-
-[Kabelsalat]: https://twitter.com/ThatGuyKabel
 
 [Install / Update]: https://ballisticng-documentation.readthedocs.io/en/latest/unity_tools/install_update.html
 [Getting Started]: https://ballisticng-documentation.readthedocs.io/en/latest/code_mods/getting_started.html
