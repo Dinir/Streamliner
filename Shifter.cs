@@ -123,6 +123,7 @@ namespace Streamliner
 		internal class Panel
 		{
 			private readonly RectTransform _rt;
+			private readonly GameObject _gameObject;
 			internal readonly string HudName;
 			internal readonly Vector2 OriginPosition;
 			internal Vector2 TargetPosition;
@@ -173,12 +174,13 @@ namespace Streamliner
 			internal void ResetPosition() =>
 				_rt.anchoredPosition = OriginPosition;
 
-			internal void Hide() => _rt.gameObject.SetActive(false);
-			internal void Show() => _rt.gameObject.SetActive(true);
+			internal void Hide() => _gameObject.SetActive(false);
+			internal void Show() => _gameObject.SetActive(true);
 
 			internal Panel(RectTransform rt, string name)
 			{
 				_rt = rt;
+				_gameObject = rt.gameObject;
 				HudName = name;
 				Vector2 anchoredPosition = rt.anchoredPosition;
 				OriginPosition = anchoredPosition;
