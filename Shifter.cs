@@ -148,31 +148,25 @@ namespace Streamliner
 				_rt.anchoredPosition = !horizontalFlip ?
 					ShiftedPosition :
 					FlipPositionOnOrigin(ShiftedPosition, true);
-
 			internal void SetPositionToShaking(bool horizontalFlip = false) =>
 				_rt.anchoredPosition = !horizontalFlip ?
 					ShakingPosition :
 					FlipPositionOnOrigin(ShakingPosition, true);
+			internal void ResetPosition() =>
+				_rt.anchoredPosition = OriginPosition;
 
 			internal Vector2 FlipPositionOnOrigin(Vector2 position, bool x = false, bool y = false) => x switch
 			{
-				true when y is false => position with
-				{
-					x = (position.x - OriginPosition.x) * -1f + OriginPosition.x
-				},
-				false when y is true => position with
-				{
-					y = (position.y - OriginPosition.y) * -1f + OriginPosition.y
-				},
+				// shorten from `(position.x - OriginPosition.x) * -1f + OriginPosition.x`
+				true when y is false => position with { x = OriginPosition.x * 2f - position.x },
+				false when y is true => position with { y = OriginPosition.y * 2f - position.y },
 				true when y is true => position with
 				{
-					x = (position.x - OriginPosition.x) * -1f + OriginPosition.x,
-					y = (position.y - OriginPosition.y) * -1f + OriginPosition.y
+					x = OriginPosition.x * 2f - position.x,
+					y = OriginPosition.y * 2f - position.y
 				},
 				_ => position
 			};
-			internal void ResetPosition() =>
-				_rt.anchoredPosition = OriginPosition;
 
 			internal void Hide() => _gameObject.SetActive(false);
 			internal void Show() => _gameObject.SetActive(true);
