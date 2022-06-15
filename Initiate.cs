@@ -356,8 +356,8 @@ namespace Streamliner
 			_ => ingameValue
 		};
 
-		private readonly string BnGAccentHtmlString =
-			"#" + UnityEngine.ColorUtility.ToHtmlStringRGB(NgUi.RaceUi.ScriptableHud.BnGAccent);
+		//private readonly string BnGAccentHtmlString = "#" + UnityEngine.ColorUtility.ToHtmlStringRGB(NgUi.RaceUi.ScriptableHud.BnGAccent);
+		private const string BnGAccentHtmlString = "#ffad00"; 
 
 		private string TooltipSecondParagraph(string message, string htmlColorString = null) =>
 			Environment.NewLine + Environment.NewLine
