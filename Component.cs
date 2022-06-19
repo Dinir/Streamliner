@@ -3960,7 +3960,9 @@ namespace Streamliner
 		private const float ActivePanelAlpha = 1f;
 		private const float TemporarilyInactivePanelAlpha = 0.5f;
 		private const float InactivePanelAlpha = 0.25f;
-
+		private const string StringTimeTrial = "Time Trial";
+		private const string StringSpeedLap = "Speed Lap";
+		private const string StringSurvival = "Survival";
 		private RectTransform _panel;
 		private CanvasGroup _panelPlatinum;
 		private Image _panelPlatinumImage;
@@ -3989,12 +3991,15 @@ namespace Streamliner
 		private string _gamemodeName;
 		private float _missedPanelAlpha = InactivePanelAlpha;
 
+		private int _totalBaseLaps;
+
 		private float _platinumTarget;
 		private float _goldTarget;
 		private float _silverTarget;
 		private float _bronzeTarget;
 		private bool _targetIsTime;
 		private bool _isSpeedLap;
+		private bool _trackingLapTimes;
 
 		private float _progressTime;
 		private int _progressZone;
@@ -4026,12 +4031,15 @@ namespace Streamliner
 
 			_targetIsTime = _gamemodeName switch
 			{
-				"Time Trial" => true,
-				"Speed Lap" => true,
-				"Survival" => false,
+				StringTimeTrial => true,
+				StringSpeedLap => true,
+				StringSurvival => false,
 				_ => true
 			};
-			_isSpeedLap = _gamemodeName == "Speed Lap";
+			_isSpeedLap = _gamemodeName == StringSpeedLap;
+			_trackingLapTimes = _gamemodeName == StringTimeTrial && OptionBestTime == 2;
+
+			_totalBaseLaps = GetTotalBaseLaps();
 
 			if (_isSpeedLap)
 			{
@@ -4047,12 +4055,7 @@ namespace Streamliner
 			}
 
 			if (_targetIsTime)
-			{
-				_textPlatinum.text = FloatToTime.Convert(_platinumTarget, TimeFormat);
-				_textGold.text = FloatToTime.Convert(_goldTarget, TimeFormat);
-				_textSilver.text = FloatToTime.Convert(_silverTarget, TimeFormat);
-				_textBronze.text = FloatToTime.Convert(_bronzeTarget, TimeFormat);
-			}
+				SetTimes(_trackingLapTimes);
 			else
 			{
 				_textPlatinum.text = "Zone " + _platinumTarget;
@@ -4061,6 +4064,9 @@ namespace Streamliner
 				_textBronze.text = "Zone " + _bronzeTarget;
 				NgUiEvents.OnZoneNumberUpdate += UpdateZone;
 			}
+
+			if (_trackingLapTimes)
+				NgRaceEvents.OnShipLapUpdate += SetTimesAsTotalTimeOnFinalLap;
 		}
 
 		public override void Update()
@@ -4097,6 +4103,35 @@ namespace Streamliner
 			{
 				_panelBronze.alpha = _missedPanelAlpha;
 			}
+		}
+
+		private int GetTotalBaseLaps() => RaceManager.Instance.PointToPointTrack ? 1 :
+				Race.GetBaseLapCountFor(Race.Speedclass) + RaceManager.Instance.ForcedExtraLaps;
+
+		private void SetTimes(bool lapTime = false)
+		{
+			if (!lapTime)
+			{
+				_textPlatinum.text = FloatToTime.Convert(_platinumTarget, TimeFormat);
+				_textGold.text = FloatToTime.Convert(_goldTarget, TimeFormat);
+				_textSilver.text = FloatToTime.Convert(_silverTarget, TimeFormat);
+				_textBronze.text = FloatToTime.Convert(_bronzeTarget, TimeFormat);
+			}
+			else
+			{
+				if (_totalBaseLaps == 0)
+					_totalBaseLaps = GetTotalBaseLaps();
+
+				_textPlatinum.text = FloatToTime.Convert(_platinumTarget / _totalBaseLaps, TimeFormat);
+				_textGold.text = FloatToTime.Convert(_goldTarget / _totalBaseLaps, TimeFormat);
+				_textSilver.text = FloatToTime.Convert(_silverTarget / _totalBaseLaps, TimeFormat);
+				_textBronze.text = FloatToTime.Convert(_bronzeTarget / _totalBaseLaps, TimeFormat);
+			}
+		}
+		private void SetTimesAsTotalTimeOnFinalLap(ShipController ship)
+		{
+			if (ship.CurrentLap == Race.MaxLaps)
+				SetTimes();
 		}
 
 		private void InvalidateLap()
@@ -4151,9 +4186,9 @@ namespace Streamliner
 				NgRaceEvents.OnShipLapUpdate -= ResetPanelAlpha;
 			}
 			if (!_targetIsTime)
-			{
 				NgUiEvents.OnZoneNumberUpdate -= UpdateZone;
-			}
+			if (_trackingLapTimes)
+				NgRaceEvents.OnShipLapUpdate -= SetTimesAsTotalTimeOnFinalLap;
 		}
 	}
 
