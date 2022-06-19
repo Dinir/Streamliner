@@ -1211,6 +1211,7 @@ namespace Streamliner
 		private int _totalBaseLaps;
 		private bool _isCampaign;
 		private bool _isCampaignFinalLap;
+		private bool _targetTimeIsTotalTime;
 
 		private float _bronzeTarget;
 		private float _silverTarget;
@@ -1264,6 +1265,8 @@ namespace Streamliner
 
 			SetTimeType(_gamemodeName);
 			SetDisplayType(_gamemodeName);
+
+			_targetTimeIsTotalTime = _timeType == TimeType.Total || _gamemodeName == StringSpeedLap;
 
 			switch (_displayType)
 			{
@@ -1475,7 +1478,7 @@ namespace Streamliner
 				return;
 			}
 
-			if (_timeType == TimeType.Total || _isCampaignFinalLap)
+			if (_targetTimeIsTotalTime || _isCampaignFinalLap)
 			{
 				ChangeCampaignTargetTime(_platinumTarget, _goldTarget, _silverTarget, _bronzeTarget);
 			}
