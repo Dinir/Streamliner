@@ -1495,6 +1495,12 @@ namespace Streamliner
 			float bronzeTarget
 		)
 		{
+			if (_lapInvalidated)
+			{
+				_currentAward = NgAward.None;
+				return;
+			}
+
 			if ((double) _currentTime <= platinumTarget)
 			{
 				_targetTime = platinumTarget;
@@ -1533,6 +1539,15 @@ namespace Streamliner
 			NgAward.Bronze => _bronzeColor,
 			_ => _defaultColor,
 		};
+
+		private void UpdateColorToMedalTint()
+		{
+			if (!_isCampaign || _currentAward == _awardUsedForTint)
+				return;
+
+			_bigDisplay.UpdateColor(GetMedalTint());
+			_awardUsedForTint = _currentAward;
+		}
 
 		private void SetBestTime(ShipController ship)
 		{
@@ -1608,6 +1623,7 @@ namespace Streamliner
 				_bigDisplay.Value.text = _bigTimeTextBuilder.ToStringNoDecimal(-1f);
 				_bigDisplay.SmallValue.text = "--";
 				_bigDisplay.FillBoth(0f);
+				UpdateColorToMedalTint();
 				return;
 			}
 			if (_targetTime <= 0f)
@@ -1619,11 +1635,7 @@ namespace Streamliner
 				return;
 			}
 
-			if (_isCampaign && _currentAward != _awardUsedForTint)
-			{
-				_bigDisplay.UpdateColor(GetMedalTint());
-				_awardUsedForTint = _currentAward;
-			}
+			UpdateColorToMedalTint();
 
 			float timeLeft = _targetTime - _currentTime;
 			float timeMax = _isCampaign ? _awardTimeDifference : _targetTime;
