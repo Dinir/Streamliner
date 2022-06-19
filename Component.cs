@@ -1149,6 +1149,11 @@ namespace Streamliner
 		private Text _normalDisplayLabel;
 		private Text _normalDisplayValue;
 		private DoubleGaugePanel _bigDisplay;
+		private readonly Color _platinumColor = GetTintColor(tintIndex: 7);
+		private readonly Color _goldColor = GetTintColor(tintIndex: 3);
+		private readonly Color _silverColor = GetTintColor(tintIndex: 0);
+		private readonly Color _bronzeColor = GetTintColor(tintIndex: 2);
+		private Color _defaultColor;
 
 		private readonly BigTimeTextBuilder _bigTimeTextBuilder = new(new StringBuilder());
 
@@ -1162,7 +1167,6 @@ namespace Streamliner
 			_timeType = gamemodeName switch
 			{
 				StringSpeedLap => TimeType.Lap,
-				StringTimeTrial when _isCampaign => TimeType.Total,
 				StringTimeTrial => OptionBestTime == 2 ? TimeType.Lap : TimeType.Total,
 				_ => OptionBestTime == 2 ? TimeType.Lap : TimeType.Total
 			};
@@ -1176,15 +1180,15 @@ namespace Streamliner
 		{
 			/*
 			 * Display Setup
-			 * TT   -> Normal(Total/Lap) / Both(Total/Lap, Total/Lap Left) / Both(Total, Target Left)
-			 * SL   -> None / Big(Lap Left) / Big(Target Left)
+			 * TT   -> Normal(Total/Lap) / Both(Total/Lap, Total/Lap Left)
+			 * SL   -> None / Big(Lap Left)
 			 * Race -> Normal(Total/Lap)
 			 * Then if OptionBestTime is set to off, remove Normal.
 			 */
 			_displayType = gamemodeName switch
 			{
-				StringSpeedLap => _isCampaign || OptionTargetTimer ? DisplayType.Big : DisplayType.None,
-				StringTimeTrial => _isCampaign || OptionTargetTimer ? DisplayType.Both : DisplayType.Normal,
+				StringSpeedLap => OptionTargetTimer ? DisplayType.Big : DisplayType.None,
+				StringTimeTrial => OptionTargetTimer ? DisplayType.Both : DisplayType.Normal,
 				_ => DisplayType.Normal
 			};
 
@@ -1206,15 +1210,25 @@ namespace Streamliner
 		private string _gamemodeName;
 		private int _totalBaseLaps;
 		private bool _isCampaign;
-		private float _bestTime;
+		private bool _isCampaignFinalLap;
+
 		private float _bronzeTarget;
 		private float _silverTarget;
 		private float _goldTarget;
 		private float _platinumTarget;
+		private float _bronzeLapTarget;
+		private float _silverLapTarget;
+		private float _goldLapTarget;
+		private float _platinumLapTarget;
+		private NgAward _currentAward;
+		private NgAward _awardUsedForTint;
+
+		private float _bestTime;
 		private float _targetTime;
 		private float _awardTimeDifference;
 		private float _currentTime;
 		private float _averageLapTimeAdvantage;
+
 		private bool _lapInvalidated;
 		private bool _initiated;
 		private bool _bestTimeIsUpAtLapUpdate;
@@ -1276,7 +1290,7 @@ namespace Streamliner
 			_usingLeftTimeDisplay =
 				_displayType is DisplayType.Big or DisplayType.Both;
 			_showingLapTimeAdvantage =
-				_gamemodeName == StringTimeTrial && _timeType == TimeType.Lap;
+				_gamemodeName == StringTimeTrial && _timeType == TimeType.Lap && !_isCampaign;
 
 			NgRaceEvents.OnCountdownStart += Initiate;
 		}
@@ -1296,6 +1310,8 @@ namespace Streamliner
 				_normalDisplayLabel.color = GetTintFromColor(TextAlpha.ThreeQuarters, engineColor);
 				_normalDisplayValue.color = GetTintFromColor(color: engineColor);
 			}
+
+			_defaultColor = _bigDisplay.GaugeColor;
 		}
 
 		private void Initiate()
@@ -1309,6 +1325,14 @@ namespace Streamliner
 				_silverTarget = NgCampaign.CurrentEvent.EventProgress.SilverValue;
 				_goldTarget = NgCampaign.CurrentEvent.EventProgress.GoldValue;
 				_platinumTarget = NgCampaign.CurrentEvent.EventProgress.PlatinumValue;
+
+				if (_timeType == TimeType.Lap)
+				{
+					_bronzeLapTarget = _bronzeTarget / _totalBaseLaps;
+					_silverLapTarget = _silverTarget / _totalBaseLaps;
+					_goldLapTarget = _goldTarget / _totalBaseLaps;
+					_platinumLapTarget = _platinumTarget / _totalBaseLaps;
+				}
 			}
 			ChangeTargetTime();
 
@@ -1354,12 +1378,12 @@ namespace Streamliner
 				return;
 
 			UpdateBestTime();
-			ChangeTargetTime();
 
 			if (!_usingLeftTimeDisplay)
 				return;
 
 			if (_gamemodeName != StringSpeedLap) UpdateCurrentTime();
+			ChangeTargetTime();
 			SetLeftTime();
 		}
 
@@ -1371,7 +1395,7 @@ namespace Streamliner
 
 		private void UpdateCurrentTime()
 		{
-			_currentTime = _timeType == TimeType.Total ?
+			_currentTime = _timeType == TimeType.Total || _isCampaignFinalLap ?
 				TargetShip.TotalRaceTime : TargetShip.CurrentLapTime;
 		}
 
@@ -1383,8 +1407,12 @@ namespace Streamliner
 			if (ship != TargetShip)
 				return;
 
+			if (_isCampaign && _gamemodeName == StringTimeTrial && ship.CurrentLap == Race.MaxLaps)
+				_isCampaignFinalLap = true;
+
 			UpdateBestTime();
 			ChangeTargetTime();
+			
 			_bestTimeIsUpAtLapUpdate = true;
 		}
 
@@ -1447,27 +1475,61 @@ namespace Streamliner
 				return;
 			}
 
-			if ((double) _currentTime <= _platinumTarget)
+			if (_timeType == TimeType.Total || _isCampaignFinalLap)
 			{
-				_targetTime = _platinumTarget;
-				_awardTimeDifference = _platinumTarget;
+				ChangeCampaignTargetTime(_platinumTarget, _goldTarget, _silverTarget, _bronzeTarget);
 			}
-			else if ((double) _currentTime <= _goldTarget)
+			else
 			{
-				_targetTime = _goldTarget;
-				_awardTimeDifference = _goldTarget - _platinumTarget;
-			}
-			else if ((double) _currentTime <= _silverTarget)
-			{
-				_targetTime = _silverTarget;
-				_awardTimeDifference = _silverTarget - _goldTarget;
-			}
-			else if ((double) _currentTime <= _bronzeTarget)
-			{
-				_targetTime = _bronzeTarget;
-				_awardTimeDifference = _bronzeTarget - _silverTarget;
+				ChangeCampaignTargetTime(_platinumLapTarget, _goldLapTarget, _silverLapTarget, _bronzeLapTarget);
 			}
 		}
+
+		private void ChangeCampaignTargetTime(
+			float platinumTarget,
+			float goldTarget,
+			float silverTarget,
+			float bronzeTarget
+		)
+		{
+			if ((double) _currentTime <= platinumTarget)
+			{
+				_targetTime = platinumTarget;
+				_awardTimeDifference = platinumTarget;
+				_currentAward = NgAward.Platinum;
+			}
+			else if ((double) _currentTime <= goldTarget)
+			{
+				_targetTime = goldTarget;
+				_awardTimeDifference = goldTarget - platinumTarget;
+				_currentAward = NgAward.Gold;
+			}
+			else if ((double) _currentTime <= silverTarget)
+			{
+				_targetTime = silverTarget;
+				_awardTimeDifference = silverTarget - goldTarget;
+				_currentAward = NgAward.Silver;
+			}
+			else if ((double) _currentTime <= bronzeTarget)
+			{
+				_targetTime = bronzeTarget;
+				_awardTimeDifference = bronzeTarget - silverTarget;
+				_currentAward = NgAward.Bronze;
+			}
+			else
+			{
+				_currentAward = NgAward.None;
+			}
+		}
+
+		private Color GetMedalTint() => _currentAward switch
+		{
+			NgAward.Platinum => _platinumColor,
+			NgAward.Gold => _goldColor,
+			NgAward.Silver => _silverColor,
+			NgAward.Bronze => _bronzeColor,
+			_ => _defaultColor,
+		};
 
 		private void SetBestTime(ShipController ship)
 		{
@@ -1552,6 +1614,12 @@ namespace Streamliner
 					IntStrDb.GetNoSingleCharNumber(Mathf.FloorToInt(_currentTime * 100f % 100f));
 				_bigDisplay.FillBoth(1f);
 				return;
+			}
+
+			if (_isCampaign && _currentAward != _awardUsedForTint)
+			{
+				_bigDisplay.UpdateColor(GetMedalTint());
+				_awardUsedForTint = _currentAward;
 			}
 
 			float timeLeft = _targetTime - _currentTime;
