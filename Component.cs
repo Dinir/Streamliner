@@ -1425,6 +1425,11 @@ namespace Streamliner
 			{
 				if (_gamemodeName != StringSpeedLap) UpdateCurrentTime();
 				ChangeTargetTime();
+
+				// when tracking lap time in campaign events,
+				// this will make the progress bar full on beginning the final lap
+				if (_isCampaignFinalLap && !_targetTimeIsTotalTime)
+					_awardTimeDifference = Math.Max(_targetTime - _currentTime, 0f);
 			}
 
 			_timesAreUpAtLapUpdate = true;
