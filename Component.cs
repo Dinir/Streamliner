@@ -1232,7 +1232,7 @@ namespace Streamliner
 
 		private bool _lapInvalidated;
 		private bool _initiated;
-		private bool _bestTimeIsUpAtLapUpdate;
+		private bool _timesAreUpAtLapUpdate;
 
 		public override void Start()
 		{
@@ -1347,7 +1347,7 @@ namespace Streamliner
 			 * So I am making an exception and make them update at
 			 * OnShipLapUpdate instead.
 			 */
-			NgRaceEvents.OnShipLapUpdate += UpdateBestAndTargetTimeOnLapUpdate;
+			NgRaceEvents.OnShipLapUpdate += UpdateTimesOnLapUpdate;
 
 			if (_usingBestTimeDisplay)
 			{
@@ -1382,12 +1382,15 @@ namespace Streamliner
 
 			UpdateBestTime();
 
-			if (!_usingLeftTimeDisplay)
-				return;
+			if (_usingLeftTimeDisplay)
+			{
+				if (_gamemodeName != StringSpeedLap) UpdateCurrentTime();
+				ChangeTargetTime();
+				SetLeftTime();
+			}
 
-			if (_gamemodeName != StringSpeedLap) UpdateCurrentTime();
-			ChangeTargetTime();
-			SetLeftTime();
+			if (_timesAreUpAtLapUpdate)
+				_timesAreUpAtLapUpdate = false;
 		}
 
 		private void UpdateSpeedLapCurrentTime(float currentTime)
@@ -1398,6 +1401,9 @@ namespace Streamliner
 
 		private void UpdateCurrentTime()
 		{
+			if (_timesAreUpAtLapUpdate)
+				return;
+
 			_currentTime = _timeType == TimeType.Total || _isCampaignFinalLap ?
 				TargetShip.TotalRaceTime : TargetShip.CurrentLapTime;
 		}
@@ -1405,7 +1411,7 @@ namespace Streamliner
 		private void InvalidateLap() =>
 			_lapInvalidated = true;
 
-		private void UpdateBestAndTargetTimeOnLapUpdate(ShipController ship)
+		private void UpdateTimesOnLapUpdate(ShipController ship)
 		{
 			if (ship != TargetShip)
 				return;
@@ -1414,18 +1420,20 @@ namespace Streamliner
 				_isCampaignFinalLap = true;
 
 			UpdateBestTime();
-			ChangeTargetTime();
-			
-			_bestTimeIsUpAtLapUpdate = true;
+
+			if (_usingLeftTimeDisplay)
+			{
+				if (_gamemodeName != StringSpeedLap) UpdateCurrentTime();
+				ChangeTargetTime();
+			}
+
+			_timesAreUpAtLapUpdate = true;
 		}
 
 		private void UpdateBestTime()
 		{
-			if (_bestTimeIsUpAtLapUpdate)
-			{
-				_bestTimeIsUpAtLapUpdate = false;
+			if (_timesAreUpAtLapUpdate)
 				return;
-			}
 
 			_bestTime = _loadedBestLapTime switch
 			{
@@ -1442,11 +1450,8 @@ namespace Streamliner
 
 		private void ChangeTargetTime()
 		{
-			if (_bestTimeIsUpAtLapUpdate)
-			{
-				_bestTimeIsUpAtLapUpdate = false;
+			if (_timesAreUpAtLapUpdate)
 				return;
-			}
 
 			/*
 			 * If best time is not loaded from the start
@@ -1670,7 +1675,7 @@ namespace Streamliner
 		public override void OnDestroy()
 		{
 			base.OnDestroy();
-			NgRaceEvents.OnShipLapUpdate -= UpdateBestAndTargetTimeOnLapUpdate;
+			NgRaceEvents.OnShipLapUpdate -= UpdateTimesOnLapUpdate;
 			if (_usingBestTimeDisplay)
 				NgRaceEvents.OnShipLapUpdate -= SetBestTime;
 			if (_usingLeftTimeDisplay)
