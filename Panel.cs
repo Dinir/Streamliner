@@ -1125,6 +1125,7 @@ namespace Streamliner
 			public readonly int Id;
 			public readonly string Name;
 			public float Value;
+			public bool Eliminated;
 
 			public RawValuePair(int id, string name, float value)
 			{
@@ -1245,7 +1246,7 @@ namespace Streamliner
 			{
 				UpdateData(loadedShips);
 				UpdateRefIdByOrder();
-				UpdateSlots(loadedShips);
+				UpdateSlots();
 
 				yield return new WaitForSeconds(Position.UpdateTime);
 			}
@@ -1274,6 +1275,7 @@ namespace Streamliner
 							_rawValueList.Count + 1 : ship.CurrentPlace;
 						break;
 				}
+				rawValuePair.Eliminated = ship.Eliminated;
 			}
 		}
 
@@ -1306,7 +1308,7 @@ namespace Streamliner
 		/// <summary>
 		/// Update the slots of <c>_visibleList</c> with data found with the given reference id in <c>_rawValueList</c>.
 		/// </summary>
-		public void UpdateSlots(List<ShipController> loadedShips)
+		public void UpdateSlots()
 		{
 			switch (_valueType)
 			{
@@ -1319,7 +1321,7 @@ namespace Streamliner
 					break;
 				case ValueType.Position:
 				default:
-					UpdateSlotsPosition(loadedShips);
+					UpdateSlotsPosition();
 					break;
 			}
 		}
@@ -1351,17 +1353,14 @@ namespace Streamliner
 			}
 		}
 
-		private void UpdateSlotsPosition(List<ShipController> loadedShips)
+		private void UpdateSlotsPosition()
 		{
 			foreach (EntrySlot slot in _visibleList)
 			{
 				int refId = slot.RefId;
 				RawValuePair rawValuePair = _rawValueList[refId];
 				slot.SetName(rawValuePair.Name);
-				if (
-					rawValuePair.Value <= _rawValueList.Count &&
-					!loadedShips[rawValuePair.Id].Eliminated
-				)
+				if (rawValuePair.Value <= _rawValueList.Count && !rawValuePair.Eliminated)
 				{
 					slot.SetDisplayValue(_valueType, rawValuePair.Value);
 					slot.ChangeOverallAlpha(TextAlpha.Full);
