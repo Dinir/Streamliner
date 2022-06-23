@@ -1233,19 +1233,6 @@ namespace Streamliner
 			}
 		}
 
-		/// <summary>
-		///		Locate the last `EntrySlot` in the list and hide its game object.
-		/// </summary>
-		/// <param name="ship">
-		///		The ship that just exploded. Keeps data even in gamemodes that don't allow respawn.
-		/// </param>
-		public void HideLastSlot(ShipController ship)
-		{
-			if (ship is null)
-				return;
-			_visibleList[_visibleList.Count - 1].Hide();
-		}
-
 		public void UpdateColor(Color color)
 		{
 			foreach (EntrySlot slot in _visibleList)

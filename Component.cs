@@ -3560,7 +3560,6 @@ namespace Streamliner
 	public class Leaderboard : CustomScaleScriptableHud
 	{
 		private Playerboard _panel;
-		private bool _hideLastSlotOnExplosion;
 
 		private Color? _currentZoneColor = null;
 		private bool _usingZoneColors;
@@ -3576,11 +3575,6 @@ namespace Streamliner
 
 			_usingZoneColors = 
 				RaceManager.CurrentGamemode.Name == "Upsurge" && OptionZoneTintOverride;
-
-			// Data in `RaceManager.CurrentGamemode` are lost when `OnDestroy()` is called.
-			_hideLastSlotOnExplosion = RaceManager.CurrentGamemode.Name == "Knockout";
-			if (_hideLastSlotOnExplosion)
-				NgRaceEvents.OnShipExploded += _panel.HideLastSlot;
 		}
 
 		public override void FinishSettingInitialTextTint()
@@ -3636,8 +3630,6 @@ namespace Streamliner
 		{
 			base.OnDestroy();
 			StopCoroutine(_panel.Update(Ships.Loaded));
-			if (_hideLastSlotOnExplosion)
-				NgRaceEvents.OnShipExploded -= _panel.HideLastSlot;
 			if (_usingZoneColors)
 				NgRaceEvents.OnShipScoreChanged -= UpdateToZoneColor;
 		}
