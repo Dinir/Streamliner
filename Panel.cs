@@ -1260,21 +1260,13 @@ namespace Streamliner
 			foreach (RawValuePair rawValuePair in _rawValueList)
 			{
 				ShipController ship = loadedShips[rawValuePair.Id];
-				switch (_valueType)
+				rawValuePair.Value = _valueType switch
 				{
-					case ValueType.Energy:
-						rawValuePair.Value = ship.ShieldIntegrity;
-						break;
-					case ValueType.Score:
-					case ValueType.IntScore:
-						rawValuePair.Value = ship.Score;
-						break;
-					case ValueType.Position:
-					default:
-						rawValuePair.Value = ship.ShieldIntegrity < 0f ?
-							_rawValueList.Count + 1 : ship.CurrentPlace;
-						break;
-				}
+					ValueType.Energy => ship.ShieldIntegrity,
+					ValueType.Score or ValueType.IntScore => ship.Score,
+					ValueType.Position or _ => ship.ShieldIntegrity >= 0f ?
+						ship.CurrentPlace : _rawValueList.Count + 1
+				};
 				rawValuePair.Eliminated = ship.Eliminated;
 			}
 		}
