@@ -1258,7 +1258,7 @@ namespace Streamliner
 			{
 				UpdateData(loadedShips);
 				UpdateRefIdByOrder();
-				UpdateSlots();
+				UpdateSlots(loadedShips);
 
 				yield return new WaitForSeconds(Position.UpdateTime);
 			}
@@ -1319,7 +1319,7 @@ namespace Streamliner
 		/// <summary>
 		/// Update the slots of <c>_visibleList</c> with data found with the given reference id in <c>_rawValueList</c>.
 		/// </summary>
-		public void UpdateSlots()
+		public void UpdateSlots(List<ShipController> loadedShips)
 		{
 			switch (_valueType)
 			{
@@ -1332,7 +1332,7 @@ namespace Streamliner
 					break;
 				case ValueType.Position:
 				default:
-					UpdateSlotsPosition();
+					UpdateSlotsPosition(loadedShips);
 					break;
 			}
 		}
@@ -1364,14 +1364,17 @@ namespace Streamliner
 			}
 		}
 
-		private void UpdateSlotsPosition()
+		private void UpdateSlotsPosition(List<ShipController> loadedShips)
 		{
 			foreach (EntrySlot slot in _visibleList)
 			{
 				int refId = slot.RefId;
 				RawValuePair rawValuePair = _rawValueList[refId];
 				slot.SetName(rawValuePair.Name);
-				if (rawValuePair.Value <= _rawValueList.Count)
+				if (
+					rawValuePair.Value <= _rawValueList.Count &&
+					!loadedShips[rawValuePair.Id].Eliminated
+				)
 				{
 					slot.SetDisplayValue(_valueType, rawValuePair.Value);
 					slot.ChangeOverallAlpha(TextAlpha.Full);
