@@ -14,6 +14,12 @@ using Random = UnityEngine.Random;
 
 namespace Streamliner
 {
+	/// <summary>
+	/// Keeps data needed for managing the motion effect.
+	/// </summary>
+	/// <remarks>
+	/// It holds various values and logics for the motion effect, updates them with the mod option values, hold references to player ships and <see cref="RectTransform"/> other <see cref="ScriptableHud"/>s send.
+	/// </remarks>
 	internal static class Shifter
 	{
 		internal const int MaxPanelCount = 20;
@@ -182,6 +188,20 @@ namespace Streamliner
 			}
 		}
 
+		/// <summary>
+		/// Apply multipliers defined and loaded in the mod options.
+		/// </summary>
+		/// <remarks>
+		/// <para>
+		/// Call this method from methods that update the option values, after updating them.
+		/// Such methods are mainly called on <see cref="NgModding.ModOptions.OnLoadSettings">OnLoadSettings</see>,
+		/// and <see cref="NgModding.ModOptions.UiToCode">UiToCode</see>.
+		/// If you are calling <see cref="NgModding.ModOptions.RegisterMod">ModOptions.RegisterMod</see>, the method being referred as the third parameter is the method for <c>UiToCode</c>.
+		/// </para>
+		/// <para>
+		/// The three option values, <c>OptionShiftMultiplier</c>, <c>OptionShakeMultiplier</c>, and <c>OptionScrapeMultiplier</c> can be defined as fields in the <see cref="NgModding.CodeMod">CodeMod</see> class. In Streamliner, they are defined as <see cref="float"/> values in a range from <c>0.0f</c> to <c>2.0f</c>, with <c>0.1f</c> as a step.
+		/// </para>
+		/// </remarks>
 		internal static void ApplySettings()
 		{
 			ShiftFactor = BaseShiftFactor * OptionShiftMultiplier;
@@ -190,6 +210,22 @@ namespace Streamliner
 			ScrapingShakeAmount = BaseScrapingShakeAmount * OptionScrapeMultiplier;
 		}
 
+		/// <summary>
+		/// Add the <see cref="RectTransform"/> to the list the motion effect will apply to.
+		/// </summary>
+		/// <remarks>
+		/// Call this method inside of every <see cref="ScriptableHud"/> you want to apply the motion effect to, in its initialization phase.<br/>
+		/// In Streamliner, <see cref="ShipController.playerIndex">TargetShip.playerIndex</see> and <see cref="object.GetType">GetType()</see><see cref="System.Reflection.MemberInfo.Name">.Name</see> are fed after the first parameter.
+		/// </remarks>
+		/// <param name="panel">
+		/// The <see cref="RectTransform"/> of a game element on which everything in the <see cref="ScriptableHud"/> will be displayed on.
+		/// </param>
+		/// <param name="playerIndex">
+		/// Index of the player the hud belongs to. Don't use <see cref="ShipController.ShipId"/> for this, as it's not properly initiated when <see cref="ScriptableHud.Start"/> is called.
+		/// </param>
+		/// <param name="name">
+		/// Name of the hud component. Not actually used, but could be helpful for debugging.
+		/// </param>
 		internal static void Add(RectTransform panel, int playerIndex, string name) =>
 			Panels[playerIndex].Add(new Panel(panel, name));
 
@@ -383,6 +419,12 @@ namespace Streamliner
 		}*/
 	}
 
+	/// <summary>
+	/// Adds <see cref="ScriptableHud.TargetShip">TargetShips</see> to <see cref="Shifter"/>, and manages starting and stopping updating the motion effect over time.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="NgModding.Huds.SceneHudManager.RegisterHud{T}(BallisticUnityTools.Placeholders.HudComponents)">Register</see> this hud component after registering all the others the motion effect should be applied to. The list for the effect is not updated after the coroutine is started, so any hud components registered after this one will not have the effect.
+	/// </remarks>
 	public class ShifterHud : ScriptableHud
 	{
 		private int _playerIndex;

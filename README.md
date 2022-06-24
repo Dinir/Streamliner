@@ -1,4 +1,4 @@
-﻿# ![Logo Light]![Logo Dark]
+# ![Logo Light]![Logo Dark]
 
 custom hud for [BallisticNG], made to streamline your racing process
 
@@ -104,9 +104,12 @@ There are not much available custom huds for this game, so it was hopeless to ge
   - `Initiate.cs` handles registering the hud and the mod options.
   - `Component.cs` contains scripts for the hud components.
   - `Panel.cs` contains classes used by several hud component scripts.
+  - `Shifter.cs` contains a static class and a corresponding hud class for the motion effect.
 
 Assets are made with **Unity 2018.3.8f1**, and scripts are built with **.NET Framework v4.7**.  
 The scripts use libraries from **version 1.3-d38 of the game**.
+
+I separated `Shifter.cs` because it can be used outside of Streamliner. If there's anyone who wants to add a motion effect to a custom hud they are making, and find mine useful, I want to be a help by sharing this file. The main condition for this -- or deriving from any of my code for your custom hud -- is that you should also make your source code publicly available. Check the license for details.
 
 ### Getting Started
 
