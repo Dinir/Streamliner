@@ -3273,43 +3273,43 @@ namespace Streamliner
 			}
 
 			// wrong way
-			if (_facingBackwardExpected)
-				return;
-
-			// wrong way entering and exiting
-			if (
-				!_wasWrongWay && !TargetShip.FacingForward ||
-				_wasWrongWay && TargetShip.FacingForward
-			)
+			if (!_facingBackwardExpected)
 			{
-				if (_wasWrongWay)
-					SetWrongWayAnimationTargetState(false);
+				// wrong way entering and exiting
+				if (
+					!_wasWrongWay && !TargetShip.FacingForward ||
+					_wasWrongWay && TargetShip.FacingForward
+				)
+				{
+					if (_wasWrongWay)
+						SetWrongWayAnimationTargetState(false);
 
-				_wrongWayWaitTimeRemaining = 0f;
-				_wasWrongWay = !TargetShip.FacingForward;
-			}
+					_wrongWayWaitTimeRemaining = 0f;
+					_wasWrongWay = !TargetShip.FacingForward;
+				}
 
-			// wait briefly before displaying wrong way warning
-			if (_wasWrongWay && _wrongWayWaitTimeRemaining < WrongWayWaitTime)
-			{
-				_wrongWayWaitTimeRemaining += Time.deltaTime;
-				if (_wrongWayWaitTimeRemaining >= WrongWayWaitTime)
-					SetWrongWayAnimationTargetState(true);
-			}
+				// wait briefly before displaying wrong way warning
+				if (_wasWrongWay && _wrongWayWaitTimeRemaining < WrongWayWaitTime)
+				{
+					_wrongWayWaitTimeRemaining += Time.deltaTime;
+					if (_wrongWayWaitTimeRemaining >= WrongWayWaitTime)
+						SetWrongWayAnimationTargetState(true);
+				}
 
-			// handle wrong way warning fade, triggers when entering or exiting
-			if (_wrongWayFadeTimeRemaining > 0f)
-			{
-				_wrongWayCurrentAlpha =
-					Mathf.Lerp(_wrongWayCurrentAlpha, _wrongWayAlpha,
-						Time.deltaTime * WrongWayFadeSpeed);
-				_wrongWay.color = _wrongWayCurrentColor with { a = _wrongWayCurrentAlpha };
-				_wrongWayFadeTimeRemaining -= Time.deltaTime;
-			}
-			else
-			{
-				_wrongWay.color = _wrongWayCurrentColor with { a = _wrongWayAlpha };
-				_wrongWayFadeTimeRemaining = 0f;
+				// handle wrong way warning fade, triggers when entering or exiting
+				if (_wrongWayFadeTimeRemaining > 0f)
+				{
+					_wrongWayCurrentAlpha =
+						Mathf.Lerp(_wrongWayCurrentAlpha, _wrongWayAlpha,
+							Time.deltaTime * WrongWayFadeSpeed);
+					_wrongWay.color = _wrongWayCurrentColor with { a = _wrongWayCurrentAlpha };
+					_wrongWayFadeTimeRemaining -= Time.deltaTime;
+				}
+				else
+				{
+					_wrongWay.color = _wrongWayCurrentColor with { a = _wrongWayAlpha };
+					_wrongWayFadeTimeRemaining = 0f;
+				}
 			}
 		}
 
