@@ -2777,6 +2777,7 @@ namespace Streamliner
 		private const float FadeOutTimeMax = 1.2f;
 		private const int WrongWayFadeSpeed = 13;
 		private const float WrongWayFadeTimeMax = 0.8f;
+		private const float WrongWayWaitTime = 2f;
 		private float _wrongWayAlpha;
 		private float _wrongWayCurrentAlpha;
 		private Color _wrongWayCurrentColor;
@@ -2856,6 +2857,7 @@ namespace Streamliner
 		private float _npDisplayTime;
 		private float _npFadeOutTimeRemaining;
 		private bool _npFadeOutInProgress;
+		private float _wrongWayWaitTimeRemaining;
 		private float _wrongWayFadeTimeRemaining;
 		private bool _wasWrongWay;
 
@@ -3274,16 +3276,28 @@ namespace Streamliner
 			if (_facingBackwardExpected)
 				return;
 
+			// wrong way entering and exiting
 			if (
 				!_wasWrongWay && !TargetShip.FacingForward ||
 				_wasWrongWay && TargetShip.FacingForward
 			)
 			{
-				_wrongWayAlpha = _wasWrongWay ? 0f : 1f;
-				_wrongWayFadeTimeRemaining = WrongWayFadeTimeMax;
+				if (_wasWrongWay)
+					SetWrongWayAnimationTargetState(false);
+
+				_wrongWayWaitTimeRemaining = 0f;
 				_wasWrongWay = !TargetShip.FacingForward;
 			}
 
+			// wait briefly before displaying wrong way warning
+			if (_wasWrongWay && _wrongWayWaitTimeRemaining < WrongWayWaitTime)
+			{
+				_wrongWayWaitTimeRemaining += Time.deltaTime;
+				if (_wrongWayWaitTimeRemaining >= WrongWayWaitTime)
+					SetWrongWayAnimationTargetState(true);
+			}
+
+			// handle wrong way warning fade, triggers when entering or exiting
 			if (_wrongWayFadeTimeRemaining > 0f)
 			{
 				_wrongWayCurrentAlpha =
@@ -3297,6 +3311,14 @@ namespace Streamliner
 				_wrongWay.color = _wrongWayCurrentColor with { a = _wrongWayAlpha };
 				_wrongWayFadeTimeRemaining = 0f;
 			}
+		}
+
+		private void SetWrongWayAnimationTargetState(bool isGoingWrongWay)
+		{
+			_wrongWayAlpha = isGoingWrongWay ? 1f : 0f;
+			_wrongWayFadeTimeRemaining = WrongWayFadeTimeMax;
+			if (isGoingWrongWay)
+				NgSound.PlayOneShot(NgSound.Ui_WrongWay, EAudioChannel.Interface, 1f, 1f);
 		}
 
 		private IEnumerator RemoveMessage(int i)
