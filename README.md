@@ -100,7 +100,7 @@ There are not much available custom huds for this game, so it was hopeless to ge
 
 - `Assets` are Unity assets of the hud. You can open `Assets/Streamliner.unity` Scene to see each hud components. I excluded font files to avoid violating any rights of the font authors.
 - `WeaponSprites` are the sprite image files the game will load.
-- The three cs files are the scripts running the hud.
+- The cs files are the scripts running the hud.
   - `Initiate.cs` handles registering the hud and the mod options.
   - `Component.cs` contains scripts for the hud components.
   - `Panel.cs` contains classes used by several hud component scripts.
