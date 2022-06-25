@@ -1903,7 +1903,7 @@ namespace Streamliner
 
 		private void StartTransition(ShipController ship)
 		{
-			if (ship != _upsurgeTargetShip?.TargetShip)
+			if (ship != _upsurgeTargetShip?.TargetShip || _gamemode.SessionFinished)
 				return;
 
 			_transitionTimer = TransitionTimerMax;
