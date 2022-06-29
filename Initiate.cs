@@ -19,7 +19,7 @@ namespace Streamliner
 		// This name appears at "config - game - hud - style - hud style".
 		// The hud is considered as a different one if this is changed.
 		private const string ID = "Streamliner";
-		private const string _version = "1.2.7";
+		private const string _version = "1.2.8";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
@@ -162,7 +162,7 @@ namespace Streamliner
 
 		private void GenerateModUi(ModOptionsUiContext ctx)
 		{
-			ctx.GenerateHeader(OptionSectionDisplay);
+			ctx.GenerateHeader(OptionSectionDisplay.ToLower());
 
 			ctx.GenerateSelector(
 				"TextTint", "text tint",
@@ -196,7 +196,7 @@ namespace Streamliner
 				"off", "follow game setting"
 			);
 
-			ctx.GenerateHeader(OptionSectionMotion);
+			ctx.GenerateHeader(OptionSectionMotion.ToLower());
 
 			ctx.GenerateSelector(
 				"Motion", "motion effect",
@@ -232,7 +232,7 @@ namespace Streamliner
 				10, NgSlider.RoundMode.Round
 			);
 
-			ctx.GenerateHeader(OptionSectionAddition);
+			ctx.GenerateHeader(OptionSectionAddition.ToLower());
 
 			ctx.GenerateSelector(
 				"SpeedHighlight", "speed reduction",
