@@ -19,7 +19,7 @@ namespace Streamliner
 		// This name appears at "config - game - hud - style - hud style".
 		// The hud is considered as a different one if this is changed.
 		private const string ID = "Streamliner";
-		private const string _version = "1.2.7";
+		private const string _version = "1.2.8";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 
@@ -39,6 +39,7 @@ namespace Streamliner
 		public static bool OptionRechargeAmount = true;
 		public static bool OptionTargetTimer = true;
 		public static int OptionBestTime = 1;
+		public static bool OptionMPWeaponWarning;
 
 		public const int OptionValueTintShipEngineIndexForGame = -1;
 
@@ -46,6 +47,7 @@ namespace Streamliner
 		private const string OptionSectionDisplay = "Display";
 		private const string OptionSectionMotion = "Motion Effect";
 		private const string OptionSectionAddition = "Additional Information";
+		private const string OptionSectionExtra = "Extra";
 		//private readonly string BnGAccentHtmlString = "#" + UnityEngine.ColorUtility.ToHtmlStringRGB(NgUi.RaceUi.ScriptableHud.BnGAccent);
 		private const string BnGAccentHtmlString = "#ffad00";
 		private readonly string ImperfectLiveUpdatableOptionNotice =
@@ -283,6 +285,16 @@ namespace Streamliner
 				OptionBestTime,
 				"off", "total time", "lap time"
 			);
+
+			ctx.GenerateHeader(OptionSectionExtra);
+
+			ctx.GenerateSelector(
+				"MPWeaponWarning", "mp weapon warning",
+				"Show weapon warnings when a nearby human player obtain a weapon." + Environment.NewLine
+				+ "This is a workaround for a missing function. Please disable it when the base game implements it.",
+				OptionMPWeaponWarning ? 1 : 0,
+				"off", "on"
+			);
 		}
 
 		private void ModUiToCode(ModOptionsUiContext ctx)
@@ -301,6 +313,7 @@ namespace Streamliner
 			OptionRechargeAmount = ctx.GetSelectorValue("RechargeAmount") == 1;
 			OptionTargetTimer = ctx.GetSelectorValue("TargetTimer") == 1;
 			OptionBestTime = ctx.GetSelectorValue("BestTime");
+			OptionMPWeaponWarning = ctx.GetSelectorValue("MPWeaponWarning") == 1;
 
 			Shifter.ApplySettings();
 		}
@@ -324,6 +337,7 @@ namespace Streamliner
 			OptionRechargeAmount = ini.ReadValue(OptionSectionAddition, "RechargeAmount", OptionRechargeAmount);
 			OptionTargetTimer = ini.ReadValue(OptionSectionAddition, "TargetTimer", OptionTargetTimer);
 			OptionBestTime = ini.ReadValue(OptionSectionAddition, "BestTime", OptionBestTime);
+			OptionMPWeaponWarning = ini.ReadValue(OptionSectionExtra, "MPWeaponWarning", OptionMPWeaponWarning);
 
 			ini.Close();
 
@@ -349,6 +363,7 @@ namespace Streamliner
 			ini.WriteValue(OptionSectionAddition, "RechargeAmount", OptionRechargeAmount);
 			ini.WriteValue(OptionSectionAddition, "TargetTimer", OptionTargetTimer);
 			ini.WriteValue(OptionSectionAddition, "BestTime", OptionBestTime);
+			ini.WriteValue(OptionSectionExtra, "MPWeaponWarning", OptionMPWeaponWarning);
 
 			ini.Close();
 		}
