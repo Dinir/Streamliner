@@ -3435,6 +3435,8 @@ namespace Streamliner
 		private PickupPanel _warningPanel;
 		private float _warningTimer;
 		private const float WarningTimeMax = 2.5f;
+		private bool _usingExtraWeaponWarning;
+		private WeaponWarningManager _warningManager;
 
 		public override void Start()
 		{
@@ -3446,10 +3448,18 @@ namespace Streamliner
 				_panel.Find("Info").GetComponent<Text>());
 			_warningPanel = new PickupPanel(
 				_panel.Find("WarningBackground").GetComponent<RectTransform>());
+			
+			_usingExtraWeaponWarning = OptionMPWeaponWarning;
 
 			PickupBase.OnPickupInit += ShowPickup;
 			PickupBase.OnPickupDeinit += HidePickup;
 			NgUiEvents.OnWeaponWarning += Warn;
+			
+			if (_usingExtraWeaponWarning)
+			{
+				_warningManager = new(TargetShip);
+				NgRaceEvents.OnShipPickup += _warningManager.OnShipPickup;
+			}
 		}
 
 		public override void FinishSettingInitialTextTint()
@@ -3522,6 +3532,8 @@ namespace Streamliner
 			PickupBase.OnPickupInit -= ShowPickup;
 			PickupBase.OnPickupDeinit -= HidePickup;
 			NgUiEvents.OnWeaponWarning -= Warn;
+			if (_usingExtraWeaponWarning)
+				NgRaceEvents.OnShipPickup -= _warningManager.OnShipPickup;
 		}
 	}
 
