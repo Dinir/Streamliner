@@ -14,6 +14,7 @@ using NgLib;
 using NgData;
 using NgModding.Huds;
 using NgModes;
+using NgPickups;
 using NgTrackData;
 using NgShips;
 using NgUi.RaceUi.HUD;
@@ -365,6 +366,37 @@ namespace Streamliner
 			{ "hunter", CustomHudRegistry.GetWeaponSprite("hunter", false) },
 			{ "hellstorm", CustomHudRegistry.GetWeaponSprite("hellstorm", false) }
 		};
+	}
+
+	internal class WeaponWarningManager
+	{
+		internal readonly ShipController TargetShip;
+
+		internal WeaponWarningManager(ShipController targetShip) => TargetShip = targetShip;
+
+		internal void OnShipPickup(ShipController ship)
+		{
+			if (ship == TargetShip || ship.IsAi) return;
+
+			Pickup pickup = ship.CurrentPickupRegister;
+			bool shouldWarn = pickup.Name switch
+			{
+				"rockets" => ShipIsBehindTargetShip(ship) && ShipIsCloseToTargetShip(ship),
+				"missile" => ShipIsCloseToTargetShip(ship, 10),
+				"mines" => !ShipIsBehindTargetShip(ship) && ShipIsCloseToTargetShip(ship),
+				"plasma" => ShipIsBehindTargetShip(ship) && ShipIsCloseToTargetShip(ship),
+				"energywall" => ShipIsCloseToTargetShip(ship),
+				"cannon" => ShipIsBehindTargetShip(ship) && ShipIsCloseToTargetShip(ship),
+				"tremor" => ShipIsBehindTargetShip(ship) && ShipIsCloseToTargetShip(ship, 120),
+				_ => false
+			};
+
+			if (shouldWarn)
+				ship.CurrentPickupRegister.WarnPlayer();
+		}
+
+		internal bool ShipIsBehindTargetShip(ShipController ship) => ship.CurrentPlace > TargetShip.CurrentPlace;
+		internal bool ShipIsCloseToTargetShip(ShipController ship, int sectionAmount = 30) => Ships.SectionOffsetBetween(TargetShip, ship) < sectionAmount;
 	}
 
 	internal static class SectionManager
