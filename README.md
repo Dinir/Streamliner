@@ -106,14 +106,36 @@ There are not much available custom huds for this game, so it was hopeless to ge
   - `Panel.cs` contains classes used by several hud component scripts.
   - `Shifter.cs` contains a static class and a corresponding hud class for the motion effect.
 
-Assets are made with **Unity 2018.3.8f1**, and scripts are built with **.NET Framework v4.7**.  
+Assets are made with **Unity 2018.3.8f1**, and scripts are built with **.NET Framework v4.7**.[^version_difference]  
 The scripts use libraries from **version 1.3-d38 of the game**.
 
 I separated `Shifter.cs` because it can be used outside of Streamliner. If there's anyone who wants to add a motion effect to a custom hud they are making, and find mine useful, I want to be a help by sharing this file. The main condition for this -- or deriving from any of my code for your custom hud -- is that you should also make your source code publicly available. Check the license for details.
 
+[^version_difference]: The framework version should've been v4.6, but when I was trying to create a project in Visual Studio I couldn't choose that version. 
+[The C# version for .NET Framework is 7.3][Compiler Defaults for Target Framework], but the scripts also use features from up to 10.0 yet the project builds successfully. I think the language version got changed when I switched to and used JetBrains Rider, which wouldn't have happened if Visual Studio didn't wipe out a huge chunk of code I wrote for several hours and SAVED….[^fyou_vs_honestly]
+
+    So it's C# 10.0 the scripts were built with, for .NET Framework v4.7 as the target framework, for a game that works with .NET Framework v4.6. I am in awe that the mod works in the game. When I finally figured out how to make the scripts work on a different project, Streamliner was at 1.2. It's too late, by a release and two major updates worth of time, to go back and get the code to work on .NET Framework v4.6. Again, I couldn't get any kinds of help at all the whole time I was working on the hud. And I doubt it will get any better in the future.
+
+[^fyou_vs_honestly]: Because I clicked 'Undo Changes', after deliberately highlighting the block I wanted to undo because it's one of the new features in the preview version I really needed, and confirmed when it asked me if I want to undo changes for 1 ***item(s)***. Item can mean several things in that context, so I made sure I saved the file and reopened the dialog to confirm it. Ctrl+Z didn't work. I suffered a physical headache.
+
+[Compiler Defaults for Target Framework]: https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version#defaults
+
 ### Getting Started
 
-To learn how to make an environment to properly see what's happening, check out [Install / Update] and [Getting Started] page on the documentation.
+To learn how to make an environment to properly see what's happening, first check out [Install / Update] and [Getting Started] page on the documentation. But make the project with target framework of v4.7 instead,[^version_difference] and add `<LangVersion>default</LangVersion>` to the `.csproj` file. The project properties file on my side, in the first `<PropertyGroup>`, looks like the one below. I still don't know how "default" can allow the code to use "latest" features though.
+
+```xml
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    ...
+    <RootNamespace>Streamliner</RootNamespace>
+    <AssemblyName>Streamliner</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    ...
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+```
 
 You can also check out +Revenant+'s tutorial to kickstart the progress. It's available in the official discord server. The tutorial will take you through making a speedometer and a pickup display. Just be aware that there was a code base refactoring at a later time, so the initiation process explained on the tutorial is not applied anymore.
 
