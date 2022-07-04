@@ -440,6 +440,7 @@ namespace Streamliner
 		private Color _deltaColor;
 		private Color _deltaFinalColor;
 		private Color _deltaInactiveColor;
+		private bool _currentlyInSituationalColor;
 		private const float DeltaFinalAlpha = 0.9f;
 		private const float DeltaInactiveAlpha = 0f;
 
@@ -527,15 +528,9 @@ namespace Streamliner
 			_delta.color = _deltaInactiveColor;
 		}
 
-		private void UpdateColor()
+		private void ImmediatelyApplyDefaultColorIfPossible()
 		{
-			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
-			_gaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
-
-			if (
-				!(OptionEnergyChange && _isRecharging) &&
-				!(OptionLowEnergy != 0 && _currentEnergy <= 25f)
-			)
+			if (!_currentlyInSituationalColor)
 				_currentColor = _defaultColor;
 
 			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0)
@@ -544,22 +539,17 @@ namespace Streamliner
 			_value.color = _defaultColor;
 			_gaugeImage.color = _defaultColor;
 		}
+		private void UpdateColor()
+		{
+			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
+			_gaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
+			ImmediatelyApplyDefaultColorIfPossible();
+		}
 		private void UpdateColor(Color color)
 		{
 			_defaultColor = GetTintFromColor(TextAlpha.ThreeQuarters, color);
 			_gaugeBackground.color = GetTintFromColor(TextAlpha.ThreeEighths, color);
-
-			if (
-				!(OptionEnergyChange && _isRecharging) &&
-				!(OptionLowEnergy != 0 && _currentEnergy <= 25f)
-			)
-				_currentColor = _defaultColor;
-
-			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0)
-				return;
-
-			_value.color = _defaultColor;
-			_gaugeImage.color = _defaultColor;
+			ImmediatelyApplyDefaultColorIfPossible();
 		}
 
 		public override void Update()
@@ -710,25 +700,44 @@ namespace Streamliner
 			if (_transitionAnimationTimer > 0f)
 			{
 				if (OptionEnergyChange && _isRecharging)
+				{
+					_currentlyInSituationalColor = true;
 					_currentColor = _rechargeColor;
+				}
 				else if (OptionLowEnergy != 0 && _currentEnergy <= 25f)
 				{
 					if (_currentEnergy > 10f)
 					{
+						_currentlyInSituationalColor =
+							OptionLowEnergy == 2 || Audio.WarnOfLowEnergy;
 						_currentColor =
-							OptionLowEnergy == 2 || Audio.WarnOfLowEnergy ?
+							_currentlyInSituationalColor ?
 								_lowColor : _defaultColor;
 					}
 					else
 					{
-						_currentColor =
-							OptionLowEnergy == 2 || Audio.WarnOfCriticalEnergy ?
-								_criticalColor : Audio.WarnOfLowEnergy ?
-									_lowColor : _defaultColor;
+						_currentlyInSituationalColor = true;
+						switch (OptionLowEnergy == 2)
+						{
+							case true:
+							case false when Audio.WarnOfCriticalEnergy:
+								_currentColor = _criticalColor;
+								break;
+							case false when Audio.WarnOfLowEnergy:
+								_currentColor = _lowColor;
+								break;
+							default:
+								_currentlyInSituationalColor = false;
+								_currentColor = _defaultColor;
+								break;
+						}
 					}
 				}
 				else
+				{
+					_currentlyInSituationalColor = false;
 					_currentColor = _defaultColor;
+				}
 
 				color = Color.Lerp(
 					color, _currentColor, Time.deltaTime * SlowTransitionSpeed);
