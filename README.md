@@ -39,7 +39,7 @@ Mods of the game can't overcome these at the moment.
 
 - Upsurge game mode will fail to properly pause the game.
 - Weapon warning is, even in the vanilla hud, not properly available in multiplayer races. It only works when a bot gets a pickup.
-- Steamworks features are blocked when Code Mods are running. This includes submitting records to the leaderboards and Steam based multiplayer races.
+- Steamworks features are blocked when code mods are running. This includes submitting records to the leaderboards and Steam based multiplayer races.
 
 - - -
 
@@ -51,8 +51,9 @@ Please switch the game to the beta version to use this hud.
 Click [here][Download Link] or *Releases* at the right side of the page to get the **7z** archive file.  
 The archive file contains a folder for weapon sprites, an `nga`, a readme text `md`, and a `dll`.
 
-1. Extract the entire folder into the game's Code Modes folder.  
-    `<Steam Library>\steamapps\common\BallisticNG\User\Mods\Code Mods\`
+1. Extract the entire folder into the game's code mods folder.  
+    `<Steam Library>\steamapps\common\BallisticNG\User\Mods\Code Mods\`  
+The dll should be accessible as `Streamliner\Streamliner.dll` from the folder.
 2. Activate the hud.  
 Run the game and go to *mod - manage mods*, then set as follow:
     > activated: **On**  
