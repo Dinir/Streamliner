@@ -12,26 +12,29 @@ custom hud for [BallisticNG], made to streamline your racing process
 
 ## Features
 
-- ### Big numbers, lines, centred message display,
-  to help you maintain your focus by reducing the time you spend looking away to read the hud.
-- ### Dynamic color-shifting speedometer and energymeter,
-  to indicate speed losses and energy changes.
-- ### 4:3 area hud position,
-  so everything stays closer to the centre of the screen, and the hud will have the same look in 4:3 screen resolutions. Also applies to splitscreen.
-- ### Proximity position tracker.
-- ### Shorter time difference format.
-  `-0:04.22` => `-4.22s`
-- ### Target time display,
-  which shows you the average lap time of your best time, and starts counting down as you start a new lap. It adds up any saves and loses at every new lap, to help you keep the pace on Time Trial (activate it with the mod option).
-- ### Scrolling lap time display,
-  so you can actually see your 5th lap time in a longer race.
-- ### Motion effect,
-  of which the intensity can be adjusted.
-- ### Text colour options.
-  White, evenly spaced 12 hues, ship trail colour, and survival palette override.
-- ### Splitscreen support.
-- ### Texts are rendered with Unity's default Text component,
-  so they will display well on the native Linux version.
+- **Full support for the base game**,  
+  including all base game modes and related base game options as of 1.3. It also works on the native Linux build as the hud uses Unity's default text component.
+
+- **Big numbers, lines, and centred message display**  
+  will help you maintain your focus by reducing the time you spend looking away to read the hud. The components also stay in the 4:3 area, so they are closer to the centre of the screen and keep the same look in 4:3 screen resolutions.
+- **Text colour options**:  
+  white, ship trail colour, evenly spaced 12 hues. There's also an option for the Survival palette to override it.
+- **Color-shifting speedometer and energymeter**  
+  indicate any speed losses and energy changes. Energymeter can also display the regained amount.
+- **Proximity position tracker**  
+  shows the distance between you and other ships over the laps.
+- **Scrolling lap time display**  
+  will let you actually see your 5th lap time in a longer race.
+- **Target time display for Time Trial and Speed Lap**  
+  shows you how you perform compared to your best time. In Time Trial, it will count down from your best average lap time and add up any differences you made at every new lap.
+- **Shorter time difference format** (`-4.22s`).
+
+- **Motion effect**  
+  reacts to wall collisions, scraping, landings, bottom-outs, and any big speed losses. If it's shaking, you might need to be improvising your racing line.
+- **Support for splitscreen**,  
+  or the only way to play other game modes with one friend of yours.
+- **Customization with mod options**:  
+  you can adjust the intensity of each motion effect kinds and toggle most of the additional features.
 
 ## Limitations
 
