@@ -530,10 +530,12 @@ namespace Streamliner
 
 		private void ImmediatelyApplyDefaultColorIfPossible()
 		{
-			if (!_currentlyInSituationalColor)
-				_currentColor = _defaultColor;
+			if (_currentlyInSituationalColor)
+				return;
 
-			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0)
+			_currentColor = _defaultColor;
+
+			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0 || _isRecharging)
 				return;
 
 			_value.color = _defaultColor;
