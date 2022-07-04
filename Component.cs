@@ -532,7 +532,11 @@ namespace Streamliner
 			_defaultColor = GetTintColor(TextAlpha.ThreeQuarters);
 			_gaugeBackground.color = GetTintColor(TextAlpha.ThreeEighths);
 
-			_currentColor = _defaultColor;
+			if (
+				!(OptionEnergyChange && _isRecharging) &&
+				!(OptionLowEnergy != 0 && _currentEnergy <= 25f)
+			)
+				_currentColor = _defaultColor;
 
 			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0)
 				return;
@@ -545,7 +549,11 @@ namespace Streamliner
 			_defaultColor = GetTintFromColor(TextAlpha.ThreeQuarters, color);
 			_gaugeBackground.color = GetTintFromColor(TextAlpha.ThreeEighths, color);
 
-			_currentColor = _defaultColor;
+			if (
+				!(OptionEnergyChange && _isRecharging) &&
+				!(OptionLowEnergy != 0 && _currentEnergy <= 25f)
+			)
+				_currentColor = _defaultColor;
 
 			if (_transitionAnimationTimer != 0 || _damageAnimationTimer != 0)
 				return;
