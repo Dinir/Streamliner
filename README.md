@@ -90,6 +90,8 @@ And thank you for trying Streamliner.
 
 - - -
 
+This is one of the big projects I did in my life, and I have a donation link for supporting my creative activities, so I decided to put the link in this repository. But I am not asking you to donate for this hud, nor will any parts of the hud in-game. The primary purpose of putting the link is to have a way to display people who supported me as a person, to show them my gratitude.
+
 - - -
 
 ## Source Code
