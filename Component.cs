@@ -803,7 +803,7 @@ namespace Streamliner
 				return;
 
 			_currentZoneColor = color;
-			UpdateColor(GetTintFromColor(color: color));
+			UpdateColor(color);
 		}
 		private void UpdateToZoneColor(string number)
 		{
