@@ -1245,6 +1245,7 @@ namespace Streamliner
 
 		private float _bestTime;
 		private float _targetTime;
+		private float _targetAverageLapTime;
 		private float _awardTimeDifference;
 		private float _currentTime;
 		private float _averageLapTimeAdvantage;
@@ -1339,6 +1340,8 @@ namespace Streamliner
 		private void Initiate()
 		{
 			_loadedBestLapTime = TargetShip.LoadedBestLapTime;
+			if (_loadedBestLapTime)
+				_targetAverageLapTime = TargetShip.TargetTime / _totalBaseLaps;
 
 			UpdateBestTime();
 			if (_isCampaign)
@@ -1465,7 +1468,7 @@ namespace Streamliner
 					TargetShip.TargetTime,
 				true when TargetShip.BestLapTime <= 0f
 				          && TargetShip.TargetTime > 0f =>
-					TargetShip.TargetTime / _totalBaseLaps,
+					_targetAverageLapTime,
 				true => TargetShip.BestLapTime,
 				false => TargetShip.HasBestLapTime ?
 					TargetShip.BestLapTime : -1f
