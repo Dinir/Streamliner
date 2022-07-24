@@ -1435,8 +1435,7 @@ namespace Streamliner
 			if (ship != TargetShip)
 				return;
 
-			if (_isCampaign && _gamemodeName == StringTimeTrial && ship.CurrentLap == Race.MaxLaps)
-				_isCampaignFinalLap = true;
+			_isCampaignFinalLap = _isCampaign && _gamemodeName == StringTimeTrial && ship.CurrentLap == Race.MaxLaps;
 
 			UpdateBestTime();
 
