@@ -19,7 +19,7 @@ namespace Streamliner
 		// This name appears at "config - game - hud - style - hud style".
 		// The hud is considered as a different one if this is changed.
 		private const string ID = "Streamliner";
-		private const string _version = "1.2.9";
+		private const string _version = "1.2.10";
 		public static ModAssets Assets;
 		private static string _modPathOnClassScope;
 

@@ -1534,33 +1534,33 @@ namespace Streamliner
 
 			if ((double) _currentTime <= platinumTarget)
 			{
+				_targetTime = platinumTarget;
 				if (_currentAward == NgAward.Platinum)
 					return;
-				_targetTime = platinumTarget;
 				_awardTimeDifference = platinumTarget;
 				_currentAward = NgAward.Platinum;
 			}
 			else if ((double) _currentTime <= goldTarget)
 			{
+				_targetTime = goldTarget;
 				if (_currentAward == NgAward.Gold)
 					return;
-				_targetTime = goldTarget;
 				_awardTimeDifference = goldTarget - platinumTarget;
 				_currentAward = NgAward.Gold;
 			}
 			else if ((double) _currentTime <= silverTarget)
 			{
+				_targetTime = silverTarget;
 				if (_currentAward == NgAward.Silver)
 					return;
-				_targetTime = silverTarget;
 				_awardTimeDifference = silverTarget - goldTarget;
 				_currentAward = NgAward.Silver;
 			}
 			else if ((double) _currentTime <= bronzeTarget)
 			{
+				_targetTime = bronzeTarget;
 				if (_currentAward == NgAward.Bronze)
 					return;
-				_targetTime = bronzeTarget;
 				_awardTimeDifference = bronzeTarget - silverTarget;
 				_currentAward = NgAward.Bronze;
 			}
