@@ -1460,7 +1460,8 @@ namespace Streamliner
 
 			_bestTime = _loadedBestLapTime switch
 			{
-				true when _timeType == TimeType.Total =>
+				true when _timeType == TimeType.Total
+									|| _isCampaignFinalLap =>
 					TargetShip.TargetTime,
 				true when TargetShip.BestLapTime <= 0f
 				          && TargetShip.TargetTime > 0f =>
